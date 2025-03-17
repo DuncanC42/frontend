@@ -1,20 +1,19 @@
 <script setup>
 
-import { ref, onMounted, watch } from 'vue'
-import audio_mp3 from '../assets/relaxed-vlog-night-street.mp3'
+import { ref, watch } from 'vue'
 
-const audio = ref(null)
-const musique = ref(100)
-const effets_sonores = ref(100)
+import { volumeStore } from '@/stores/volume';
+const volumes = volumeStore();
 
-const playSong = () => {
-    audio.value = new Audio(audio_mp3);
-    audio.value.volume = musique.value*0.01;
-    audio.value.play();
-}
+const musique_volume = ref(50)
+const effets_sonores_volume = ref(50)
 
-watch(musique, ()=>{
-    audio.value.volume = musique.value*0.01;
+watch(musique_volume, () => {
+    volumes.setMusique(musique_volume.value)
+})
+
+watch(effets_sonores_volume, () => {
+    volumes.setEffetSonore(musique_volume.value)
 })
 
 </script>
@@ -25,16 +24,15 @@ watch(musique, ()=>{
             <font-awesome-icon class="icon" :icon="['fas', 'gear']" />
             <h1>Sons et musiques</h1>
         </div>
-        <button @click="playSong">Audio</button>
         <div class="slider">
             <font-awesome-icon class="icon" :icon="['fas', 'music']" />
-            <input v-model="musique" type="range" class="level">
-            <span>{{ musique }}</span>
+            <input v-model="musique_volume" type="range" class="level">
+            <span>{{ musique_volume }}</span>
         </div>
         <div class="slider">
             <font-awesome-icon class="icon" :icon="['fas', 'volume-high']" />
-            <input v-model="effets_sonores" type="range" class="level">
-            <span>{{ effets_sonores }}</span>
+            <input v-model="effets_sonores_volume" type="range" class="level">
+            <span>{{ effets_sonores_volume }}</span>
         </div>
     </div>
 </template>
