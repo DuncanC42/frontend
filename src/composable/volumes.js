@@ -1,13 +1,14 @@
 import { ref, watch } from 'vue';
 import { volumeStore } from '@/stores/volume';
-import audio_mp3 from '@/assets/sons/musiques/chill-ambiance.mp3';
+import audio_mp3 from '@/assets/sons/musiques/ambiance/chill.mp3';
 
 export function useMusique() {
     const volumes = volumeStore();
     const musique = ref(new Audio(audio_mp3));
 
     musique.value.volume = volumes.musique;
-
+    musique.value.loop = true;
+    
     (async () => {
         let isPlaying = false;
         while (!isPlaying) {
