@@ -1,5 +1,22 @@
 <script setup>
 
+import { ref, onMounted, watch } from 'vue'
+import audio_mp3 from '../assets/relaxed-vlog-night-street.mp3'
+
+const audio = ref(null)
+const musique = ref(100)
+const effets_sonores = ref(100)
+
+const playSong = () => {
+    audio.value = new Audio(audio_mp3);
+    audio.value.volume = musique.value*0.01;
+    audio.value.play();
+}
+
+watch(musique, ()=>{
+    audio.value.volume = musique.value*0.01;
+})
+
 </script>
 
 <template>
@@ -8,13 +25,16 @@
             <font-awesome-icon class="icon" :icon="['fas', 'gear']" />
             <h1>Sons et musiques</h1>
         </div>
+        <button @click="playSong">Audio</button>
         <div class="slider">
             <font-awesome-icon class="icon" :icon="['fas', 'music']" />
-            <input type="range" class="level">
+            <input v-model="musique" type="range" class="level">
+            <span>{{ musique }}</span>
         </div>
         <div class="slider">
-            <font-awesome-icon  class="icon" :icon="['fas', 'volume-high']" />
-            <input type="range" class="level">
+            <font-awesome-icon class="icon" :icon="['fas', 'volume-high']" />
+            <input v-model="effets_sonores" type="range" class="level">
+            <span>{{ effets_sonores }}</span>
         </div>
     </div>
 </template>
@@ -50,7 +70,7 @@
     --slider-height: 6px;
     --slider-bg: rgb(82, 82, 82);
     --slider-border-radius: 999px;
-    --level-color: #bebebe;
+    --level-color: #ffffff;
     --level-transition-duration: .1s;
     --icon-margin: 15px;
     --icon-color: var(--slider-bg);
@@ -67,6 +87,8 @@
 }
 
 .slider .level {
+
+    width: 100vw;
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;

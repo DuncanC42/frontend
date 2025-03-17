@@ -1,8 +1,8 @@
 <script setup>
 
-
+import VolumeMenu from './views/VolumeMenu.vue'
 </script>
 
 <template>
-	hello !
+	<VolumeMenu></VolumeMenu>
 </template>
