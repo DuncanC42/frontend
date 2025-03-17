@@ -1,8 +1,8 @@
 <script setup>
-
+    import ButtonIdenticator from './components/buttons/ButtonIdenticator.vue';
 
 </script>
 
 <template>
-	hello !
+	  <ButtonIdenticator label="Primary" classArray="primary"></ButtonIdenticator>
 </template>
