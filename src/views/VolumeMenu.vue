@@ -1,8 +1,7 @@
 <script setup>
 
-
 </script>
 
 <template>
-	hello !
+    bonjour
 </template>
