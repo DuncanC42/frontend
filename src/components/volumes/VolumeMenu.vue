@@ -5,15 +5,15 @@ import { ref, watch } from 'vue'
 import { volumeStore } from '@/stores/volume';
 const volumes = volumeStore();
 
-const musique_volume = ref(50)
-const effets_sonores_volume = ref(50)
+const musique_volume = ref(Math.sqrt(volumes.musique) * 100)
+const effets_sonores_volume = ref(Math.sqrt(volumes.effet_sonore) * 100)
 
 watch(musique_volume, () => {
     volumes.setMusique(musique_volume.value)
 })
 
 watch(effets_sonores_volume, () => {
-    volumes.setEffetSonore(musique_volume.value)
+    volumes.setEffetSonore(effets_sonores_volume.value)
 })
 
 </script>
@@ -25,12 +25,16 @@ watch(effets_sonores_volume, () => {
             <h1>Sons et musiques</h1>
         </div>
         <div class="slider">
-            <font-awesome-icon class="icon" :icon="['fas', 'music']" />
+            <font-awesome-icon v-if="musique_volume > 0" class="icon" :icon="['fas', 'music']" />
+            <font-awesome-icon v-else class="icon" :icon="['fas', 'music']" />
+            <font-awesome-icon v-if="musique_volume == 0" class="icon slash" :icon="['fas', 'slash']" />
+
             <input v-model="musique_volume" type="range" class="level">
             <span>{{ musique_volume }}</span>
         </div>
         <div class="slider">
-            <font-awesome-icon class="icon" :icon="['fas', 'volume-high']" />
+            <font-awesome-icon v-if="effets_sonores_volume > 0" class="icon" :icon="['fas', 'volume-high']" />
+            <font-awesome-icon v-else class="icon" :icon="['fas', 'volume-xmark']" />
             <input v-model="effets_sonores_volume" type="range" class="level">
             <span>{{ effets_sonores_volume }}</span>
         </div>
@@ -49,8 +53,6 @@ watch(effets_sonores_volume, () => {
 .title {
     display: flex;
     align-items: center;
-    gap: 20px;
-
 }
 
 .title>h1 {
@@ -59,12 +61,22 @@ watch(effets_sonores_volume, () => {
 
 .icon {
     font-size: larger;
-    width: 30px;
     height: 30px;
+    width: 60px;
+}
+
+.slash {
+    position: absolute;
+    translate:  -7px;
+}
+
+span {
+    width: 20px;
 }
 
 
 .slider {
+    width: 80vw;
     --slider-height: 6px;
     --slider-bg: rgb(82, 82, 82);
     --slider-border-radius: 999px;
