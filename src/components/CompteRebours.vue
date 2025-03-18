@@ -1,3 +1,6 @@
+<!--  <h1>🕒 Compte à rebours test</h1>                 -->
+<!--  <CompteRebours targetDate="2025-03-18T09:00:00" /> -->
+
 <template>
   <div v-if="timeLeft > 0" class="countdown">
     <div class="minuteur">{{ formattedTime }}</div>
