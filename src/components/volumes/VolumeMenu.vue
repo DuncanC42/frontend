@@ -42,6 +42,7 @@ watch(effets_sonores_volume, () => {
 </template>
 
 <style scoped>
+
 .page {
     display: flex;
     flex-direction: column;
