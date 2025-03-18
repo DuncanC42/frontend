@@ -7,17 +7,13 @@
   import VolumeButton from './components/volumes/VolumeButton.vue'
   import {useMusique} from './composable/volumes'
   useMusique();
-
   const width = ref(window.innerWidth);
-
   const updateWidth = () => {
     width.value = window.innerWidth;
   };
-
   onMounted(() => {
     window.addEventListener('resize', updateWidth);
   });
-
   onUnmounted(() => {
     window.removeEventListener('resize', updateWidth);
   });
