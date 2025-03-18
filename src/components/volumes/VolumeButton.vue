@@ -30,7 +30,7 @@ const isMenuOpen = ref(false)
     left: 0;
     height: 100vh;
     width: 100vw;
-    background-color: rgba(0, 0, 0, 0.3);
+    background-color: rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(10px);
 }
 

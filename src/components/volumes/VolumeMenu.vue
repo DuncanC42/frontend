@@ -49,6 +49,7 @@ watch(effets_sonores_volume, () => {
     align-items: center;
     gap: 10vh;
     margin-top: 20vh;
+    color: white;
 }
 
 .title {
@@ -79,7 +80,7 @@ span {
 .slider {
     width: 80vw;
     --slider-height: 6px;
-    --slider-bg: rgb(82, 82, 82);
+    --slider-bg: rgb(184, 184, 184);
     --slider-border-radius: 999px;
     --level-color: #ffffff;
     --level-transition-duration: .1s;
