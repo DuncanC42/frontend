@@ -59,43 +59,43 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.countdown {
-  text-align: center;
-  background-color: #494646;
-}
-.minuteur {
-  font-size: 48px;
-  margin-bottom: 0;
-  filter: drop-shadow(0px 4px 4px #00000040);
-  color: white;
-}
-.message {
-  text-align: center;
-  font-size: 30px;
-  font-weight: bold;
-  color: red;
-}
-.chrono {
-  margin-top: -5px;
-  display: flex;
-  font-size: 14px;
-  color: white;
-  filter: drop-shadow(0px 4px 4px #00000040);
-}
-.chrono .p1 {
-  margin-left: 74px;
-  font-weight: bold;
-}
-.chrono .p2 {
-  margin-left: 44px;
-  font-weight: bold;
-}
-.chrono .p3 {
-  margin-left: 35px;
-  font-weight: bold;
-}
-.chrono .p4 {
-  margin-left: 28px;
-  font-weight: bold;
-}
+  .countdown {
+    text-align: center;
+    background-color: #494646;
+  }
+  .minuteur {
+    font-size: 48px;
+    margin-bottom: 0;
+    filter: drop-shadow(0px 4px 4px #00000040);
+    color: white;
+  }
+  .message {
+    text-align: center;
+    font-size: 30px;
+    font-weight: bold;
+    color: red;
+  }
+  .chrono {
+    margin-top: -5px;
+    display: flex;
+    font-size: 14px;
+    color: white;
+    filter: drop-shadow(0px 4px 4px #00000040);
+  }
+  .chrono .p1 {
+    margin-left: 74px;
+    font-weight: bold;
+  }
+  .chrono .p2 {
+    margin-left: 44px;
+    font-weight: bold;
+  }
+  .chrono .p3 {
+    margin-left: 35px;
+    font-weight: bold;
+  }
+  .chrono .p4 {
+    margin-left: 28px;
+    font-weight: bold;
+  }
 </style>
