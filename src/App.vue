@@ -5,6 +5,16 @@
 </script>
 
 <template>
-	  <ButtonIdenticator label="Primary" classArray="primary"></ButtonIdenticator>
-    <ButtonMenu classArray="normalSize" icon="door-open"></ButtonMenu>
+    <div>
+        <ButtonIdenticator label="Primary" classArray="primary"></ButtonIdenticator>
+        <ButtonIdenticator label="Secondary" classArray="secondary"></ButtonIdenticator>
+    </div>
+	
+    <div style="display: flex; justify-content: space-around;">
+        <ButtonMenu classArray="normalSize" icon="door-open"></ButtonMenu>
+        <ButtonMenu classArray="normalSize" icon="rotate-right"></ButtonMenu>
+        <ButtonMenu classArray="normalSize" icon="play"></ButtonMenu>
+        <ButtonMenu classArray="littleSize" icon="pause"></ButtonMenu>
+    </div>
+    
 </template>
