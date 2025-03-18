@@ -1,3 +1,7 @@
+<!--
+<Chronometre couleur="black"/>
+<Chronometre couleur="white"/>
+-->
 <template>
     <div>
         <div class="chronometre" :class="couleur">

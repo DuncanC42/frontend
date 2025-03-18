@@ -1,3 +1,7 @@
+<!--
+<Minuteur couleur="black"/>
+<Minuteur couleur="white"/>
+-->
 <template>
     <div v-if="timeLeft > 0" class="minuteur" :class="currentColor">
         {{ formattedTime }}
@@ -58,7 +62,7 @@ onMounted(() => {
         color: white;
         filter: drop-shadow(0px 4px 4px #00000040);
     }
-    
+
     .black {
         color: black;
         filter: drop-shadow(0px 4px 4px #00000040);
