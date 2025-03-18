@@ -1,5 +1,5 @@
 <script setup>
-import VolumeMenu from './views/VolumeMenu.vue'
+import VolumeButton from './components/volumes/VolumeButton.vue'
 
 import {useMusique} from './composable/volumes'
 useMusique();
@@ -7,5 +7,5 @@ useMusique();
 </script>
 
 <template>
-	<VolumeMenu></VolumeMenu>
+	<VolumeButton></VolumeButton>
 </template>
