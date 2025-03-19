@@ -54,7 +54,6 @@ onMounted(() => {
         border-radius: 10px;
         margin: 0 150px;
         filter: drop-shadow(0px 4px 4px #00000040);
-
     }
   
     /* Couleurs dynamiques */
