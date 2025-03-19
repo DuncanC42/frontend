@@ -1,30 +1,46 @@
 <script setup>
-  import { ref, onMounted, onUnmounted } from 'vue';
-  import CompteRebours from './components/CompteRebours.vue';
-  import PageBienvenue from './views/PageBienvenue.vue';
-  import PageErreur from './views/PageErreur.vue'
-  
-  import VolumeButton from './components/volumes/VolumeButton.vue'
-  import {useMusique} from './composable/volumes'
-  useMusique();
+import { ref, onMounted, onUnmounted } from 'vue';
+import PageBienvenue from './views/PageBienvenue.vue';
+import PageErreur from './views/PageErreur.vue'
+import PanneauJeux from './views/PanneauJeux.vue';
+import FondEcran from './components/FondEcran.vue'; 
+import Header from './components/Header.vue'
 
-  const width = ref(window.innerWidth);
+import VolumeButton from './components/volumes/VolumeButton.vue'
+import { useMusique } from './composable/volumes'
+useMusique();
 
-  const updateWidth = () => {
-    width.value = window.innerWidth;
-  };
+const width = ref(window.innerWidth);
 
-  onMounted(() => {
-    window.addEventListener('resize', updateWidth);
-  });
+const updateWidth = () => {
+	width.value = window.innerWidth;
+};
 
-  onUnmounted(() => {
-    window.removeEventListener('resize', updateWidth);
-  });
+onMounted(() => {
+	window.addEventListener('resize', updateWidth);
+});
+
+onUnmounted(() => {
+	window.removeEventListener('resize', updateWidth);
+});
 </script>
 
 <template>
-  <PageErreur v-if="width > 700" /> <!--Passage de la page d'erreur à la page de bienvenue--> 
-  <PageBienvenue v-else />
-  <VolumeButton></VolumeButton>
+	<div>
+		<Header></Header>
+		<RouterView></RouterView>
+		<VolumeButton></VolumeButton>
+	</div>
+	
 </template>
+
+
+<style scoped>
+div{
+	display: flex;
+	flex-direction: column;
+	height: 100vh;
+	width: 100vw;
+}
+
+</style>
