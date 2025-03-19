@@ -2,7 +2,7 @@
 
 defineProps({
     image : {
-        type : Object,
+        type : String,
         required : true
     }
 })
