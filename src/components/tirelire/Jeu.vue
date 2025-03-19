@@ -27,6 +27,13 @@ import maison from '@/assets/tirelire/images/pictos_faux/maison.png';
 import puzzle from '@/assets/tirelire/images/pictos_faux/puzzle.png';
 import telephone from '@/assets/tirelire/images/pictos_faux/telephone.png';
 
+// Jauge
+import jauge0 from '@/assets/tirelire/images/jauges/jauge0.png';
+import jauge1 from '@/assets/tirelire/images/jauges/jauge1.png';
+import jauge2 from '@/assets/tirelire/images/jauges/jauge2.png';
+import jauge3 from '@/assets/tirelire/images/jauges/jauge3.png';
+import jauge4 from '@/assets/tirelire/images/jauges/jauge4.png';
+
 const gameContainer = ref(null);
 
 onMounted(() => {
@@ -58,11 +65,11 @@ onMounted(() => {
     let tirelire;
     let isDragging = false;
     let score = 0;
-    let scoreText;
     let timerText;
     let timeElapsed = 0;
     let collectedPictograms = {};
     let gameOver = false;
+    let gauge; // Reference to the current gauge sprite
 
     // Arrays of good and bad pictograms
     const goodPictograms = [
@@ -82,12 +89,19 @@ onMounted(() => {
         // Load all pictograms
         goodPictograms.forEach((picto) => this.load.image(picto.key, picto.image));
         badPictograms.forEach((picto, index) => this.load.image(`bad${index}`, picto));
+
+        // Load gauge sprites
+        this.load.image('jauge0', jauge0);
+        this.load.image('jauge1', jauge1);
+        this.load.image('jauge2', jauge2);
+        this.load.image('jauge3', jauge3);
+        this.load.image('jauge4', jauge4);
     }
 
     function create() {
         setUpBackground.call(this);
         setUpTirelire.call(this);
-        setUpScore.call(this);
+        setUpGauge.call(this);
         setUpTimer.call(this);
         spawnFallingObjects.call(this);
     }
@@ -114,11 +128,28 @@ onMounted(() => {
         makeTirelireDraggable.call(this, tirelire);
     }
 
-    function setUpScore() {
-        scoreText = this.add.text(16, 16, 'Score: 0', {
-            fontSize: '100px',
-            fill: '#fff',
-        });
+    function setUpGauge() {
+        // Display the initial gauge (jauge0)
+        gauge = this.add.image(150, 550, 'jauge0').setScale(0.15);
+    }
+
+    function updateGauge() {
+        // Map the score to the correct gauge sprite based on the new rules
+        let gaugeKey;
+        if (score === 0) {
+            gaugeKey = 'jauge0';
+        } else if (score === 1) {
+            gaugeKey = 'jauge1';
+        } else if (score === 2 || score === 3) {
+            gaugeKey = 'jauge2';
+        } else if (score === 4 || score === 5) {
+            gaugeKey = 'jauge3';
+        } else {
+            gaugeKey = 'jauge4'; // For 6 or more points
+        }
+
+        // Update the gauge sprite
+        gauge.setTexture(gaugeKey);
     }
 
     function setUpTimer() {
@@ -219,7 +250,9 @@ onMounted(() => {
                 // Mark the pictogram as collected and increment the score
                 collectedPictograms[pictogramKey] = true;
                 score += 1;
-                scoreText.setText(`Score: ${score}`);
+
+                // Update the gauge
+                updateGauge.call(this);
 
                 // Check if all good pictograms have been collected
                 if (Object.keys(collectedPictograms).length === goodPictograms.length) {
@@ -228,6 +261,9 @@ onMounted(() => {
                         fontSize: '200px',
                         fill: '#0f0',
                     }).setOrigin(0.5);
+
+                    // Pause the game after displaying the "Game Complete!" message
+                    pauseGame.call(this);
                 }
             }
         } else {
@@ -235,6 +271,14 @@ onMounted(() => {
             timeElapsed += 10;
             timerText.setText(`Time: ${timeElapsed}s`);
         }
+    }
+
+    function pauseGame() {
+        this.scene.pause();
+    }
+
+    function unpauseGame() {
+        this.scene.resume();
     }
 });
 </script>
