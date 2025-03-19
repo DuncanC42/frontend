@@ -2,6 +2,7 @@
     import ButtonIdenticator from './components/buttons/ButtonIdenticator.vue';
     import ButtonMenu from './components/buttons/ButtonMenu.vue';
     import ButtonNextPrevious from './components/buttons/ButtonNextPrevious.vue';
+    import ButtonEndGame from './components/buttons/ButtonEndGame.vue';
 
 </script>
 
@@ -20,6 +21,11 @@
     <div style="background-color: black; display: flex; justify-content: space-around;">
         <ButtonNextPrevious classArray="previous" />
         <ButtonNextPrevious classArray="next" />
+    </div>
+    <div>
+        <ButtonEndGame classArray="share" />
+        <ButtonEndGame classArray="continue" />
+        <ButtonEndGame classArray="retry" />
     </div>
     
 </template>
