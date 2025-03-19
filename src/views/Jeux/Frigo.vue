@@ -1,0 +1,3 @@
+<template>
+    Fruit ninja
+</template>
