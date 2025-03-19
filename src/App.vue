@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
 import NavBar from './components/NavBar.vue';
+import Header from './components/Header.vue'
 import VolumeButton from './components/volumes/VolumeButton.vue'
 import { useMusique } from './composable/volumes'
 useMusique();
