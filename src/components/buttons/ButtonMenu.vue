@@ -33,6 +33,7 @@
         border-radius: 50px;
         border: none;
         transition: all ease 0.2s;
+        font-family: 'Source Sans Pro';
     }
 
     button:active {
