@@ -7,13 +7,6 @@ import { useMusique } from './composable/volumes'
 useMusique();
 
 
-onMounted(() => {
-  window.addEventListener('resize', updateWidth);
-});
-
-onUnmounted(() => {
-  window.removeEventListener('resize', updateWidth);
-});
 </script>
 
 <template>
