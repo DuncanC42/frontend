@@ -11,7 +11,7 @@ useMusique();
 
 <template>
   <div>
-    <NavBar /> <!-- Barre de navigation -->
+    <!-- <NavBar /> -->
     <Header></Header>
     <RouterView></RouterView>
     <VolumeButton></VolumeButton>
