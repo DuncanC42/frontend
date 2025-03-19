@@ -5,6 +5,7 @@
 <script setup>
 import { onMounted, ref } from 'vue';
 import Phaser from 'phaser';
+import { useMusic } from '@/composable/volumes';
 
 // Import des images
 import tirelireSprite from '@/assets/tirelire/images/Tirelire.png';
@@ -34,9 +35,19 @@ import jauge2 from '@/assets/tirelire/images/jauges/jauge2.png';
 import jauge3 from '@/assets/tirelire/images/jauges/jauge3.png';
 import jauge4 from '@/assets/tirelire/images/jauges/jauge4.png';
 
+// Sound
+import goodSound from '@/assets/tirelire/sons/good.mp3';
+import wrongSound from '@/assets/tirelire/sons/wrong.mp3';
+import ambiance from '@/assets/tirelire/sons/ambiance.mp3';
+import chill from '@/assets/sons/musiques/ambiance/chill.mp3';
+import clap from '@/assets/tirelire/sons/clap.mp3';
+
+
 const gameContainer = ref(null);
 
 onMounted(() => {
+    const { switchAudio, pause, resume } = useMusic();
+    switchAudio(ambiance);
     const fixedWidth = 2000;
     const aspectRatio = 4510 / 8014;
     const calculatedHeight = fixedWidth / aspectRatio;
@@ -70,6 +81,9 @@ onMounted(() => {
     let collectedPictograms = {};
     let gameOver = false;
     let gauge; // Reference to the current gauge sprite
+    let goodSoundEffect;
+    let wrongSoundEffect;
+    let clapSoundEffect;
 
     // Arrays of good and bad pictograms
     const goodPictograms = [
@@ -96,6 +110,11 @@ onMounted(() => {
         this.load.image('jauge2', jauge2);
         this.load.image('jauge3', jauge3);
         this.load.image('jauge4', jauge4);
+
+        // Load sounds
+        this.load.audio('goodSound', goodSound);
+        this.load.audio('wrongSound', wrongSound);
+        this.load.audio('clap', clap);
     }
 
     function create() {
@@ -104,6 +123,11 @@ onMounted(() => {
         setUpGauge.call(this);
         setUpTimer.call(this);
         spawnFallingObjects.call(this);
+
+        // Initialize sounds
+        goodSoundEffect = this.sound.add('goodSound');
+        wrongSoundEffect = this.sound.add('wrongSound');
+        clapSoundEffect = this.sound.add('clap');
     }
 
     function update() {
@@ -147,7 +171,6 @@ onMounted(() => {
         } else {
             gaugeKey = 'jauge4'; // For 6 or more points
         }
-
         // Update the gauge sprite
         gauge.setTexture(gaugeKey);
     }
@@ -254,22 +277,28 @@ onMounted(() => {
                 // Update the gauge
                 updateGauge.call(this);
 
+                // Play good sound effect
+                goodSoundEffect.play();
+
                 // Check if all good pictograms have been collected
                 if (Object.keys(collectedPictograms).length === goodPictograms.length) {
+                    pause()
                     gameOver = true;
+
                     this.add.text(fixedWidth / 2, calculatedHeight / 2, 'Game Complete!', {
                         fontSize: '200px',
                         fill: '#0f0',
                     }).setOrigin(0.5);
 
-                    // Pause the game after displaying the "Game Complete!" message
+                    clapSoundEffect.play();
                     pauseGame.call(this);
+                    setTimeout(() => switchAudio(chill), 4500);
                 }
             }
         } else {
-            // Increase the timer by 10 seconds for bad pictograms
             timeElapsed += 10;
             timerText.setText(`Time: ${timeElapsed}s`);
+            wrongSoundEffect.play();
         }
     }
 
