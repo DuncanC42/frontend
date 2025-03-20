@@ -1,5 +1,15 @@
 <template>
-  <div id="phaser-container"></div>
+  <div id="phaser-container">
+    <button @click="resetPuzzle" id="reset-button">Réinitialiser le puzzle</button>
+
+    <div v-if="showModal" class="modal">
+      <div class="modal-content">
+        <h2>🎉 Bravo ! 🎉</h2>
+        <p>Vous avez résolu le puzzle !</p>
+        <button @click="closeModal">Fermer</button>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -23,10 +33,12 @@ export default {
   data() {
     return {
       game: null,
+      showModal: false,
       backgroundImageUrl: backgroundImage,
       tiles: [tile1, tile2, tile3, tile4, tile5, tile6, tile7, tile8, tile9, tile10, tile11, tile12],
       grid: [],
-      emptyPos: { row: 2, col: 3 }
+      emptyPos: {row: 2, col: 3},
+      phaserScene: null
     }
   },
   mounted() {
@@ -45,7 +57,7 @@ export default {
 
       class MainScene extends Phaser.Scene {
         constructor() {
-          super({ key: 'MainScene' })
+          super({key: 'MainScene'})
         }
 
         preload() {
@@ -63,6 +75,7 @@ export default {
           this.scale.on('resize', () => {
             this.resizeBackground(background)
           })
+          self.phaserScene = this
         }
 
         createGrid() {
@@ -93,8 +106,8 @@ export default {
 
               tileSprite.row = row
               tileSprite.col = col
-              tileSprite.originalRow = row
-              tileSprite.originalCol = col
+              tileSprite.originalRow = Math.floor(idx / 4)
+              tileSprite.originalCol = idx % 4
 
               tileSprite.on('pointerdown', () => {
                 this.tryMove(tileSprite)
@@ -112,11 +125,9 @@ export default {
           const dist = Math.abs(empty.row - row) + Math.abs(empty.col - col)
 
           if (dist === 1) {
-            // Swap
             self.grid[empty.row][empty.col] = tile
             self.grid[row][col] = null
 
-            // Move tile
             const tileSize = tile.displayWidth
             const offsetX = (this.cameras.main.width - (tileSize * 4)) / 2
             const offsetY = (this.cameras.main.height - (tileSize * 3)) / 2
@@ -129,7 +140,10 @@ export default {
               x: offsetX + empty.col * tileSize,
               y: offsetY + empty.row * tileSize,
               duration: 150,
-              ease: 'Power2'
+              ease: 'Power2',
+              onComplete: () => {
+                self.checkWin()
+              }
             })
 
             self.emptyPos = {row, col}
@@ -190,15 +204,48 @@ export default {
       this.game = new Phaser.Game(config)
     },
 
+    checkWin() {
+      for (let row = 0; row < 3; row++) {
+        for (let col = 0; col < 4; col++) {
+          if (row === 2 && col === 3) continue // Ignore la case vide
+          const tile = this.grid[row][col]
+          if (!tile) return false
+          // Est-ce que la tuile à cette position est bien celle qui devait s'y trouver ?
+          if (tile.originalRow !== row || tile.originalCol !== col) {
+            return false
+          }
+        }
+      }
+      this.showModal = true
+      return true
+    },
+
+    closeModal() {
+      this.showModal = false
+    },
+
     resizeGame() {
       if (this.game) {
         this.game.scale.resize(window.innerWidth, window.innerHeight)
       }
+    },
+
+    resetPuzzle() {
+      if (!this.phaserScene) return
+      const scene = this.phaserScene
+      for (let row = 0; row < 3; row++) {
+        for (let col = 0; col < 4; col++) {
+          const tile = this.grid[row][col]
+          if (tile) tile.destroy()
+        }
+      }
+      this.grid = []
+      this.emptyPos = {row: 2, col: 3}
+      scene.createGrid()
     }
   }
 }
 </script>
-
 
 <style scoped>
 #phaser-container {
@@ -208,5 +255,39 @@ export default {
   height: 100vh;
   overflow: hidden;
   position: relative;
+}
+
+#reset-button {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 10;
+  padding: 10px 20px;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.modal {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 20;
+}
+
+.modal-content {
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }
 </style>
