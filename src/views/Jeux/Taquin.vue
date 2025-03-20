@@ -1,6 +1,6 @@
 <template>
   <div id="phaser-container">
-    <button @click="resetPuzzle" id="reset-button">Réinitialiser le puzzle</button>
+<!--    <button @click="resetPuzzle" id="reset-button">Réinitialiser le puzzle</button>-->
 
     <div v-if="showModal" class="modal">
       <div class="modal-content">
