@@ -61,7 +61,7 @@ onMounted(() => {
 <style scoped>
   .countdown {
     text-align: center;
-    background-color: #494646;
+    background-color: #00000000;
   }
   .minuteur {
     font-size: 48px;
@@ -76,26 +76,17 @@ onMounted(() => {
     color: red;
   }
   .chrono {
+    
     margin-top: -5px;
     display: flex;
+    justify-content: center;
+    gap:32px;
     font-size: 14px;
     color: white;
     filter: drop-shadow(0px 4px 4px #00000040);
+
   }
-  .chrono .p1 {
-    margin-left: 74px;
-    font-weight: bold;
-  }
-  .chrono .p2 {
-    margin-left: 44px;
-    font-weight: bold;
-  }
-  .chrono .p3 {
-    margin-left: 35px;
-    font-weight: bold;
-  }
-  .chrono .p4 {
-    margin-left: 28px;
-    font-weight: bold;
-  }
+
+
+
 </style>
