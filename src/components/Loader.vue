@@ -4,17 +4,20 @@ import BlurFilter from './BlurFilter.vue';
 
 <template>
     <BlurFilter :isOpen="true"></BlurFilter>
-    <div class="loading">
-    <svg width="64px" height="48px">
-        <polyline points="0.157 23.954, 14 23.954, 21.843 48, 43 0, 50 24, 64 24" id="back"></polyline>
-        <polyline points="0.157 23.954, 14 23.954, 21.843 48, 43 0, 50 24, 64 24" id="front"></polyline>
-    </svg>
+    <div class="loader">
+        <div class="iconLoader">
+            <svg width="64px" height="48px">
+                <polyline points="0.157 23.954, 14 23.954, 21.843 48, 43 0, 50 24, 64 24" id="back"></polyline>
+                <polyline points="0.157 23.954, 14 23.954, 21.843 48, 43 0, 50 24, 64 24" id="front"></polyline>
+            </svg>
+        </div>
+        <p>Chargement...</p>
     </div>
 </template>
 
 <style scoped>
     /* From Uiverse.io by milley69 */ 
-.loading svg polyline {
+.iconLoader svg polyline {
   fill: none;
   stroke-width: 3;
   stroke-linecap: round;
@@ -22,12 +25,12 @@ import BlurFilter from './BlurFilter.vue';
 
 }
 
-.loading svg polyline#back {
+.iconLoader svg polyline#back {
   fill: none;
-  stroke: #98c6ea;
+  stroke: white;
 }
 
-.loading svg polyline#front {
+.iconLoader svg polyline#front {
   fill: none;
   stroke: #015BA7;
   stroke-dasharray: 48, 144;
@@ -35,12 +38,22 @@ import BlurFilter from './BlurFilter.vue';
   animation: dash_682 1.4s linear infinite;
 }
 
-.loading {
+.iconLoader {
     display: flex;
     justify-content: center;
     z-index: 3;
     position: relative; 
-    top: 30%;
+}
+
+.loader {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+    position: fixed;
+    z-index: 100;
 }
 
 @keyframes dash_682 {
@@ -53,4 +66,10 @@ import BlurFilter from './BlurFilter.vue';
   }
 }
 
+p {
+    font-size: 20px;
+    font-family: 'source sans pro';
+    color: white;
+
+}
 </style>

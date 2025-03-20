@@ -49,7 +49,6 @@ const handleClick = (numero, status) => {
 <template>
     
     <FondEcran :image="Image"></FondEcran>
-    
     <div v-for="i in 5" @click="handleClick(i, status['jeux' + i])" :key="'jeux-' + i" :id="'jeux-' + i"
     :class="status['jeux' + i] === 'locked' && 'locked'">
     <JeuxStatus :status="status['jeux' + i]"></JeuxStatus>
