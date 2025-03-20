@@ -1,6 +1,6 @@
 <template>
   <div id="phaser-container">
-    <button @click="resetPuzzle" id="reset-button">Réinitialiser le puzzle</button>
+<!--    <button @click="resetPuzzle" id="reset-button">Réinitialiser le puzzle</button>-->
 
     <div v-if="showModal" class="modal">
       <div class="modal-content">
@@ -60,8 +60,58 @@ export default {
           super({key: 'MainScene'})
         }
 
+        showFinalTile() {
+          const tileSize = this.cameras.main.width * 0.8 / 4
+          const offsetX = (this.cameras.main.width - (tileSize * 4)) / 2
+          const offsetY = (this.cameras.main.height - (tileSize * 3)) / 2
+
+          // 1. Ajout du halo lumineux
+          const halo = this.add.graphics()
+          const haloPadding = 20
+
+          halo.lineStyle(10, 0xffff99, 0.8)
+          halo.strokeRoundedRect(
+              offsetX - haloPadding,
+              offsetY - haloPadding,
+              tileSize * 4 + haloPadding * 2,
+              tileSize * 3 + haloPadding * 2,
+              15
+          )
+
+          // 2. Animation "pulsante" du halo (alpha qui varie)
+          this.tweens.add({
+            targets: halo,
+            alpha: { from: 0.3, to: 1 },
+            duration: 800,
+            yoyo: true,
+            repeat: -1
+          })
+
+          // 3. Animation de la dernière tuile
+          const finalTile = this.add.image(
+              offsetX + 3 * tileSize,
+              -tileSize * 2,
+              'finalTile'
+          )
+              .setOrigin(0)
+              .setDisplaySize(tileSize, tileSize)
+
+          const targetY = offsetY + 2 * tileSize
+
+          this.tweens.add({
+            targets: finalTile,
+            y: targetY,
+            duration: 1000,
+            ease: 'Bounce.easeOut',
+            onComplete: () => {
+              self.showModal = true
+            }
+          })
+        }
+
         preload() {
           this.load.image('background', self.backgroundImageUrl)
+          this.load.image('finalTile', tile12)
           self.tiles.forEach((tile, index) => {
             this.load.image(`tile${index}`, tile)
           })
@@ -151,11 +201,20 @@ export default {
         }
 
         shuffleTiles() {
-          const moves = 100
-          for (let i = 0; i < moves; i++) {
-            const neighbors = this.getMovableTiles()
-            const tile = Phaser.Utils.Array.GetRandom(neighbors)
-            if (tile) this.tryMove(tile)
+          let shuffled = false
+          while (!shuffled) {
+            const moves = 100
+            for (let i = 0; i < moves; i++) {
+              const neighbors = this.getMovableTiles()
+              const tile = Phaser.Utils.Array.GetRandom(neighbors)
+              if (tile) this.tryMove(tile)
+            }
+            if (!self.checkWin()) { // Vérifie qu'on n'est pas déjà sur un puzzle résolu
+              shuffled = true
+            } else {
+              // Si c'est résolu après le shuffle, on recommence
+              self.resetPuzzle()
+            }
           }
         }
 
@@ -216,8 +275,12 @@ export default {
           }
         }
       }
-      this.showModal = true
+      if (this.phaserScene) {
+        this.phaserScene.showFinalTile()
+      }
+// Ne pas afficher directement la modale ici
       return true
+
     },
 
     closeModal() {
