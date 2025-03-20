@@ -3,14 +3,13 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import Phaser from 'phaser';
 import { useMusic } from '@/composable/volumes';
-
+import { volumeStore } from '@/stores/volume';
 // Import des images
 import tirelireSprite from '@/assets/tirelire/images/Tirelire.png';
 import background from '@/assets/tirelire/images/background.png';
-
 // Good picto
 import hopital from '@/assets/tirelire/images/pictos_bons/Hopital.png';
 import auditive from '@/assets/tirelire/images/pictos_bons/AideAuditive.png';
@@ -18,7 +17,6 @@ import dentiste from '@/assets/tirelire/images/pictos_bons/Dentiste.png';
 import medecin from '@/assets/tirelire/images/pictos_bons/Medecin.png';
 import optique from '@/assets/tirelire/images/pictos_bons/Optique.png';
 import transport from '@/assets/tirelire/images/pictos_bons/TransportSanitaire.png';
-
 // Bad picto
 import ampoule from '@/assets/tirelire/images/pictos_faux/ampoule.png';
 import courrier from '@/assets/tirelire/images/pictos_faux/courrier.png';
@@ -27,14 +25,12 @@ import livre from '@/assets/tirelire/images/pictos_faux/livre.png';
 import maison from '@/assets/tirelire/images/pictos_faux/maison.png';
 import puzzle from '@/assets/tirelire/images/pictos_faux/puzzle.png';
 import telephone from '@/assets/tirelire/images/pictos_faux/telephone.png';
-
 // Jauge
 import jauge0 from '@/assets/tirelire/images/jauges/jauge0.png';
 import jauge1 from '@/assets/tirelire/images/jauges/jauge1.png';
 import jauge2 from '@/assets/tirelire/images/jauges/jauge2.png';
 import jauge3 from '@/assets/tirelire/images/jauges/jauge3.png';
 import jauge4 from '@/assets/tirelire/images/jauges/jauge4.png';
-
 // Sound
 import goodSound from '@/assets/tirelire/sons/good.mp3';
 import wrongSound from '@/assets/tirelire/sons/wrong.mp3';
@@ -42,12 +38,12 @@ import ambiance from '@/assets/tirelire/sons/ambiance.mp3';
 import chill from '@/assets/sons/musiques/ambiance/chill.mp3';
 import clap from '@/assets/tirelire/sons/clap.mp3';
 
-
 const gameContainer = ref(null);
 
 onMounted(() => {
     const { switchAudio, pause, resume } = useMusic();
     switchAudio(ambiance);
+
     const fixedWidth = 2000;
     const aspectRatio = 4510 / 8014;
     const calculatedHeight = fixedWidth / aspectRatio;
@@ -72,7 +68,6 @@ onMounted(() => {
     };
 
     const game = new Phaser.Game(config);
-
     let tirelire;
     let isDragging = false;
     let score = 0;
@@ -80,12 +75,12 @@ onMounted(() => {
     let timeElapsed = 0;
     let collectedPictograms = {};
     let gameOver = false;
-    let gauge; // Reference to the current gauge sprite
+    let gauge;
     let goodSoundEffect;
     let wrongSoundEffect;
     let clapSoundEffect;
+    let isGameStarted = false;
 
-    // Arrays of good and bad pictograms
     const goodPictograms = [
         { key: 'hopital', image: hopital },
         { key: 'auditive', image: auditive },
@@ -99,19 +94,13 @@ onMounted(() => {
     function preload() {
         this.load.image('tirelire', tirelireSprite);
         this.load.image('background', background);
-
-        // Load all pictograms
         goodPictograms.forEach((picto) => this.load.image(picto.key, picto.image));
         badPictograms.forEach((picto, index) => this.load.image(`bad${index}`, picto));
-
-        // Load gauge sprites
         this.load.image('jauge0', jauge0);
         this.load.image('jauge1', jauge1);
         this.load.image('jauge2', jauge2);
         this.load.image('jauge3', jauge3);
         this.load.image('jauge4', jauge4);
-
-        // Load sounds
         this.load.audio('goodSound', goodSound);
         this.load.audio('wrongSound', wrongSound);
         this.load.audio('clap', clap);
@@ -119,19 +108,50 @@ onMounted(() => {
 
     function create() {
         setUpBackground.call(this);
-        setUpTirelire.call(this);
-        setUpGauge.call(this);
-        setUpTimer.call(this);
-        spawnFallingObjects.call(this);
 
-        // Initialize sounds
-        goodSoundEffect = this.sound.add('goodSound');
-        wrongSoundEffect = this.sound.add('wrongSound');
-        clapSoundEffect = this.sound.add('clap');
+        const startTextBg = this.add.rectangle(0, 0, fixedWidth, calculatedHeight, 0x000000).setOrigin(0).setAlpha(0.4); // Full-screen background
+        const startText = this.add.text(fixedWidth / 2, calculatedHeight / 2, 'Appuyer pour démarrer !', {
+            fontSize: '150px',
+            fontFamily: '\'Source Sans Pro\', sans-serif',
+            fontWeight: 'bolder',
+            fill: '#fff',
+        }).setOrigin(0.5);
+
+        this.input.once('pointerdown', () => {
+            startText.destroy();
+            startTextBg.destroy();
+            isGameStarted = true;
+
+            setUpTirelire.call(this);
+            setUpGauge.call(this);
+            setUpTimer.call(this);
+            spawnFallingObjects.call(this);
+
+            goodSoundEffect = this.sound.add('goodSound');
+            wrongSoundEffect = this.sound.add('wrongSound');
+            clapSoundEffect = this.sound.add('clap');
+
+            const volumes = volumeStore()
+
+            // Set initial volume for sound effects
+            goodSoundEffect.volume = volumes.effet_sonore;
+            wrongSoundEffect.volume = volumes.effet_sonore;
+            clapSoundEffect.volume = volumes.effet_sonore;
+
+            // Watch for changes in sound effect volume and update dynamically
+            watch(
+                () => volumes.effet_sonore,
+                (newVolume) => {
+                    goodSoundEffect.volume = newVolume;
+                    wrongSoundEffect.volume = newVolume;
+                    clapSoundEffect.volume = newVolume;
+                }
+            );
+        });
     }
 
     function update() {
-        // Logique supplémentaire si nécessaire
+        if (!isGameStarted) return;
     }
 
     function setUpBackground() {
@@ -142,23 +162,18 @@ onMounted(() => {
     function setUpTirelire() {
         const tirelireYPosition = calculatedHeight - 700;
         tirelire = this.physics.add.sprite(fixedWidth / 2, tirelireYPosition, 'tirelire').setScale(0.07);
-
         const tirelireBody = tirelire.body;
         tirelireBody.setSize(tirelire.displayWidth, tirelire.displayHeight * 0.7);
-
         tirelire.body.setCollideWorldBounds(true);
         tirelire.body.setMaxVelocityY(0);
-
         makeTirelireDraggable.call(this, tirelire);
     }
 
     function setUpGauge() {
-        // Display the initial gauge (jauge0)
         gauge = this.add.image(150, 550, 'jauge0').setScale(0.15);
     }
 
     function updateGauge() {
-        // Map the score to the correct gauge sprite based on the new rules
         let gaugeKey;
         if (score === 0) {
             gaugeKey = 'jauge0';
@@ -169,22 +184,21 @@ onMounted(() => {
         } else if (score === 4 || score === 5) {
             gaugeKey = 'jauge3';
         } else {
-            gaugeKey = 'jauge4'; // For 6 or more points
+            gaugeKey = 'jauge4';
         }
-        // Update the gauge sprite
         gauge.setTexture(gaugeKey);
     }
 
     function setUpTimer() {
-        // Create the timer text in the top-right corner
         timerText = this.add.text(fixedWidth - 16, 16, 'Time: 0s', {
-            fontSize: '100px',
+            fontSize: '150px',
+            fontFamily: '\'Source Sans Pro\', sans-serif',
+            fontWeight: 'bolder',
             fill: '#fff',
-        }).setOrigin(1, 0); // Align text to the top-right corner
+        }).setOrigin(1, 0);
 
-        // Update the timer every second
         this.time.addEvent({
-            delay: 1000, // 1 second
+            delay: 1000,
             loop: true,
             callback: () => {
                 if (!gameOver) {
@@ -198,11 +212,9 @@ onMounted(() => {
     function makeTirelireDraggable(tirelire) {
         tirelire.setInteractive();
         let tirelire_size = tirelire.displayWidth;
-
         this.input.on('pointerdown', () => {
             isDragging = true;
         });
-
         this.input.on('pointermove', (pointer) => {
             if (isDragging) {
                 let newX = pointer.x;
@@ -210,11 +222,9 @@ onMounted(() => {
                 tirelire.x = newX;
             }
         });
-
         this.input.on('pointerup', () => {
             isDragging = false;
         });
-
         this.input.on('pointerout', (pointer) => {
             if (
                 pointer.x < 0 ||
@@ -229,12 +239,10 @@ onMounted(() => {
 
     function spawnFallingObjects() {
         this.time.addEvent({
-            delay: 1000, // Spawn every second
-            loop: true, // Repeat indefinitely
+            delay: 1000,
+            loop: true,
             callback: () => {
-                // Randomly decide if the pictogram is good or bad (50/50 chance)
                 const isGood = Phaser.Math.Between(0, 1) === 1;
-
                 let pictogramKey;
                 if (isGood) {
                     const randomIndex = Phaser.Math.Between(0, goodPictograms.length - 1);
@@ -242,52 +250,36 @@ onMounted(() => {
                 } else {
                     pictogramKey = `bad${Phaser.Math.Between(0, badPictograms.length - 1)}`;
                 }
-
                 const fallingObject = this.physics.add.sprite(0, 0, pictogramKey).setScale(0.7);
                 const pictogramWidth = fallingObject.displayWidth;
-
-                // Ensure the pictogram spawns within the game frame
                 const randomX = Phaser.Math.Between(pictogramWidth / 2, fixedWidth - pictogramWidth / 2);
                 fallingObject.setPosition(randomX, 0);
-
                 fallingObject.setVelocityY(Phaser.Math.Between(2000, 4000));
-
-                // Tag the object as good or bad for collision detection
                 fallingObject.isGood = isGood;
-
-                // Detect collisions between falling objects and tirelire
                 this.physics.add.overlap(tirelire, fallingObject, collectObject, null, this);
             },
         });
     }
 
     function collectObject(tirelire, fallingObject) {
-        // Destroy the falling object immediately
         fallingObject.disableBody(true, true);
-
         if (fallingObject.isGood) {
             const pictogramKey = fallingObject.texture.key;
-
-            // Check if the pictogram has already been collected
             if (!collectedPictograms[pictogramKey]) {
-                // Mark the pictogram as collected and increment the score
                 collectedPictograms[pictogramKey] = true;
                 score += 1;
-
-                // Update the gauge
                 updateGauge.call(this);
-
-                // Play good sound effect
                 goodSoundEffect.play();
-
-                // Check if all good pictograms have been collected
                 if (Object.keys(collectedPictograms).length === goodPictograms.length) {
-                    pause()
+                    pause();
                     gameOver = true;
 
-                    this.add.text(fixedWidth / 2, calculatedHeight / 2, 'Game Complete!', {
-                        fontSize: '200px',
-                        fill: '#0f0',
+                    this.add.rectangle(0, 0, fixedWidth, calculatedHeight, 0x000000).setOrigin(0).setAlpha(0.4); // Full-screen background
+                    this.add.text(fixedWidth / 2, calculatedHeight / 2, 'Jeu terminé !', {
+                        fontSize: '150px',
+                        fontFamily: '\'Source Sans Pro\', sans-serif',
+                        fontWeight: 'bolder',
+                        fill: '#fff',
                     }).setOrigin(0.5);
 
                     clapSoundEffect.play();
@@ -315,7 +307,8 @@ onMounted(() => {
 <style scoped>
 .game-container {
     width: 100vw;
-    height: fit-content;
+    height: 100vh;
     margin: 0 auto;
+    background-color: lightgray;
 }
 </style>
