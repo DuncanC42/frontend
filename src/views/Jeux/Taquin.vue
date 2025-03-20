@@ -1,6 +1,6 @@
 <template>
   <div id="phaser-container">
-<!--    <button @click="resetPuzzle" id="reset-button">Réinitialiser le puzzle</button>-->
+    <button @click="resetPuzzle" id="reset-button">Réinitialiser le puzzle</button>
 
     <div v-if="showModal" class="modal">
       <div class="modal-content">
@@ -35,6 +35,7 @@ export default {
       game: null,
       showModal: false,
       backgroundImageUrl: backgroundImage,
+      // liste des images des tuiles
       tiles: [tile1, tile2, tile3, tile4, tile5, tile6, tile7, tile8, tile9, tile10, tile11, tile12],
       grid: [],
       emptyPos: {row: 2, col: 3},
@@ -42,12 +43,12 @@ export default {
     }
   },
   mounted() {
-    this.initPhaser()
-    window.addEventListener('resize', this.resizeGame)
+    this.initPhaser() // Démarre Phaser quand le composant est monté
+    window.addEventListener('resize', this.resizeGame) // Gère le redimensionnement de la fenêtre
   },
   beforeDestroy() {
     if (this.game) {
-      this.game.destroy(true)
+      this.game.destroy(true) // Nettoyage du jeu quand le composant est détruit
     }
     window.removeEventListener('resize', this.resizeGame)
   },
@@ -60,15 +61,15 @@ export default {
           super({key: 'MainScene'})
         }
 
+        // Fonction appelée une fois le puzzle terminé
         showFinalTile() {
           const tileSize = this.cameras.main.width * 0.8 / 4
           const offsetX = (this.cameras.main.width - (tileSize * 4)) / 2
           const offsetY = (this.cameras.main.height - (tileSize * 3)) / 2
 
-          // 1. Ajout du halo lumineux
+          // Halo lumineux autour du puzzle
           const halo = this.add.graphics()
           const haloPadding = 20
-
           halo.lineStyle(10, 0xffff99, 0.8)
           halo.strokeRoundedRect(
               offsetX - haloPadding,
@@ -78,16 +79,16 @@ export default {
               15
           )
 
-          // 2. Animation "pulsante" du halo (alpha qui varie)
+          // Animation du halo (effet pulsant)
           this.tweens.add({
             targets: halo,
-            alpha: { from: 0.3, to: 1 },
+            alpha: {from: 0.3, to: 1},
             duration: 800,
             yoyo: true,
             repeat: -1
           })
 
-          // 3. Animation de la dernière tuile
+          // Animation de la dernière tuile qui "tombe" pour compléter le puzzle
           const finalTile = this.add.image(
               offsetX + 3 * tileSize,
               -tileSize * 2,
@@ -104,11 +105,12 @@ export default {
             duration: 1000,
             ease: 'Bounce.easeOut',
             onComplete: () => {
-              self.showModal = true
+              self.showModal = true // Affiche la modale de victoire
             }
           })
         }
 
+        // Précharge les assets
         preload() {
           this.load.image('background', self.backgroundImageUrl)
           this.load.image('finalTile', tile12)
@@ -117,6 +119,7 @@ export default {
           })
         }
 
+        // Crée le plateau de jeu et mélange les tuiles
         create() {
           const background = this.add.image(0, 0, 'background').setOrigin(0)
           this.resizeBackground(background)
@@ -128,6 +131,7 @@ export default {
           self.phaserScene = this
         }
 
+        // Crée la grille du puzzle (3 lignes x 4 colonnes)
         createGrid() {
           const rows = 3
           const cols = 4
@@ -142,9 +146,11 @@ export default {
             self.grid[row] = []
             for (let col = 0; col < cols; col++) {
               if (row === 2 && col === 3) {
+                // Case vide (en bas à droite)
                 self.grid[row][col] = null
                 continue
               }
+              // Création et positionnement de chaque tuile
               const tileSprite = this.add.image(
                   offsetX + col * tileSize,
                   offsetY + row * tileSize,
@@ -154,11 +160,13 @@ export default {
                   .setDisplaySize(tileSize, tileSize)
                   .setInteractive()
 
+              // Sauvegarde de la position actuelle et de la position d'origine
               tileSprite.row = row
               tileSprite.col = col
               tileSprite.originalRow = Math.floor(idx / 4)
               tileSprite.originalCol = idx % 4
 
+              // Écouteur pour déplacer la tuile
               tileSprite.on('pointerdown', () => {
                 this.tryMove(tileSprite)
               })
@@ -169,11 +177,14 @@ export default {
           }
         }
 
+
+        // Tente de déplacer une tuile vers la case vide
         tryMove(tile) {
           const {row, col} = tile
           const empty = self.emptyPos
           const dist = Math.abs(empty.row - row) + Math.abs(empty.col - col)
 
+          // On ne peut déplacer que si c'est adjacent à la case vide
           if (dist === 1) {
             self.grid[empty.row][empty.col] = tile
             self.grid[row][col] = null
@@ -185,6 +196,7 @@ export default {
             tile.row = empty.row
             tile.col = empty.col
 
+            // Animation de déplacement fluide
             this.tweens.add({
               targets: tile,
               x: offsetX + empty.col * tileSize,
@@ -196,10 +208,12 @@ export default {
               }
             })
 
+            // Mise à jour de la position vide
             self.emptyPos = {row, col}
           }
         }
 
+        // Mélange aléatoire des tuiles (shuffle)
         shuffleTiles() {
           let shuffled = false
           while (!shuffled) {
@@ -209,15 +223,16 @@ export default {
               const tile = Phaser.Utils.Array.GetRandom(neighbors)
               if (tile) this.tryMove(tile)
             }
-            if (!self.checkWin()) { // Vérifie qu'on n'est pas déjà sur un puzzle résolu
+            // Si le puzzle est résolu après le shuffle, on recommence
+            if (!self.checkWin()) {
               shuffled = true
             } else {
-              // Si c'est résolu après le shuffle, on recommence
               self.resetPuzzle()
             }
           }
         }
 
+        // Trouve les tuiles adjacentes à la case vide (mouvables)
         getMovableTiles() {
           const empty = self.emptyPos
           const candidates = []
@@ -237,6 +252,7 @@ export default {
           return candidates
         }
 
+        // Redimensionne l'image de fond pour s'adapter à la taille de la fenêtre
         resizeBackground(background) {
           const width = this.cameras.main.width
           const height = this.cameras.main.height
@@ -248,21 +264,21 @@ export default {
         }
       }
 
-      const config = {
+      // Création de l'instance Phaser avec la scène personnalisée
+      this.game = new Phaser.Game({
         type: Phaser.AUTO,
-        parent: 'phaser-container',
         width: window.innerWidth,
         height: window.innerHeight,
+        parent: 'phaser-container',
         scene: [MainScene],
         scale: {
-          mode: Phaser.Scale.RESIZE,
+          mode: Phaser.Scale.RESIZE, // S'adapte à la taille de l'écran
           autoCenter: Phaser.Scale.CENTER_BOTH
         }
-      }
-
-      this.game = new Phaser.Game(config)
+      })
     },
 
+//àrevoir
     checkWin() {
       for (let row = 0; row < 3; row++) {
         for (let col = 0; col < 4; col++) {
@@ -278,7 +294,6 @@ export default {
       if (this.phaserScene) {
         this.phaserScene.showFinalTile()
       }
-// Ne pas afficher directement la modale ici
       return true
 
     },
