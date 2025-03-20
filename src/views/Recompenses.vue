@@ -5,6 +5,10 @@ import Appartement from '@/assets/images/Appartement.png'
 import FondEcran from '@/components/FondEcran.vue';
 import BlurFilter from '@/components/BlurFilter.vue';
 import CompteRebours from '@/components/temps/CompteRebours.vue';
+import { ref } from 'vue';
+
+//TO DO : fetch la fin en base
+const limit = ref('04/01/2025')
 </script>
 
 <template>
@@ -13,7 +17,7 @@ import CompteRebours from '@/components/temps/CompteRebours.vue';
         <FondEcran :image="Appartement"></FondEcran>
         <div class="countdown">
             <h1>Distribution des récompenses dans</h1>
-            <CompteRebours :target-date="'04/01/2025'"></CompteRebours>
+            <CompteRebours :target-date="limit"></CompteRebours>
         </div>
         <div class="gifts">
             <img :src="gift_1" alt="Image cadeau n°1">
@@ -42,6 +46,7 @@ import CompteRebours from '@/components/temps/CompteRebours.vue';
 
 .countdown h1{
     text-decoration: underline;
+    font-size: xx-large;
     font-weight: 500;
 }
 
