@@ -1,5 +1,7 @@
 <template>
-    <div ref="gameContainer" class="game-container"></div>
+    <div ref="gameContainer" class="game-container">
+        <Chrono :time="timeElapsed"></Chrono>
+    </div>
 </template>
 
 <script setup>
@@ -10,8 +12,10 @@ import { preloadAssets, assets } from '@/composable/tirelire/assetsLoader'; // I
 import { volumeStore } from '@/stores/volume';
 import ambiance from '@/assets/tirelire/sons/ambiance.mp3';
 import chill from '@/assets/sons/musiques/ambiance/chill.mp3';
+import Chrono from '@/components/temps/ChronoTirelire.vue';
 
 const gameContainer = ref(null);
+const timeElapsed = ref(0)
 
 onMounted(() => {
     const { switchAudio, pause, resume } = useMusic();
@@ -44,8 +48,6 @@ onMounted(() => {
     let tirelire;
     let isDragging = false;
     let score = 0;
-    let timerText;
-    let timeElapsed = 0;
     let collectedPictograms = {};
     let gameOver = false;
     let gauge;
@@ -137,19 +139,12 @@ onMounted(() => {
     }
 
     function setUpTimer() {
-        timerText = this.add.text(fixedWidth - 16, 16, 'Time: 0s', {
-            fontSize: '150px',
-            fontFamily: '\'Source Sans Pro\', sans-serif',
-            fontWeight: 'bolder',
-            fill: '#fff',
-        }).setOrigin(1, 0);
         this.time.addEvent({
             delay: 1000,
             loop: true,
             callback: () => {
                 if (!gameOver) {
-                    timeElapsed += 1;
-                    timerText.setText(`Time: ${timeElapsed}s`);
+                    timeElapsed.value += 1;
                 }
             },
         });
@@ -232,8 +227,7 @@ onMounted(() => {
                 }
             }
         } else {
-            timeElapsed += 10;
-            timerText.setText(`Time: ${timeElapsed}s`);
+            timeElapsed.value += 10;
             wrongSoundEffect.play();
         }
     }
@@ -250,6 +244,7 @@ onMounted(() => {
 
 <style scoped>
 .game-container {
+    position: relative;
     width: 100vw;
     height: 100vh;
     margin: 0 auto;
