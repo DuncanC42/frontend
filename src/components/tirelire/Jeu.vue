@@ -3,40 +3,13 @@
 </template>
 
 <script setup>
-import { onMounted, ref, watch } from 'vue';
+import { onMounted, ref,watch } from 'vue';
 import Phaser from 'phaser';
 import { useMusic } from '@/composable/volumes';
+import { preloadAssets, assets } from '@/composable/tirelire/assetsLoader'; // Import the centralized asset loader
 import { volumeStore } from '@/stores/volume';
-// Import des images
-import tirelireSprite from '@/assets/tirelire/images/Tirelire.png';
-import background from '@/assets/tirelire/images/background.png';
-// Good picto
-import hopital from '@/assets/tirelire/images/pictos_bons/Hopital.png';
-import auditive from '@/assets/tirelire/images/pictos_bons/AideAuditive.png';
-import dentiste from '@/assets/tirelire/images/pictos_bons/Dentiste.png';
-import medecin from '@/assets/tirelire/images/pictos_bons/Medecin.png';
-import optique from '@/assets/tirelire/images/pictos_bons/Optique.png';
-import transport from '@/assets/tirelire/images/pictos_bons/TransportSanitaire.png';
-// Bad picto
-import ampoule from '@/assets/tirelire/images/pictos_faux/ampoule.png';
-import courrier from '@/assets/tirelire/images/pictos_faux/courrier.png';
-import etude from '@/assets/tirelire/images/pictos_faux/etude.png';
-import livre from '@/assets/tirelire/images/pictos_faux/livre.png';
-import maison from '@/assets/tirelire/images/pictos_faux/maison.png';
-import puzzle from '@/assets/tirelire/images/pictos_faux/puzzle.png';
-import telephone from '@/assets/tirelire/images/pictos_faux/telephone.png';
-// Jauge
-import jauge0 from '@/assets/tirelire/images/jauges/jauge0.png';
-import jauge1 from '@/assets/tirelire/images/jauges/jauge1.png';
-import jauge2 from '@/assets/tirelire/images/jauges/jauge2.png';
-import jauge3 from '@/assets/tirelire/images/jauges/jauge3.png';
-import jauge4 from '@/assets/tirelire/images/jauges/jauge4.png';
-// Sound
-import goodSound from '@/assets/tirelire/sons/good.mp3';
-import wrongSound from '@/assets/tirelire/sons/wrong.mp3';
 import ambiance from '@/assets/tirelire/sons/ambiance.mp3';
 import chill from '@/assets/sons/musiques/ambiance/chill.mp3';
-import clap from '@/assets/tirelire/sons/clap.mp3';
 
 const gameContainer = ref(null);
 
@@ -81,34 +54,12 @@ onMounted(() => {
     let clapSoundEffect;
     let isGameStarted = false;
 
-    const goodPictograms = [
-        { key: 'hopital', image: hopital },
-        { key: 'auditive', image: auditive },
-        { key: 'dentiste', image: dentiste },
-        { key: 'medecin', image: medecin },
-        { key: 'optique', image: optique },
-        { key: 'transport', image: transport },
-    ];
-    const badPictograms = [ampoule, courrier, etude, livre, maison, puzzle, telephone];
-
     function preload() {
-        this.load.image('tirelire', tirelireSprite);
-        this.load.image('background', background);
-        goodPictograms.forEach((picto) => this.load.image(picto.key, picto.image));
-        badPictograms.forEach((picto, index) => this.load.image(`bad${index}`, picto));
-        this.load.image('jauge0', jauge0);
-        this.load.image('jauge1', jauge1);
-        this.load.image('jauge2', jauge2);
-        this.load.image('jauge3', jauge3);
-        this.load.image('jauge4', jauge4);
-        this.load.audio('goodSound', goodSound);
-        this.load.audio('wrongSound', wrongSound);
-        this.load.audio('clap', clap);
+        preloadAssets(this); // Use the centralized asset loader
     }
 
     function create() {
         setUpBackground.call(this);
-
         const startTextBg = this.add.rectangle(0, 0, fixedWidth, calculatedHeight, 0x000000).setOrigin(0).setAlpha(0.4); // Full-screen background
         const startText = this.add.text(fixedWidth / 2, calculatedHeight / 2, 'Appuyer pour démarrer !', {
             fontSize: '150px',
@@ -116,12 +67,10 @@ onMounted(() => {
             fontWeight: 'bolder',
             fill: '#fff',
         }).setOrigin(0.5);
-
         this.input.once('pointerdown', () => {
             startText.destroy();
             startTextBg.destroy();
             isGameStarted = true;
-
             setUpTirelire.call(this);
             setUpGauge.call(this);
             setUpTimer.call(this);
@@ -133,12 +82,10 @@ onMounted(() => {
 
             const volumes = volumeStore()
 
-            // Set initial volume for sound effects
             goodSoundEffect.volume = volumes.effet_sonore;
             wrongSoundEffect.volume = volumes.effet_sonore;
             clapSoundEffect.volume = volumes.effet_sonore;
 
-            // Watch for changes in sound effect volume and update dynamically
             watch(
                 () => volumes.effet_sonore,
                 (newVolume) => {
@@ -196,7 +143,6 @@ onMounted(() => {
             fontWeight: 'bolder',
             fill: '#fff',
         }).setOrigin(1, 0);
-
         this.time.addEvent({
             delay: 1000,
             loop: true,
@@ -245,10 +191,10 @@ onMounted(() => {
                 const isGood = Phaser.Math.Between(0, 1) === 1;
                 let pictogramKey;
                 if (isGood) {
-                    const randomIndex = Phaser.Math.Between(0, goodPictograms.length - 1);
-                    pictogramKey = goodPictograms[randomIndex].key;
+                    const randomIndex = Phaser.Math.Between(0, assets.goodPictograms.length - 1);
+                    pictogramKey = assets.goodPictograms[randomIndex].key;
                 } else {
-                    pictogramKey = `bad${Phaser.Math.Between(0, badPictograms.length - 1)}`;
+                    pictogramKey = `bad${Phaser.Math.Between(0, assets.badPictograms.length - 1)}`;
                 }
                 const fallingObject = this.physics.add.sprite(0, 0, pictogramKey).setScale(0.7);
                 const pictogramWidth = fallingObject.displayWidth;
@@ -270,10 +216,9 @@ onMounted(() => {
                 score += 1;
                 updateGauge.call(this);
                 goodSoundEffect.play();
-                if (Object.keys(collectedPictograms).length === goodPictograms.length) {
+                if (Object.keys(collectedPictograms).length === assets.goodPictograms.length) {
                     pause();
                     gameOver = true;
-
                     this.add.rectangle(0, 0, fixedWidth, calculatedHeight, 0x000000).setOrigin(0).setAlpha(0.4); // Full-screen background
                     this.add.text(fixedWidth / 2, calculatedHeight / 2, 'Jeu terminé !', {
                         fontSize: '150px',
@@ -281,7 +226,6 @@ onMounted(() => {
                         fontWeight: 'bolder',
                         fill: '#fff',
                     }).setOrigin(0.5);
-
                     clapSoundEffect.play();
                     pauseGame.call(this);
                     setTimeout(() => switchAudio(chill), 4500);
