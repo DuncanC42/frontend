@@ -42,6 +42,7 @@ button {
     justify-content: center;
     gap: 8px;
     font-size: 12px;
+    font-family: 'Source Sans Pro';
     background-color: rgba(255, 255, 255, 0.3);
 }
 

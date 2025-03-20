@@ -3,6 +3,7 @@
 import Image from '../assets/images/PanneauLiege.png'
 import FondEcran from '@/components/FondEcran.vue';
 import JeuxStatus from '@/components/JeuxStatus.vue'
+import BlurFilter from '@/components/BlurFilter.vue';
 
 import { useRouter } from 'vue-router'
 const router = useRouter();
@@ -46,10 +47,13 @@ const handleClick = (numero, status) => {
 
 <template>
     <FondEcran :image="Image"></FondEcran>
+    
     <div v-for="i in 5" @click="handleClick(i, status['jeux' + i])" :key="'jeux-' + i" :id="'jeux-' + i"
-        :class="status['jeux' + i] === 'locked' && 'locked'">
-        <JeuxStatus :status="status['jeux' + i]"></JeuxStatus>
-    </div>
+    :class="status['jeux' + i] === 'locked' && 'locked'">
+    <JeuxStatus :status="status['jeux' + i]"></JeuxStatus>
+</div>
+
+    
 </template>
 
 <style scoped>

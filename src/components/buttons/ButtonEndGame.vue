@@ -43,6 +43,7 @@ button {
     gap: 8px;
     font-size: 15px;
     color: white;
+    font-family: 'Source Sans Pro';
 }
 
 button:active {
