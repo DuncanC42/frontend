@@ -1,6 +1,13 @@
 <template>
     <div ref="gameContainer" class="game-container">
         <Chrono :time="timeElapsed"></Chrono>
+        <PagePause 
+            :time="timeElapsed" 
+            @pause="pauseGame" 
+            @unpause="unpauseGame" 
+            @leave="" 
+            @retry=""
+        ></PagePause>
     </div>
 </template>
 
@@ -13,9 +20,26 @@ import { volumeStore } from '@/stores/volume';
 import ambiance from '@/assets/tirelire/sons/ambiance.mp3';
 import chill from '@/assets/sons/musiques/ambiance/chill.mp3';
 import Chrono from '@/components/temps/ChronoTirelire.vue';
+import PagePause from '../PagePause.vue';
 
 const gameContainer = ref(null);
 const timeElapsed = ref(0);
+
+// Declare game as a global variable so it can be accessed by pauseGame and unpauseGame
+let game;
+
+// Define pauseGame and unpauseGame functions
+function pauseGame() {
+    if (game) {
+        game.pause();
+    }
+}
+
+function unpauseGame() {
+    if (game) {
+        game.resume();
+    }
+}
 
 onMounted(() => {
     const { switchAudio, pause, resume } = useMusic();
@@ -32,7 +56,6 @@ onMounted(() => {
     const calculateCanvasSize = () => {
         const screenWidth = window.innerWidth; // Always use 100vw for width
         const screenHeight = screenWidth / aspectRatio; // Calculate height based on aspect ratio
-
         return { width: screenWidth, height: screenHeight };
     };
 
@@ -69,8 +92,8 @@ onMounted(() => {
         },
     };
 
-    const game = new Phaser.Game(config);
-
+    // Initialize the game and assign it to the global variable
+    game = new Phaser.Game(config);
     let scalingFactors = getScalingFactors(initialWidth, initialHeight);
 
     // Handle window resize events
@@ -99,6 +122,7 @@ onMounted(() => {
 
     function create() {
         setUpBackground.call(this);
+
         const startTextBg = this.add.rectangle(0, 0, game.config.width, game.config.height, 0x000000).setOrigin(0).setAlpha(0.4); // Full-screen background
         const startText = this.add.text(game.config.width / 2, game.config.height / 2, 'Appuyer pour démarrer !', {
             fontSize: `${150 * scalingFactors.widthScale}px`,
@@ -106,6 +130,7 @@ onMounted(() => {
             fontWeight: 'bolder',
             fill: '#fff',
         }).setOrigin(0.5);
+
         this.input.once('pointerdown', () => {
             startText.destroy();
             startTextBg.destroy();
@@ -120,7 +145,6 @@ onMounted(() => {
             clapSoundEffect = this.sound.add('clap');
 
             const volumes = volumeStore();
-
             goodSoundEffect.volume = volumes.effet_sonore;
             wrongSoundEffect.volume = volumes.effet_sonore;
             clapSoundEffect.volume = volumes.effet_sonore;
@@ -191,6 +215,7 @@ onMounted(() => {
         this.input.on('pointerdown', () => {
             isDragging = true;
         });
+
         this.input.on('pointermove', (pointer) => {
             if (isDragging) {
                 let newX = pointer.x;
@@ -198,9 +223,11 @@ onMounted(() => {
                 tirelire.x = newX;
             }
         });
+
         this.input.on('pointerup', () => {
             isDragging = false;
         });
+
         this.input.on('pointerout', (pointer) => {
             if (
                 pointer.x < 0 ||
@@ -226,6 +253,7 @@ onMounted(() => {
                 } else {
                     pictogramKey = `bad${Phaser.Math.Between(0, assets.badPictograms.length - 1)}`;
                 }
+
                 const fallingObject = this.physics.add.sprite(0, 0, pictogramKey);
                 fallingObject.setScale(0.7 * scalingFactors.widthScale); // Scale the falling object
                 const pictogramWidth = fallingObject.displayWidth;
@@ -233,6 +261,7 @@ onMounted(() => {
                 fallingObject.setPosition(randomX, 0);
                 fallingObject.setVelocityY(Phaser.Math.Between(50, 100));
                 fallingObject.isGood = isGood;
+
                 this.physics.add.overlap(tirelire, fallingObject, collectObject, null, this);
             },
         });
@@ -247,6 +276,7 @@ onMounted(() => {
                 score += 1;
                 updateGauge.call(this);
                 goodSoundEffect.play();
+
                 if (Object.keys(collectedPictograms).length === assets.goodPictograms.length) {
                     pause();
                     gameOver = true;
@@ -258,7 +288,6 @@ onMounted(() => {
                         fill: '#fff',
                     }).setOrigin(0.5);
                     clapSoundEffect.play();
-                    pauseGame.call(this);
                     setTimeout(() => switchAudio(chill), 4500);
                 }
             }
@@ -266,14 +295,6 @@ onMounted(() => {
             timeElapsed.value += 10;
             wrongSoundEffect.play();
         }
-    }
-
-    function pauseGame() {
-        this.scene.pause();
-    }
-
-    function unpauseGame() {
-        this.scene.resume();
     }
 });
 </script>
