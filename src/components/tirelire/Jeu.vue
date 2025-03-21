@@ -5,7 +5,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref,watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import Phaser from 'phaser';
 import { useMusic } from '@/composable/volumes';
 import { preloadAssets, assets } from '@/composable/tirelire/assetsLoader'; // Import the centralized asset loader
@@ -15,36 +15,73 @@ import chill from '@/assets/sons/musiques/ambiance/chill.mp3';
 import Chrono from '@/components/temps/ChronoTirelire.vue';
 
 const gameContainer = ref(null);
-const timeElapsed = ref(0)
+const timeElapsed = ref(0);
 
 onMounted(() => {
     const { switchAudio, pause, resume } = useMusic();
     switchAudio(ambiance);
 
-    const fixedWidth = 2000;
-    const aspectRatio = 4510 / 8014;
-    const calculatedHeight = fixedWidth / aspectRatio;
+    // Reference resolution (base resolution)
+    const referenceWidth = 4510;
+    const referenceHeight = 8014;
+
+    // Aspect ratio of the game (width / height)
+    const aspectRatio = referenceWidth / referenceHeight;
+
+    // Function to calculate canvas dimensions
+    const calculateCanvasSize = () => {
+        const screenWidth = window.innerWidth; // Always use 100vw for width
+        const screenHeight = screenWidth / aspectRatio; // Calculate height based on aspect ratio
+
+        return { width: screenWidth, height: screenHeight };
+    };
+
+    // Initial canvas size
+    const { width: initialWidth, height: initialHeight } = calculateCanvasSize();
+
+    // Calculate scaling factors
+    const getScalingFactors = (currentWidth, currentHeight) => {
+        const widthScale = currentWidth / referenceWidth * 2.2;
+        const heightScale = currentHeight / referenceHeight * 2.2;
+        const bgHeight = currentHeight / referenceHeight;
+        return { widthScale, heightScale, bgHeight };
+    };
 
     const config = {
         type: Phaser.AUTO,
-        width: fixedWidth,
-        height: calculatedHeight,
+        width: initialWidth,
+        height: initialHeight,
         parent: gameContainer.value,
+        scale: {
+            mode: Phaser.Scale.NONE, // Disable automatic scaling
+            resizeInterval: 0, // Prevent frequent resizing
+        },
         physics: {
             default: 'arcade',
             arcade: {
-                gravity: { y: 200 },
+                gravity: { y: initialHeight },
                 debug: false,
             },
         },
         scene: {
             preload,
             create,
-            update,
         },
     };
 
     const game = new Phaser.Game(config);
+
+    let scalingFactors = getScalingFactors(initialWidth, initialHeight);
+
+    // Handle window resize events
+    const handleResize = () => {
+        const { width, height } = calculateCanvasSize();
+        game.scale.resize(width, height); // Resize the game canvas
+        scalingFactors = getScalingFactors(width, height); // Update scaling factors
+    };
+
+    window.addEventListener('resize', handleResize);
+
     let tirelire;
     let isDragging = false;
     let score = 0;
@@ -62,9 +99,9 @@ onMounted(() => {
 
     function create() {
         setUpBackground.call(this);
-        const startTextBg = this.add.rectangle(0, 0, fixedWidth, calculatedHeight, 0x000000).setOrigin(0).setAlpha(0.4); // Full-screen background
-        const startText = this.add.text(fixedWidth / 2, calculatedHeight / 2, 'Appuyer pour démarrer !', {
-            fontSize: '150px',
+        const startTextBg = this.add.rectangle(0, 0, game.config.width, game.config.height, 0x000000).setOrigin(0).setAlpha(0.4); // Full-screen background
+        const startText = this.add.text(game.config.width / 2, game.config.height / 2, 'Appuyer pour démarrer !', {
+            fontSize: `${150 * scalingFactors.widthScale}px`,
             fontFamily: '\'Source Sans Pro\', sans-serif',
             fontWeight: 'bolder',
             fill: '#fff',
@@ -82,7 +119,7 @@ onMounted(() => {
             wrongSoundEffect = this.sound.add('wrongSound');
             clapSoundEffect = this.sound.add('clap');
 
-            const volumes = volumeStore()
+            const volumes = volumeStore();
 
             goodSoundEffect.volume = volumes.effet_sonore;
             wrongSoundEffect.volume = volumes.effet_sonore;
@@ -99,18 +136,15 @@ onMounted(() => {
         });
     }
 
-    function update() {
-        if (!isGameStarted) return;
-    }
-
     function setUpBackground() {
-        const bg = this.add.image(fixedWidth / 2, calculatedHeight / 2, 'background');
-        bg.setScale(Math.max(fixedWidth / 4510, calculatedHeight / 8014));
+        const bg = this.add.image(game.config.width / 2, game.config.height / 2, 'background');
+        bg.setScale(scalingFactors.widthScale, scalingFactors.bgHeight);
     }
 
     function setUpTirelire() {
-        const tirelireYPosition = calculatedHeight - 700;
-        tirelire = this.physics.add.sprite(fixedWidth / 2, tirelireYPosition, 'tirelire').setScale(0.07);
+        const tirelireYPosition = game.config.height - 700 * scalingFactors.heightScale;
+        tirelire = this.physics.add.sprite(game.config.width / 2, tirelireYPosition, 'tirelire');
+        tirelire.setScale(0.07 * scalingFactors.widthScale); // Scale the sprite
         const tirelireBody = tirelire.body;
         tirelireBody.setSize(tirelire.displayWidth, tirelire.displayHeight * 0.7);
         tirelire.body.setCollideWorldBounds(true);
@@ -119,7 +153,8 @@ onMounted(() => {
     }
 
     function setUpGauge() {
-        gauge = this.add.image(150, 550, 'jauge0').setScale(0.15);
+        gauge = this.add.image(150 * scalingFactors.widthScale, 550 * scalingFactors.heightScale, 'jauge0');
+        gauge.setScale(0.15 * scalingFactors.widthScale); // Scale the gauge
     }
 
     function updateGauge() {
@@ -159,7 +194,7 @@ onMounted(() => {
         this.input.on('pointermove', (pointer) => {
             if (isDragging) {
                 let newX = pointer.x;
-                newX = Phaser.Math.Clamp(newX, tirelire_size / 2, fixedWidth - tirelire_size / 2);
+                newX = Phaser.Math.Clamp(newX, tirelire_size / 2, game.config.width - tirelire_size / 2);
                 tirelire.x = newX;
             }
         });
@@ -169,9 +204,9 @@ onMounted(() => {
         this.input.on('pointerout', (pointer) => {
             if (
                 pointer.x < 0 ||
-                pointer.x > fixedWidth ||
+                pointer.x > game.config.width ||
                 pointer.y < 0 ||
-                pointer.y > calculatedHeight
+                pointer.y > game.config.height
             ) {
                 isDragging = false;
             }
@@ -191,11 +226,12 @@ onMounted(() => {
                 } else {
                     pictogramKey = `bad${Phaser.Math.Between(0, assets.badPictograms.length - 1)}`;
                 }
-                const fallingObject = this.physics.add.sprite(0, 0, pictogramKey).setScale(0.7);
+                const fallingObject = this.physics.add.sprite(0, 0, pictogramKey);
+                fallingObject.setScale(0.7 * scalingFactors.widthScale); // Scale the falling object
                 const pictogramWidth = fallingObject.displayWidth;
-                const randomX = Phaser.Math.Between(pictogramWidth / 2, fixedWidth - pictogramWidth / 2);
+                const randomX = Phaser.Math.Between(pictogramWidth / 2, game.config.width - pictogramWidth / 2);
                 fallingObject.setPosition(randomX, 0);
-                fallingObject.setVelocityY(Phaser.Math.Between(2000, 4000));
+                fallingObject.setVelocityY(Phaser.Math.Between(50, 100));
                 fallingObject.isGood = isGood;
                 this.physics.add.overlap(tirelire, fallingObject, collectObject, null, this);
             },
@@ -214,9 +250,9 @@ onMounted(() => {
                 if (Object.keys(collectedPictograms).length === assets.goodPictograms.length) {
                     pause();
                     gameOver = true;
-                    this.add.rectangle(0, 0, fixedWidth, calculatedHeight, 0x000000).setOrigin(0).setAlpha(0.4); // Full-screen background
-                    this.add.text(fixedWidth / 2, calculatedHeight / 2, 'Jeu terminé !', {
-                        fontSize: '150px',
+                    this.add.rectangle(0, 0, game.config.width, game.config.height, 0x000000).setOrigin(0).setAlpha(0.4); // Full-screen background
+                    this.add.text(game.config.width / 2, game.config.height / 2, 'Jeu terminé !', {
+                        fontSize: `${150 * scalingFactors.widthScale}px`,
                         fontFamily: '\'Source Sans Pro\', sans-serif',
                         fontWeight: 'bolder',
                         fill: '#fff',
