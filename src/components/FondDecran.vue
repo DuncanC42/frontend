@@ -16,6 +16,7 @@
         height: 100vh;
         overflow: hidden;
         filter: blur(3px);
+        z-index: -1;
     }
 
     .opaque {

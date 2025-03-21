@@ -4,7 +4,6 @@
 </script>
 
 <template>
-    <Header />
     <FondDecran />
 
     <div class="container">
@@ -12,7 +11,7 @@
             <p>Bienvenue sur <br> le serious game <br> d'Ameli</p>
         </div>
         <div class="text">
-            <p>Des jeux pour prendre en main ta santé sans prise de tête</p>
+            <p>Des jeux pour prendre en main <br> ta santé sans prise de tête</p>
         </div>
         <button class="btn">Se connecter</button>
         <div class="devider">
@@ -33,13 +32,12 @@
     align-items: center;
     justify-content: center;
     text-align: center;
-    margin-top: 50px; /* Ajuste la distance sous le header */
 }
 
 /* Section "Bienvenue" */
 .bienvenue {
     text-align: center;
-    font-size: 1.5em;
+    font-size: 2.3em;
     color: white;
     font-weight: 500;
     margin-bottom: 20px; /* Ajoute de l'espace sous "Bienvenue" */
@@ -49,13 +47,14 @@
 /* Texte principal */
 .text {
     text-align: center;
-    font-size: 0.8em;
-    margin-bottom: 20px; /* Espace avant les lignes */
+    font-size: 1em;
+    color: white;
+    z-index: 1;
 }
 
 .btn {
     position: relative;
-    top: 270px;
+    top: 70px;
     z-index: 1;
     margin: 10px 0; /* Ajoute un espace au-dessus et en dessous des boutons */
     padding: 10px 20px;
@@ -69,7 +68,7 @@
 /* Conteneur des lignes + "ou" */
 .devider {
     position: relative;
-    top: 270px;
+    top: 70px;
     display: flex;
     align-items: center;
     justify-content: center;
