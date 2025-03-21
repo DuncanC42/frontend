@@ -1,9 +1,11 @@
 <template>
     <div ref="gameContainer" class="game-container">
         <Chrono :time="timeElapsed"></Chrono>
-        <PagePause :time="timeElapsed" @pause="pauseGame" @unpause="unpauseGame" @leave="handleLeave"
+        <<<<<<< HEAD <PagePause :time="timeElapsed" @pause="pauseGame" @unpause="unpauseGame" @leave="handleLeave"
             @retry="handleRetry">
-        </PagePause>
+            </PagePause>
+            =======
+            >>>>>>> master
     </div>
 </template>
 
@@ -138,7 +140,6 @@ const initializeGame = () => {
             fontWeight: 'bolder',
             fill: '#fff',
         }).setOrigin(0.5);
-
         this.input.once('pointerdown', () => {
             startText.destroy();
             startTextBg.destroy();
