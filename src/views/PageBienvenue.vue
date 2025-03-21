@@ -1,6 +1,7 @@
 <script setup>
     import Header from '../components/Header.vue';
     import FondDecran from '../components/FondDecran.vue';
+    import ButtonIdenticator from '../components/buttons/ButtonIdenticator.vue';
 </script>
 
 <template>
@@ -13,13 +14,13 @@
         <div class="text">
             <p>Des jeux pour prendre en main <br> ta santé sans prise de tête</p>
         </div>
-        <button class="btn">Se connecter</button>
+        <ButtonIdenticator id="btn-primary" label="Connectez-vous" classArray="primary"></ButtonIdenticator>
         <div class="devider">
             <div class="ligne"></div>
             <span class="ou">ou</span>
             <div class="ligne"></div>
         </div>
-        <button class="btn">S'inscrire</button>
+        <ButtonIdenticator id="btn-secondary" label="Créer votre compte" classArray="secondary"></ButtonIdenticator>
     </div>
 </template>
 
@@ -52,23 +53,20 @@
     z-index: 1;
 }
 
-.btn {
-    position: relative;
-    top: 70px;
+#btn-primary {
+    margin-top: 40px;
     z-index: 1;
-    margin: 10px 0; /* Ajoute un espace au-dessus et en dessous des boutons */
-    padding: 10px 20px;
-    background-color: white;
-    color: black;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
+}
+
+#btn-secondary {
+    margin-top: 0px;
+    z-index: 1;
 }
 
 /* Conteneur des lignes + "ou" */
 .devider {
     position: relative;
-    top: 70px;
+    top: 0px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -92,4 +90,5 @@
     font-weight: bold;
     white-space: nowrap;
 }
+
 </style>

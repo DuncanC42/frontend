@@ -1,3 +1,10 @@
+:root {
+  --primary-color: #015BA7;
+  --secondary-color: #ffffff;
+}
+
+
+
 @media (hover: hover) {
   a:hover {
     background-color: hsla(160, 100%, 37%, 0.2);

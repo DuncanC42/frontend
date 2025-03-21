@@ -11,4 +11,9 @@ header {
     padding: 0;
     background-color: white;
 }
+
+header, header *{
+    z-index: 200;
+
+}
 </style>
