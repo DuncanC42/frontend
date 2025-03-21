@@ -184,16 +184,12 @@ div {
     left: 0;
     width: 100vw;
     height: 100vh;
-    transition: all 0.5s ease-in-out;
+    transition: all 0.5s cubic-bezier(0.2, 0.5, 0.22, 1);
+    pointer-events: none;
 }
 
 .blur {
-    backdrop-filter: blur(100px);
+    backdrop-filter: blur(200px);
     background-color: rgba(0, 0, 0, 0.8);
-    transition: all 0.1s ease-in-out;
-}
-
-.anti-blur {
-    transition: all 0.1s ease-in-out;
 }
 </style>
