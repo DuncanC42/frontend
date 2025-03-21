@@ -11,18 +11,18 @@
         <div class="buttons">
             <button @click="startStop">{{ isRunning ? '⏸ Pause' : '▶ Démarrer' }}</button>
             <button @click="reset">🔄 Réinitialiser</button>
-        </div>
+        </div> 
     </div>
 </template>
-  
+
 <script setup>
     import { ref, computed } from 'vue';
-  
+
     // 🎨 Recevoir la couleur en prop
     const props = defineProps({
         couleur: String, // Ex: "white" ou "black"
     });
-  
+
     const timeElapsed = ref(0); // Temps écoulé en secondes
     const isRunning = ref(false);
     let timer = null;
@@ -33,7 +33,7 @@
         const seconds = timeElapsed.value % 60;
         return `${String(minutes).padStart(2, '0')}'${String(seconds).padStart(2, '0')}`;
     });
-  
+
     // ▶ Démarrer ou ⏸ arrêter le chronomètre
     const startStop = () => {
         if (isRunning.value) {
@@ -45,7 +45,7 @@
         }
         isRunning.value = !isRunning.value;
     };
-  
+
     // 🔄 Réinitialiser le chronomètre
     const reset = () => {
         clearInterval(timer);
@@ -63,7 +63,7 @@
         margin: 0 150px;
         filter: drop-shadow(0px 4px 4px #00000040);
     }
-  
+
     /* 🎨 Couleurs dynamiques */
     .white {
         color: white;
@@ -97,4 +97,3 @@
         color: white;
     }
 </style>
-  
