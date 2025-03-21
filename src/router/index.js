@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 import Home from '@/views/PanneauJeux.vue'
 import Recompenses from '@/views/Recompenses.vue'
+import Bienvenue from '@/views/Bienvenue.vue'
 import PageErreur from '@/views/PageErreur.vue'
 import NotFound from '@/views/NotFound.vue'
 
@@ -20,10 +21,22 @@ const router = createRouter({
 			component: Home,
 		},
 		{
-			path: '/',
+			path: '/erreur',
 			name: 'accueil',
-			component: PageErreur
-		}, 
+			component: Bienvenue,
+		},
+
+		{
+			path: '/bienvenue',
+			name: 'bienvenue',
+			component: Bienvenue,
+		},
+
+		{
+			path: '/erreur',
+			name: 'erreur',
+			component: PageErreur,
+		},
 
 		{
 			path: '/dino',
