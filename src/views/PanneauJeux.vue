@@ -1,10 +1,9 @@
 <script setup>
-
 import Image from '../assets/images/PanneauLiege.png'
+import Appartement from '@/assets/images/Appartement.png'
 import FondEcran from '@/components/FondEcran.vue';
 import JeuxStatus from '@/components/JeuxStatus.vue'
-import BlurFilter from '@/components/BlurFilter.vue';
-import Loader from '@/components/Loader.vue';
+import { ref, onMounted } from 'vue';
 
 import { useRouter } from 'vue-router'
 const router = useRouter();
@@ -17,6 +16,8 @@ const status = {
     jeux4: 'locked',
     jeux5: 'locked',
 }
+
+const ready = ref(false)
 
 const handleClick = (numero, status) => {
     if (status !== 'locked') {
@@ -44,20 +45,64 @@ const handleClick = (numero, status) => {
     }
 }
 
+onMounted(() => {
+    const appartementWrapper = document.getElementById('appartement-wrapper');
+    if (appartementWrapper) {
+        appartementWrapper.classList.add('zoom-in'); // Trigger zoom animation
+    }
+
+    setTimeout(() => {
+        ready.value = true;
+
+    }, 3000);
+
+    setTimeout(() => {
+        document.getElementById('blur').classList.add('blur');
+        setTimeout(() => {
+
+            document.getElementById('blur').classList.remove('blur');
+
+        }, 500);
+    }, 2500);
+
+    setTimeout(() => {
+        document.getElementById('blur').classList.add('blur');
+        setTimeout(() => {
+
+            document.getElementById('blur').classList.remove('blur');
+
+        }, 300);
+    }, 4000);
+})
 </script>
 
-<template>
-    
-    <FondEcran :image="Image"></FondEcran>
-    <div v-for="i in 5" @click="handleClick(i, status['jeux' + i])" :key="'jeux-' + i" :id="'jeux-' + i"
-    :class="status['jeux' + i] === 'locked' && 'locked'">
-    <JeuxStatus :status="status['jeux' + i]"></JeuxStatus>
-</div>
 
-    
+<template>
+
+    <Transition name="zoom" appear="">
+        <img :src="Appartement" v-show="!ready" id="appartement">
+    </Transition>
+    <div v-show="ready">
+        <FondEcran :image="Image"></FondEcran>
+        <div v-for="i in 5" @click="handleClick(i, status['jeux' + i])" :key="'jeux-' + i" :id="'jeux-' + i"
+            :class="status['jeux' + i] === 'locked' && 'locked'">
+            <JeuxStatus :status="status['jeux' + i]"></JeuxStatus>
+        </div>
+    </div>
+    <div id="blur"></div>
 </template>
 
 <style scoped>
+#blur {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    transition: all 0.5s ease-in-out;
+}
+
+/* General styles */
 .locked {
     background-color: rgba(0, 0, 0, 0.5);
 }
@@ -68,6 +113,28 @@ div {
     width: 50px;
 }
 
+#appartement {
+    position: fixed;
+    width: 100vw;
+    bottom: 0;
+    left: 0;
+    transition: transform 3s ease-in-out;
+    /* Smooth transition for zoom */
+}
+
+#appartement-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Positioning for game elements */
 #jeux-1 {
     left: 13vw;
     bottom: 111.5vw;
@@ -105,5 +172,30 @@ div {
     height: 23vw;
     width: 23vw;
     transform: rotate(-10deg);
+}
+
+.zoom-enter-from {
+    transform: scale(1);
+    transform-origin: 50% 20%;
+}
+
+.zoom-enter-active {
+    transition: transform 3s ease-in-out;
+}
+
+.zoom-enter-to {
+    transform: scale(3.3);
+    transform-origin: 40% 42%;
+}
+
+
+.blur {
+    backdrop-filter: blur(100px);
+    background-color: rgba(0, 0, 0, 0.7);
+    transition: all 0.1s ease-in-out;
+}
+
+.anti-blur {
+    transition: all 0.1s ease-in-out;
 }
 </style>
