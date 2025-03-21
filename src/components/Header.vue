@@ -12,4 +12,9 @@ header {
     background-color: white;
     z-index: 100;
 }
+
+header, header *{
+    z-index: 200;
+
+}
 </style>

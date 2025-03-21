@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
 import Home from '@/views/PanneauJeux.vue'
+import Recompenses from '@/views/Recompenses.vue'
 import PageErreur from '@/views/PageErreur.vue'
 import NotFound from '@/views/NotFound.vue'
 
@@ -49,7 +50,11 @@ const router = createRouter({
 			name: 'dents',
 			component: Dents
 		},
-
+		{
+			path : '/recompenses',
+			name:"recompenses",
+			component : Recompenses,
+		},
 		{
 			path: '/:pathMatch(.*)*',
 			name: 'notFound',

@@ -19,15 +19,15 @@
 import { ref } from 'vue';
 
 // Définition des couleurs
-const mainColor = '#444444'; 
-const secondaryColor = '#8E8E8E'; 
+const mainColor = '#1a1a1a'; 
+const secondaryColor = '#00000049'; 
 
 // Liste des liens et icônes associées
 const links = ref([
-  { path: '/', icon: 'house' },
-  { path: '/about', icon: 'trophy' },
-  { path: '/services', icon: 'chart-simple' },
-  { path: '/contact', icon: 'gift' }
+  { path: 'home', icon: 'house' },
+  { path: 'classement', icon: 'trophy' },
+  { path: 'stats', icon: 'chart-simple' },
+  { path: 'recompenses', icon: 'gift' }
 ]);
 
 // Suivi de l'icône active
@@ -43,12 +43,16 @@ const activeIndex = ref(0);
   bottom: 20px;
   left: 50%; 
   transform: translateX(-50%); 
-  background: #dfdfdf94;
+  background: #757575c2;
   padding: 8px 40px;
   border-radius: 50px; 
   width: fit-content; 
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
   z-index: 100;
+}
+
+.navbar *, .navbar{
+  z-index: 200;
 }
 
 
