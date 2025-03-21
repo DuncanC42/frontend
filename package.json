@@ -18,7 +18,8 @@
     "phaser": "^3.88.2",
     "pinia": "^3.0.1",
     "vue": "^3.5.13",
-    "vue-router": "^4.5.0"
+    "vue-router": "^4.5.0",
+    "@vueuse/core": "^13.0.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.2.1",
