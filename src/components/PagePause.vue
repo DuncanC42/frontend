@@ -1,8 +1,29 @@
 <script setup>
 
+/**
+ * Pour utiliser ce composant il faudra lui donner en props un temps en secondes pour qu'il puisse l'afficher dans le chrono
+ * 
+ * const emit = defineEmits(['pause', 'unpause', 'retry', 'leave']) permet de faire savoir au parent qu'une action s'est réalisé dans l'enfant
+ * 
+ * Dans le parent : <PagePause :time="..." @pause="<ta_fonction>" ...>
+ * 
+ * Ici quand pause sera "activé" dans l'enfant alors le parent executera la fonction (<ta_fonction>) passé en param
+ * 
+ * Pour pause/unpause le composant gère tout seule la popup mais c'est à vous de mettre en pause votre jeu avec un fonction comme ci-dessus
+ * 
+ * La redirection se fait toute seule mais attention à vous de modifier la musique si necessaire
+ * 
+ * Pour le retry je vous conseille de recréer le jeu : game.destroy(true); --> supprime la canva  initJeu(); --> fonction que vous avez fait pour init votre jeu
+ * ⚠️ Pensez à bien reset le timer
+ * 
+ */
+
 import { ref, computed } from 'vue';
 import ButtonMenu from './buttons/ButtonMenu.vue';
 import BlurFilter from './BlurFilter.vue';
+import { useRouter } from 'vue-router';
+
+const router = useRouter()
 
 const isPaused = ref(false)
 
@@ -26,21 +47,23 @@ const timeToDisplay = computed(() => {
 const emit = defineEmits(['pause', 'unpause', 'retry', 'leave'])
 
 const handlePause = () => {
-    isPaused.value = true
     emit('pause')
+    isPaused.value = true
 }
 
 const handleUnpause = () => {
-    isPaused.value = false
     emit('unpause')
+    isPaused.value = false
 }
 
 const handleLeave = () => {
     emit('leave')
+    router.push('home')
 }
 
 const handleRetry = () => {
     emit('retry')
+    isPaused.value = false
 }
 
 </script>
