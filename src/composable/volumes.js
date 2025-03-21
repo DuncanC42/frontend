@@ -1,28 +1,82 @@
 import { ref, watch } from 'vue';
 import { volumeStore } from '@/stores/volume';
-import audio_mp3 from '@/assets/sons/musiques/ambiance/chill.mp3';
 
-export function useMusique() {
+let musiqueInstance = null;
+
+export function useMusic(initialAudioMp3) {
     const volumes = volumeStore();
-    const musique = ref(new Audio(audio_mp3));
 
-    musique.value.volume = volumes.musique;
-    musique.value.loop = true;
-    
-    (async () => {
-        let isPlaying = false;
-        while (!isPlaying) {
-            try {
-                await musique.value.play();
-                isPlaying = true;
-            } catch {
-                // Wait 1 second and retry
-                await new Promise(r => setTimeout(r, 1000));
-            }
-        }
-    })();
-
-    watch(() => volumes.musique, () => {
+    if (!musiqueInstance) {
+        const musique = ref(new Audio(initialAudioMp3));
         musique.value.volume = volumes.musique;
-    });
+        musique.value.loop = true;
+
+        (async () => {
+            let isPlaying = false;
+            while (!isPlaying) {
+                try {
+                    await musique.value.play();
+                    isPlaying = true;
+                } catch {
+                    await new Promise((resolve) => setTimeout(resolve, 1000));
+                }
+            }
+        })();
+
+        watch(
+            () => volumes.musique,
+            (newVolume) => {
+                musique.value.volume = newVolume;
+            }
+        );
+        musiqueInstance = musique.value;
+    }
+
+    function switchAudio(newAudioMp3) {
+        if (musiqueInstance) {
+            musiqueInstance.pause();
+            musiqueInstance.currentTime = 0;
+            musiqueInstance.src = newAudioMp3;
+
+            (async () => {
+                let isPlaying = false;
+                while (!isPlaying) {
+                    try {
+                        await musiqueInstance.play();
+                        isPlaying = true;
+                    } catch {
+                        await new Promise((resolve) => setTimeout(resolve, 1000));
+                    }
+                }
+            })();
+        }
+    }
+
+    function pause() {
+        if (musiqueInstance) {
+            musiqueInstance.pause();
+        }
+    }
+
+    function resume() {
+        if (musiqueInstance) {
+            (async () => {
+                let isPlaying = false;
+                while (!isPlaying) {
+                    try {
+                        await musiqueInstance.play();
+                        isPlaying = true;
+                    } catch {
+                        await new Promise((resolve) => setTimeout(resolve, 1000));
+                    }
+                }
+            })();
+        }
+    }
+
+    return {
+        switchAudio,
+        pause,
+        resume,
+    };
 }
