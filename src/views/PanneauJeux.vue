@@ -189,7 +189,7 @@ div {
 }
 
 .blur {
-    backdrop-filter: blur(200px);
-    background-color: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(5vw);
+    background-color: rgba(0, 0, 0, 1);
 }
 </style>

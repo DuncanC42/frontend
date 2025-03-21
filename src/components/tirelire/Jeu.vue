@@ -1,11 +1,9 @@
 <template>
     <div ref="gameContainer" class="game-container">
         <Chrono :time="timeElapsed"></Chrono>
-        <<<<<<< HEAD <PagePause :time="timeElapsed" @pause="pauseGame" @unpause="unpauseGame" @leave="handleLeave"
+        <PagePause :time="timeElapsed" @pause="pauseGame" @unpause="unpauseGame" @leave="handleLeave"
             @retry="handleRetry">
-            </PagePause>
-            =======
-            >>>>>>> master
+        </PagePause>
     </div>
 </template>
 
