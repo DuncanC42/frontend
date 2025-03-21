@@ -1,9 +1,10 @@
 <script setup>
-import ChronoTirelire from '@/components/temps/ChronoTirelire.vue';
 import Jeu from '@/components/tirelire/Jeu.vue'
+import PagePause from '@/components/PagePause.vue';
 
 </script>
 
 <template>
+    <PagePause></PagePause>
     <Jeu></Jeu>
 </template>
