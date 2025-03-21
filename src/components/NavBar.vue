@@ -47,7 +47,8 @@ const activeIndex = ref(0);
   padding: 8px 40px;
   border-radius: 50px; 
   width: fit-content; 
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2); 
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+  z-index: 100;
 }
 
 
