@@ -51,26 +51,28 @@ onMounted(() => {
         appartementWrapper.classList.add('zoom-in'); // Trigger zoom animation
     }
 
+    // Switch entre image appratement et le panneau 
     setTimeout(() => {
         ready.value = true;
 
     }, 3000);
 
+    // Premier clignement d'oeil
     setTimeout(() => {
         document.getElementById('blur').classList.add('blur');
         setTimeout(() => {
 
             document.getElementById('blur').classList.remove('blur');
 
-        }, 500);
+        }, 600);
     }, 2500);
 
+    // Deuxième clignement d'oeil
     setTimeout(() => {
         document.getElementById('blur').classList.add('blur');
         setTimeout(() => {
 
             document.getElementById('blur').classList.remove('blur');
-
         }, 300);
     }, 4000);
 })
@@ -93,16 +95,6 @@ onMounted(() => {
 </template>
 
 <style scoped>
-#blur {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    transition: all 0.5s ease-in-out;
-}
-
-/* General styles */
 .locked {
     background-color: rgba(0, 0, 0, 0.5);
 }
@@ -118,8 +110,6 @@ div {
     width: 100vw;
     bottom: 0;
     left: 0;
-    transition: transform 3s ease-in-out;
-    /* Smooth transition for zoom */
 }
 
 #appartement-wrapper {
@@ -134,7 +124,6 @@ div {
     align-items: center;
 }
 
-/* Positioning for game elements */
 #jeux-1 {
     left: 13vw;
     bottom: 111.5vw;
@@ -188,10 +177,19 @@ div {
     transform-origin: 40% 42%;
 }
 
+/** Animation pour transition panneau */
+#blur {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    transition: all 0.5s ease-in-out;
+}
 
 .blur {
     backdrop-filter: blur(100px);
-    background-color: rgba(0, 0, 0, 0.7);
+    background-color: rgba(0, 0, 0, 0.8);
     transition: all 0.1s ease-in-out;
 }
 
