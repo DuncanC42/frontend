@@ -1,13 +1,9 @@
 <template>
     <div ref="gameContainer" class="game-container">
         <Chrono :time="timeElapsed"></Chrono>
-        <PagePause 
-            :time="timeElapsed" 
-            @pause="pauseGame" 
-            @unpause="unpauseGame" 
-            @leave="" 
-            @retry=""
-        ></PagePause>
+        <PagePause :time="timeElapsed" @pause="pauseGame" @unpause="unpauseGame" @leave="handleLeave"
+            @retry="handleRetry">
+        </PagePause>
     </div>
 </template>
 
@@ -25,6 +21,9 @@ import PagePause from '../PagePause.vue';
 const gameContainer = ref(null);
 const timeElapsed = ref(0);
 
+const { switchAudio, pause, resume } = useMusic();
+switchAudio(ambiance);
+
 // Declare game as a global variable so it can be accessed by pauseGame and unpauseGame
 let game;
 
@@ -41,10 +40,19 @@ function unpauseGame() {
     }
 }
 
-onMounted(() => {
-    const { switchAudio, pause, resume } = useMusic();
-    switchAudio(ambiance);
+const handleLeave = () => {
+    switchAudio(chill);
+}
 
+const handleRetry = () => {
+    if (game) {
+        timeElapsed.value = 0
+        game.destroy(true)
+        initializeGame()
+    }
+}
+
+const initializeGame = () => {
     // Reference resolution (base resolution)
     const referenceWidth = 4510;
     const referenceHeight = 8014;
@@ -296,7 +304,9 @@ onMounted(() => {
             wrongSoundEffect.play();
         }
     }
-});
+}
+
+onMounted(initializeGame)
 </script>
 
 <style scoped>
