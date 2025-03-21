@@ -48,7 +48,7 @@ onMounted(() => {
     };
 
     const config = {
-        type: Phaser.AUTO,
+        type: Phaser.CANVAS,
         width: initialWidth,
         height: initialHeight,
         parent: gameContainer.value,
