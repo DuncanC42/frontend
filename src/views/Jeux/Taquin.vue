@@ -1,6 +1,6 @@
 <template>
   <div id="phaser-container">
-    <button @click="resetPuzzle" id="reset-button">Réinitialiser le puzzle</button>
+    <button @click="resetPuzzle" id="reset-button" v-if="!showClassement">Réinitialiser le puzzle</button>
 
     <div v-if="showModal" class="modal">
       <div class="modal-content">
@@ -9,11 +9,17 @@
         <button @click="closeModal">Fermer</button>
       </div>
     </div>
+
+    <!-- Affichage conditionnel du composant ClassementFinJeu -->
+    <ClassementFinJeu
+        v-if="showClassement"
+        :joueurs="listeJoueurs"
+        :currentPlayerId="joueurActuelId"
+    />
   </div>
 </template>
 
 <script setup>
-
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import Phaser from 'phaser'
 import backgroundImage from '@/assets/jeu-taquin/Fond_soiree.png'
@@ -29,15 +35,28 @@ import tile9 from '@/assets/jeu-taquin/carteVitale_09.jpg'
 import tile10 from '@/assets/jeu-taquin/carteVitale_10.jpg'
 import tile11 from '@/assets/jeu-taquin/carteVitale_11.jpg'
 import tile12 from '@/assets/jeu-taquin/carteVitale_12.jpg'
+import ClassementFinJeu from "@/components/ClassementFinJeu.vue";
 
 // Variables réactives
 const game = ref(null)
 const showModal = ref(false)
+const showClassement = ref(false)
 const backgroundImageUrl = ref(backgroundImage)
 const tiles = ref([tile1, tile2, tile3, tile4, tile5, tile6, tile7, tile8, tile9, tile10, tile11, tile12])
 const grid = ref([])
 const emptyPos = ref({ row: 2, col: 3 })
 const phaserScene = ref(null)
+
+// Données de classement (à remplacer par vos propres données)
+const joueurActuelId = ref("joueur123")
+const listeJoueurs = ref([
+  { id: "joueur111", name: 'Alice', score: '32,45' },
+  { id: "joueur222", name: 'Bob', score: '38,12' },
+  { id: "joueur333", name: 'Charlie', score: '42,83' },
+  { id: "joueur123", name: 'Vous', score: '52' },  // Le joueur actuel
+  { id: "joueur555", name: 'David', score: '51,92' },
+  { id: "joueur555", name: 'David2', score: '60,92' }
+])
 
 // Fonction d'initialisation de Phaser
 const initPhaser = () => {
@@ -282,14 +301,18 @@ const checkWin = () => {
   return true
 }
 
-// Ferme la fenêtre modale de victoire
+// Ferme la fenêtre modale de victoire et affiche le classement
 const closeModal = () => {
-  showModal.value = false
+  showModal.value = false;
+  // if (game.value) {
+  //   game.value.destroy(true); // Détruire l'instance Phaser
+  // }
+  showClassement.value = true; // Afficher le composant ClassementFinJeu
 }
 
 // Redimensionne le jeu lors du redimensionnement de la fenêtre
 const resizeGame = () => {
-  if (game.value) {
+  if (game.value && !showClassement.value) {
     game.value.scale.resize(window.innerWidth, window.innerHeight)
   }
 }
