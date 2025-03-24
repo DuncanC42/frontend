@@ -5,8 +5,13 @@ import VolumeButton from './components/volumes/VolumeButton.vue'
 import { useMusic } from '@/composable/volumes';
 import audio_mp3 from '@/assets/sons/musiques/ambiance/chill.mp3';
 
+import { fetchBackend } from './composable/fetchBackend';
+
 useMusic(audio_mp3);
 
+fetchBackend('games', 'GET').then(response=>{
+  console.log(response)
+})
 
 </script>
 
