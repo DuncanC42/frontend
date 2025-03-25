@@ -1,5 +1,8 @@
 const STATIC_TOKEN = 'your-static-token-here';
-
+/*
+* Composable pour fetch apiCodeine
+* exemple : fetchBackend('users', 'GET', {adresse_mail : '123@gmail.com', pseudo : 'moi'}, {page: 1, limit: 10})
+*/
 export async function fetchBackend(endpoint, method = 'GET', body = null, params = {}) {
     try {
         const url = new URL(`http://localhost:8050/api/${endpoint}`);
