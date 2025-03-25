@@ -1,5 +1,23 @@
 <template>
   <div id="phaser-container">
+    <!-- Minuteur -->
+    <Minuteur
+        ref="minuteurRef"
+        :couleur="'white'"
+        class="timer-position"
+        v-model="gameTime"
+    />
+    <!-- Bouton de pause -->
+    <PagePause
+        v-if="!puzzleCompleted"
+        :time="remainingTimeBeforePause"
+        @pause="handlePause"
+        @unpause="handleUnpause"
+        @retry="handleRetry"
+        @leave="handleLeave"
+    />
+
+
     <button @click="resetPuzzle" id="reset-button" v-if="!showClassement">Réinitialiser le puzzle</button>
 
     <div v-if="showModal" class="modal">
@@ -19,8 +37,10 @@
 </template>
 
 <script setup>
-import {ref, onMounted, onBeforeUnmount} from 'vue'
+import { ref, onMounted, onBeforeUnmount, onUnmounted } from 'vue'
 import Phaser from 'phaser'
+import Minuteur from '@/components/temps/Minuteur.vue'
+import PagePause from '@/components/PagePause.vue'
 import backgroundImage from '@/assets/jeu-taquin/images/Fond_soiree.png'
 import tile1 from '@/assets/jeu-taquin/images/carteVitale_01.jpg'
 import tile2 from '@/assets/jeu-taquin/images/carteVitale_02.jpg'
@@ -37,11 +57,18 @@ import tile12 from '@/assets/jeu-taquin/images/carteVitale_12.jpg'
 import ClassementFinJeu from "@/components/ClassementFinJeu.vue";
 import ambiance from '@/assets/jeu-taquin/sons/Son ambiance - taquin.mp3';
 import shwish from '@/assets/jeu-taquin/sons/SWSH_Whoosh 4 (ID 1796)_LS.mp3';
-import applause from '@/assets/jeu-taquin/sons/CRWDApls_Applaudissements 1 (ID 2363)_LS.mp3'; // Assuming this is the correct path for applause sound
+import applause from '@/assets/jeu-taquin/sons/CRWDApls_Applaudissements 1 (ID 2363)_LS.mp3';
 import {useMusic} from "@/composable/volumes.js";
+import { useRouter } from 'vue-router';
 
+const router = useRouter()
 const {switchAudio, pause, resume} = useMusic();
 switchAudio(ambiance);
+
+const minuteurRef = ref(null)
+
+const puzzleCompleted = ref(false)
+
 
 // Variables réactives
 const game = ref(null)
@@ -55,6 +82,12 @@ const phaserScene = ref(null)
 const swishSound = ref(null)
 const applauseSound = ref(null)
 
+// Gestion du temps de jeu
+const TIME_LIMIT = 60
+const gameTime = ref(TIME_LIMIT);
+const gameTimer = ref(null)
+const isGamePaused = ref(false)
+
 // Données de classement (à remplacer par vos propres données)
 const joueurActuelId = ref("joueur123")
 const listeJoueurs = ref([
@@ -65,7 +98,80 @@ const listeJoueurs = ref([
   {id: "joueur555", name: 'David', score: '51,92'},
   {id: "joueur555", name: 'David2', score: '60,92'}
 ])
+// Stocke le temps restant avant la pause
+const remainingTimeBeforePause = ref(0)
 
+// Gestion du temps de jeu
+const startGameTimer = () => {
+  gameTimer.value = setInterval(() => {
+    if (!isGamePaused.value && gameTime.value > 0) {
+      gameTime.value--
+    }
+
+    // Vérifier si le temps est écoulé
+    if (gameTime.value <= 0) {
+      clearInterval(gameTimer.value)
+      handleGameOver()
+    }
+  }, 1000)
+}
+
+const handlePause = () => {
+  isGamePaused.value = true
+  remainingTimeBeforePause.value = gameTime.value // Sauvegarde le temps restant
+  minuteurRef.value.pauseTimer() // Mettre en pause le minuteur
+  pause() // Mettre en pause la musique
+
+  // Mettre en pause la scène Phaser si elle existe
+  if (phaserScene.value) {
+    phaserScene.value.scene.pause()
+  }
+}
+
+const handleUnpause = () => {
+  isGamePaused.value = false
+  gameTime.value = remainingTimeBeforePause.value // Restaure le temps restant
+  minuteurRef.value.startTimer() // Redémarre le minuteur
+  resume() // Reprendre la musique
+
+  // Reprendre la scène Phaser si elle existe
+  if (phaserScene.value) {
+    phaserScene.value.scene.resume()
+  }
+}
+
+const handleRetry = () => {
+  // Réinitialisation complète
+  clearInterval(gameTimer.value)
+
+  resetPuzzle()
+  gameTime.value = TIME_LIMIT // Réinitialiser le temps
+  isGamePaused.value = false
+  remainingTimeBeforePause.value = TIME_LIMIT
+
+  // Redémarre le timer
+  startGameTimer()
+  resume()
+
+  // Reprendre la scène Phaser si elle existe
+  if (phaserScene.value) {
+    phaserScene.value.scene.restart()
+  }
+}
+
+const handleLeave = () => {
+  // Arrêter le timer et la musique
+  clearInterval(gameTimer.value)
+  router.push('home')
+}
+
+const handleGameOver = () => {
+  // Logique de fin de jeu quand le temps est écoulé
+  if (phaserScene.value) {
+    phaserScene.value.scene.pause()
+  }
+  showClassement.value = true
+}
 // Fonction d'initialisation de Phaser
 const initPhaser = () => {
   class MainScene extends Phaser.Scene {
@@ -75,6 +181,9 @@ const initPhaser = () => {
 
     // Fonction appelée une fois le puzzle terminé
     showFinalTile() {
+
+      puzzleCompleted.value = true
+
       const tileSize = this.cameras.main.width * 0.8 / 4
       const offsetX = (this.cameras.main.width - (tileSize * 4)) / 2
       const offsetY = (this.cameras.main.height - (tileSize * 3)) / 2
@@ -119,6 +228,9 @@ const initPhaser = () => {
         onComplete: () => {
           showModal.value = true // Affiche la modale de victoire
           applauseSound.value.play() // Joue le son d'applaudissements
+
+          // Arrêter le timer
+          clearInterval(gameTimer.value)
         }
       })
     }
@@ -357,6 +469,11 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  // Nettoyer le timer
+  if (gameTimer.value) {
+    clearInterval(gameTimer.value)
+  }
+
   if (game.value) {
     game.value.destroy(true) // Nettoyage du jeu quand le composant est détruit
   }
@@ -377,7 +494,7 @@ onBeforeUnmount(() => {
 #reset-button {
   position: absolute;
   top: 20px;
-  right: 20px;
+  left: 20px;
   z-index: 10;
   padding: 10px 20px;
   background: rgba(255, 255, 255, 0.9);
@@ -385,6 +502,14 @@ onBeforeUnmount(() => {
   border-radius: 5px;
   cursor: pointer;
   font-weight: bold;
+}
+
+.timer-position {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
 }
 
 .modal {
