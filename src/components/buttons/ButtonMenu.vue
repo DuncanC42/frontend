@@ -1,6 +1,6 @@
 <template>
     <button :style="buttonStyle">
-        <font-awesome-icon :class="classArray" class="icon, button" :icon="['fas', icon]" />
+        <font-awesome-icon :class="classArray" class="icon button" :icon="['fas', icon]" />
         <!-- icon="play, pause, rotate-right, door-open exit" -->
     </button>
 </template>
