@@ -7,7 +7,6 @@ import audio_mp3 from '@/assets/sons/musiques/ambiance/chill.mp3';
 
 useMusic(audio_mp3);
 
-
 </script>
 
 <template>
