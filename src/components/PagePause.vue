@@ -69,7 +69,7 @@ const handleRetry = () => {
 </script>
 
 <template>
-    <ButtonMenu @click="handlePause" icon="pause" :classArray="['littleSize']" id="bouton"></ButtonMenu>
+    <ButtonMenu @click="handlePause" icon="pause" :classArray="['littleSize']" id="bouton" ></ButtonMenu>
     <div v-show="isPaused" id="panel">
         <BlurFilter :is-open="true" style="z-index: 100;"></BlurFilter>
         <div id="pause-menu">

@@ -1,5 +1,23 @@
 <template>
   <div id="phaser-container">
+    <!-- Minuteur -->
+    <Minuteur
+        ref="minuteurRef"
+        :couleur="'white'"
+        class="timer-position"
+        v-model="gameTime"
+    />
+    <!-- Bouton de pause -->
+    <PagePause
+        v-if="!puzzleCompleted"
+        :time="remainingTimeBeforePause"
+        @pause="handlePause"
+        @unpause="handleUnpause"
+        @retry="handleRetry"
+        @leave="handleLeave"
+    />
+
+
     <button @click="resetPuzzle" id="reset-button" v-if="!showClassement">Réinitialiser le puzzle</button>
 
     <div v-if="showModal" class="modal">
@@ -10,7 +28,6 @@
       </div>
     </div>
 
-    <!-- Affichage conditionnel du composant ClassementFinJeu -->
     <ClassementFinJeu
         v-if="showClassement"
         :joueurs="listeJoueurs"
@@ -20,22 +37,38 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount, onUnmounted } from 'vue'
 import Phaser from 'phaser'
-import backgroundImage from '@/assets/jeu-taquin/Fond_soiree.png'
-import tile1 from '@/assets/jeu-taquin/carteVitale_01.jpg'
-import tile2 from '@/assets/jeu-taquin/carteVitale_02.jpg'
-import tile3 from '@/assets/jeu-taquin/carteVitale_03.jpg'
-import tile4 from '@/assets/jeu-taquin/carteVitale_04.jpg'
-import tile5 from '@/assets/jeu-taquin/carteVitale_05.jpg'
-import tile6 from '@/assets/jeu-taquin/carteVitale_06.jpg'
-import tile7 from '@/assets/jeu-taquin/carteVitale_07.jpg'
-import tile8 from '@/assets/jeu-taquin/carteVitale_08.jpg'
-import tile9 from '@/assets/jeu-taquin/carteVitale_09.jpg'
-import tile10 from '@/assets/jeu-taquin/carteVitale_10.jpg'
-import tile11 from '@/assets/jeu-taquin/carteVitale_11.jpg'
-import tile12 from '@/assets/jeu-taquin/carteVitale_12.jpg'
+import Minuteur from '@/components/temps/Minuteur.vue'
+import PagePause from '@/components/PagePause.vue'
+import backgroundImage from '@/assets/jeu-taquin/images/Fond_soiree.png'
+import tile1 from '@/assets/jeu-taquin/images/carteVitale_01.jpg'
+import tile2 from '@/assets/jeu-taquin/images/carteVitale_02.jpg'
+import tile3 from '@/assets/jeu-taquin/images/carteVitale_03.jpg'
+import tile4 from '@/assets/jeu-taquin/images/carteVitale_04.jpg'
+import tile5 from '@/assets/jeu-taquin/images/carteVitale_05.jpg'
+import tile6 from '@/assets/jeu-taquin/images/carteVitale_06.jpg'
+import tile7 from '@/assets/jeu-taquin/images/carteVitale_07.jpg'
+import tile8 from '@/assets/jeu-taquin/images/carteVitale_08.jpg'
+import tile9 from '@/assets/jeu-taquin/images/carteVitale_09.jpg'
+import tile10 from '@/assets/jeu-taquin/images/carteVitale_10.jpg'
+import tile11 from '@/assets/jeu-taquin/images/carteVitale_11.jpg'
+import tile12 from '@/assets/jeu-taquin/images/carteVitale_12.jpg'
 import ClassementFinJeu from "@/components/ClassementFinJeu.vue";
+import ambiance from '@/assets/jeu-taquin/sons/Son ambiance - taquin.mp3';
+import shwish from '@/assets/jeu-taquin/sons/SWSH_Whoosh 4 (ID 1796)_LS.mp3';
+import applause from '@/assets/jeu-taquin/sons/CRWDApls_Applaudissements 1 (ID 2363)_LS.mp3';
+import {useMusic} from "@/composable/volumes.js";
+import { useRouter } from 'vue-router';
+
+const router = useRouter()
+const {switchAudio, pause, resume} = useMusic();
+switchAudio(ambiance);
+
+const minuteurRef = ref(null)
+
+const puzzleCompleted = ref(false)
+
 
 // Variables réactives
 const game = ref(null)
@@ -44,29 +77,113 @@ const showClassement = ref(false)
 const backgroundImageUrl = ref(backgroundImage)
 const tiles = ref([tile1, tile2, tile3, tile4, tile5, tile6, tile7, tile8, tile9, tile10, tile11, tile12])
 const grid = ref([])
-const emptyPos = ref({ row: 2, col: 3 })
+const emptyPos = ref({row: 2, col: 3})
 const phaserScene = ref(null)
+const swishSound = ref(null)
+const applauseSound = ref(null)
+
+// Gestion du temps de jeu
+const TIME_LIMIT = 60
+const gameTime = ref(TIME_LIMIT);
+const gameTimer = ref(null)
+const isGamePaused = ref(false)
 
 // Données de classement (à remplacer par vos propres données)
 const joueurActuelId = ref("joueur123")
 const listeJoueurs = ref([
-  { id: "joueur111", name: 'Alice', score: '32,45' },
-  { id: "joueur222", name: 'Bob', score: '38,12' },
-  { id: "joueur333", name: 'Charlie', score: '42,83' },
-  { id: "joueur123", name: 'Vous', score: '52' },  // Le joueur actuel
-  { id: "joueur555", name: 'David', score: '51,92' },
-  { id: "joueur555", name: 'David2', score: '60,92' }
+  {id: "joueur111", name: 'Alice', score: '32,45'},
+  {id: "joueur222", name: 'Bob', score: '38,12'},
+  {id: "joueur333", name: 'Charlie', score: '42,83'},
+  {id: "joueur123", name: 'Vous', score: '52'},  // Le joueur actuel
+  {id: "joueur555", name: 'David', score: '51,92'},
+  {id: "joueur555", name: 'David2', score: '60,92'}
 ])
+// Stocke le temps restant avant la pause
+const remainingTimeBeforePause = ref(0)
 
+// Gestion du temps de jeu
+const startGameTimer = () => {
+  gameTimer.value = setInterval(() => {
+    if (!isGamePaused.value && gameTime.value > 0) {
+      gameTime.value--
+    }
+
+    // Vérifier si le temps est écoulé
+    if (gameTime.value <= 0) {
+      clearInterval(gameTimer.value)
+      handleGameOver()
+    }
+  }, 1000)
+}
+
+const handlePause = () => {
+  isGamePaused.value = true
+  remainingTimeBeforePause.value = gameTime.value // Sauvegarde le temps restant
+  minuteurRef.value.pauseTimer() // Mettre en pause le minuteur
+  pause() // Mettre en pause la musique
+
+  // Mettre en pause la scène Phaser si elle existe
+  if (phaserScene.value) {
+    phaserScene.value.scene.pause()
+  }
+}
+
+const handleUnpause = () => {
+  isGamePaused.value = false
+  gameTime.value = remainingTimeBeforePause.value // Restaure le temps restant
+  minuteurRef.value.startTimer() // Redémarre le minuteur
+  resume() // Reprendre la musique
+
+  // Reprendre la scène Phaser si elle existe
+  if (phaserScene.value) {
+    phaserScene.value.scene.resume()
+  }
+}
+
+const handleRetry = () => {
+  // Réinitialisation complète
+  clearInterval(gameTimer.value)
+
+  resetPuzzle()
+  gameTime.value = TIME_LIMIT // Réinitialiser le temps
+  isGamePaused.value = false
+  remainingTimeBeforePause.value = TIME_LIMIT
+
+  // Redémarre le timer
+  startGameTimer()
+  resume()
+
+  // Reprendre la scène Phaser si elle existe
+  if (phaserScene.value) {
+    phaserScene.value.scene.restart()
+  }
+}
+
+const handleLeave = () => {
+  // Arrêter le timer et la musique
+  clearInterval(gameTimer.value)
+  router.push('home')
+}
+
+const handleGameOver = () => {
+  // Logique de fin de jeu quand le temps est écoulé
+  if (phaserScene.value) {
+    phaserScene.value.scene.pause()
+  }
+  showClassement.value = true
+}
 // Fonction d'initialisation de Phaser
 const initPhaser = () => {
   class MainScene extends Phaser.Scene {
     constructor() {
-      super({ key: 'MainScene' })
+      super({key: 'MainScene'})
     }
 
     // Fonction appelée une fois le puzzle terminé
     showFinalTile() {
+
+      puzzleCompleted.value = true
+
       const tileSize = this.cameras.main.width * 0.8 / 4
       const offsetX = (this.cameras.main.width - (tileSize * 4)) / 2
       const offsetY = (this.cameras.main.height - (tileSize * 3)) / 2
@@ -86,7 +203,7 @@ const initPhaser = () => {
       // Animation du halo (effet pulsant)
       this.tweens.add({
         targets: halo,
-        alpha: { from: 0.3, to: 1 },
+        alpha: {from: 0.3, to: 1},
         duration: 800,
         yoyo: true,
         repeat: -1
@@ -110,6 +227,10 @@ const initPhaser = () => {
         ease: 'Bounce.easeOut',
         onComplete: () => {
           showModal.value = true // Affiche la modale de victoire
+          applauseSound.value.play() // Joue le son d'applaudissements
+
+          // Arrêter le timer
+          clearInterval(gameTimer.value)
         }
       })
     }
@@ -121,12 +242,21 @@ const initPhaser = () => {
       tiles.value.forEach((tile, index) => {
         this.load.image(`tile${index}`, tile)
       })
+
+      // Précharge les sons
+      this.load.audio('swish', shwish)
+      this.load.audio('applause', applause)
     }
 
     // Crée le plateau de jeu et mélange les tuiles
     create() {
       const background = this.add.image(0, 0, 'background').setOrigin(0)
       this.resizeBackground(background)
+
+      // Initialise les sons
+      swishSound.value = this.sound.add('swish')
+      applauseSound.value = this.sound.add('applause')
+
       this.createGrid()
       this.shuffleTiles()
       this.scale.on('resize', () => {
@@ -183,12 +313,15 @@ const initPhaser = () => {
 
     // Tente de déplacer une tuile vers la case vide
     tryMove(tile) {
-      const { row, col } = tile
+      const {row, col} = tile
       const empty = emptyPos.value
       const dist = Math.abs(empty.row - row) + Math.abs(empty.col - col)
 
       // On ne peut déplacer que si c'est adjacent à la case vide
       if (dist === 1) {
+        // Joue le son swish lors du déplacement
+        swishSound.value.play()
+
         grid.value[empty.row][empty.col] = tile
         grid.value[row][col] = null
 
@@ -212,7 +345,7 @@ const initPhaser = () => {
         })
 
         // Mise à jour de la position vide
-        emptyPos.value = { row, col }
+        emptyPos.value = {row, col}
       }
     }
 
@@ -240,10 +373,10 @@ const initPhaser = () => {
       const empty = emptyPos.value
       const candidates = []
       const directions = [
-        { row: -1, col: 0 },
-        { row: 1, col: 0 },
-        { row: 0, col: -1 },
-        { row: 0, col: 1 }
+        {row: -1, col: 0},
+        {row: 1, col: 0},
+        {row: 0, col: -1},
+        {row: 0, col: 1}
       ]
 
       for (const dir of directions) {
@@ -304,9 +437,6 @@ const checkWin = () => {
 // Ferme la fenêtre modale de victoire et affiche le classement
 const closeModal = () => {
   showModal.value = false;
-  // if (game.value) {
-  //   game.value.destroy(true); // Détruire l'instance Phaser
-  // }
   showClassement.value = true; // Afficher le composant ClassementFinJeu
 }
 
@@ -339,6 +469,11 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  // Nettoyer le timer
+  if (gameTimer.value) {
+    clearInterval(gameTimer.value)
+  }
+
   if (game.value) {
     game.value.destroy(true) // Nettoyage du jeu quand le composant est détruit
   }
@@ -359,7 +494,7 @@ onBeforeUnmount(() => {
 #reset-button {
   position: absolute;
   top: 20px;
-  right: 20px;
+  left: 20px;
   z-index: 10;
   padding: 10px 20px;
   background: rgba(255, 255, 255, 0.9);
@@ -367,6 +502,14 @@ onBeforeUnmount(() => {
   border-radius: 5px;
   cursor: pointer;
   font-weight: bold;
+}
+
+.timer-position {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
 }
 
 .modal {
