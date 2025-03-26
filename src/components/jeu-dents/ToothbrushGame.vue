@@ -95,7 +95,7 @@
     />
     <Bravo 
       v-if="gameWon" 
-      :time="currentTime" 
+      :score="score" 
       message="L'Assurance Maladie offre des rendez-vous de prévention avec le dentiste appelés « M'T dents » aux jeunes de âgés de 18, 21 et 24 ans !"
       @retry="handleRetry" 
       @quit="handleLeave" 
@@ -134,7 +134,6 @@ import mousse6 from '@/assets/Jeu5/mousse_6.png';
 
 import dentsJaunes from '@/assets/Jeu5/dents_extraites.png';
 
-import dentifrice from '@/assets/Jeu5/dentifrice.png';
 import brossefixe from '@/assets/Jeu5/brosse_a_dent_fixe.png';
 import brossefixedentifrice from '@/assets/Jeu5/brosse_a_dent_fixe_dentifrice.png';
 
@@ -143,6 +142,14 @@ import PagePause from '../PagePause.vue';
 import Bravo from '@/components/Bravo.vue';
 import Dommage from '@/components/Dommage.vue';
 import MinuteurDent from '../temps/MinuteurDent.vue';
+
+import brossageSound from '@/assets/Jeu5/brosseDentBruitage.mp3';
+import amibanceJeu from '@/assets/Jeu5/sonAmbiance.mp3';
+
+import { volumeStore } from '@/stores/volume';
+import { useMusic } from '@/composable/volumes';
+import { watch } from 'vue';
+ 
 
 export default {
   components: {
@@ -217,7 +224,11 @@ export default {
       gameLost: false,
       checkCounter: 0,
       lastCheckResult: false,
-      requiredCleaningRatio: 1 // 95% à nettoyer
+      requiredCleaningRatio: 1,
+      brushSound: null,
+      score: 0,
+      teethCleanedPercentage: 0,
+      enemiesRemaining: 0
     };
   },
   computed: {
@@ -323,6 +334,11 @@ export default {
       if (!this.isGamePaused) {
         this.isBrushing = true;
         this.isTouchingBrush = true;
+        // Jouer le son
+        if (this.brushSound) {
+          this.brushSound.currentTime = 0; // Remet le son au début
+          this.brushSound.play().catch(e => console.log("Erreur de lecture audio:", e));
+        }
       }
     },
     moveBrush(event) {
@@ -453,6 +469,10 @@ export default {
     stopBrush() {
       this.isBrushing = false;
       this.isTouchingBrush = false;
+      // Arrêter le son
+      if (this.brushSound) {
+        this.brushSound.pause();
+      }
     },
     preventScroll(event) {
       if (this.isTouchingBrush) {
@@ -496,11 +516,15 @@ export default {
     checkWinCondition() {
       // 1. Vérification prioritaire des ennemis (toujours active)
       if (this.microbes.length > 0 || this.caries.length > 0) {
+        // Calcul du score même si la partie n'est pas gagnée
+        this.calculateScore();
         return false;
       }
 
       // 2. Vérification canvas aléatoire (10% de chance de s'activer)
       if (Math.random() > 0.1) {
+        // Calcul du score même si la vérification n'est pas activée
+        this.calculateScore();
         return false;
       }
 
@@ -510,7 +534,7 @@ export default {
       
       // Paramètres optimisés
       const sampleSize = 100; // Nombre fixe de pixels à vérifier
-      const requiredCleanPercent = 98; // Seuil de propreté (98%)
+      const requiredCleanPercent = 100; // Seuil de propreté (100%)
       let cleanCount = 0;
 
       // Vérification sur des positions aléatoires
@@ -528,12 +552,46 @@ export default {
       const cleanPercent = (cleanCount / sampleSize) * 100;
 
       if (cleanPercent >= requiredCleanPercent) {
+        // Calcul du score final avant de déclarer la victoire
+        this.calculateScore();
         this.gameWon = true;
         this.pauseGame();
         return true;
       }
 
+      // Calcul du score même si la condition de victoire n'est pas remplie
+      this.calculateScore();
       return false;
+    },
+    // Nouvelle méthode pour calculer le score
+    calculateScore() {
+      // 1. Calcul des composants du score
+      const enemiesRemaining = this.microbes.length + this.caries.length;
+      const timeBonus = this.currentTime * 10; // 10 points par seconde restante
+      const enemiesPenalty = enemiesRemaining * 50; // -50 points par ennemi restant
+      
+      // 2. Calcul du pourcentage de dents nettoyées
+      const canvas = this.$refs.dentsCanvas;
+      const ctx = canvas.getContext("2d");
+      const sampleSize = 100;
+      let cleanCount = 0;
+      
+      for (let i = 0; i < sampleSize; i++) {
+        const x = Math.floor(Math.random() * canvas.width);
+        const y = Math.floor(Math.random() * canvas.height);
+        const pixel = ctx.getImageData(x, y, 1, 1).data;
+        if (pixel[3] === 0) cleanCount++;
+      }
+      
+      const teethCleanedPercentage = (cleanCount / sampleSize) * 100;
+      const cleanlinessBonus = teethCleanedPercentage * 5; // 5 points par % de propreté
+      
+      // 3. Calcul du score total
+      this.score = Math.max(0, timeBonus + cleanlinessBonus - enemiesPenalty);
+      
+      // Stockage des valeurs intermédiaires pour le débogage (optionnel)
+      this.teethCleanedPercentage = teethCleanedPercentage;
+      this.enemiesRemaining = enemiesRemaining;
     }
   },
   mounted() {
@@ -560,10 +618,27 @@ export default {
     this.$nextTick(() => {
       this.selectRandomPattern();
     });
+
+    this.brushSound = new Audio(brossageSound);
+    this.brushSound.loop = true;
+
+    const volumes = volumeStore();
+    this.brushSound.volume = volumes.effet_sonore;
+
+    watch(
+        () => volumes.effet_sonore,
+        (newVolume) => {
+          this.brushSound.volume = newVolume;
+        }
+    );
+
+    const { switchAudio, pause, resume } = useMusic();
+    switchAudio(amibanceJeu);
   },
   watch: {
     currentTime(newVal) {
       if (newVal <= 0 && !this.gameWon) {
+        this.calculateScore();
         this.gameLost = true;
         this.pauseGame();
         // Version sécurisée qui ne génère pas d'erreur
