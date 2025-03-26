@@ -3,6 +3,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Home from '@/views/PanneauJeux.vue'
 import Recompenses from '@/views/Recompenses.vue'
 import Bienvenue from '@/views/Bienvenue.vue'
+import PageConnexion from '@/views/PageConnexion.vue'
+import PageInscription from '@/views/PageInscription.vue'
 import PageErreur from '@/views/PageErreur.vue'
 import NotFound from '@/views/NotFound.vue'
 
@@ -30,6 +32,16 @@ const router = createRouter({
 			path: '/bienvenue',
 			name: 'bienvenue',
 			component: Bienvenue,
+		},
+		{
+			path: '/connexion',
+			name: 'connexion',
+			component: PageConnexion
+		},
+		{
+			path: '/inscription',
+			name: 'inscription',
+			component: PageInscription
 		},
 
 		{
