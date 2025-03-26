@@ -1,7 +1,17 @@
 <script setup>
-    import Header from '../components/Header.vue';
     import FondDecran from '../components/FondDecran.vue';
     import ButtonIdenticator from '../components/buttons/ButtonIdenticator.vue';
+
+    import { useRouter } from 'vue-router';
+    const router = useRouter();
+
+    const handleConnexion = () => {
+        router.push('/connexion');
+    };
+
+    const handleInscription = () => {
+        router.push('/inscription');
+    };
 </script>
 
 <template>
@@ -14,13 +24,13 @@
         <div class="text">
             <p>Des jeux pour prendre en main <br> ta santé sans prise de tête</p>
         </div>
-        <ButtonIdenticator id="btn-primary" label="Connectez-vous" classArray="primary"></ButtonIdenticator>
+        <ButtonIdenticator id="btn-primary" label="Connectez-vous" classArray="primary" @click="handleConnexion"></ButtonIdenticator>
         <div class="devider">
             <div class="ligne"></div>
             <span class="ou">ou</span>
             <div class="ligne"></div>
         </div>
-        <ButtonIdenticator id="btn-secondary" label="Créer votre compte" classArray="secondary"></ButtonIdenticator>
+        <ButtonIdenticator id="btn-secondary" label="Créer votre compte" classArray="secondary" @click="handleInscription"></ButtonIdenticator>
     </div>
 </template>
 
