@@ -5,7 +5,7 @@ const STATIC_TOKEN = 'your-static-token-here';
 */
 export async function fetchBackend(endpoint, method = 'GET', body = null, params = {}) {
     try {
-        const url = new URL(`http://localhost:8050/api/${endpoint}`);
+        const url = new URL(`http://localhost:8050/${endpoint}`);
 
         Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
 

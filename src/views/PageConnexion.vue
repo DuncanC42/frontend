@@ -3,10 +3,25 @@
     import ButtonIdenticator from '../components/buttons/ButtonIdenticator.vue';
     import ButtonBack from '@/components/buttons/ButtonBack.vue';
     import { useRouter } from 'vue-router';
+    import {fetchBackend} from '@/composable/fetchBackend.js';
+    import {ref} from 'vue';
     const router = useRouter();
 
     const handleBienvenue = () => {
         router.push('/bienvenue');
+    }
+
+    const pseudo = ref('');
+    const email = ref('');
+
+    const handleConnexion = () => {
+        fetchBackend('api/login', 'POST', {email : email.value, pseudo : pseudo.value}).then((response) => {
+            if (response.status === 200) {
+                router.push('/home');
+            } else {
+                console.log('Erreur');
+            }
+        });
     }
 
 </script>
@@ -20,21 +35,21 @@
             <p>Connectez-vous</p>
         </div>
 
-        <form action="" method="post">
+        <div class="form">
 
             <div class="input-container">
                 <img src="../assets/images/pseudo.png" alt="Pseudo Icon" class="input-icon">
-                <input type="text" id="pseudo" name="pseudoname" placeholder="Pseudo">
+                <input v-model="pseudo" type="text" id="pseudo" name="pseudoname" placeholder="Pseudo">
             </div>
             <div class="input-container">
                 <img src="../assets/images/email.png" alt="Email Icon" class="input-icon">
-                <input type="email" id="email" name="email" placeholder="Email">
+                <input v-model="email" type="email" id="email" name="email" placeholder="Email">
             </div>
             
             <div class="button-container">
-                <ButtonIdenticator id="btn-primary" label="Se connecter" classArray="primary" @click=""></ButtonIdenticator>
+                <ButtonIdenticator id="btn-primary" label="Se connecter" classArray="primary" @click="handleConnexion"></ButtonIdenticator>
             </div>
-        </form>
+        </div>
     </div>
 </template>
 
@@ -61,7 +76,7 @@
     }
 
     /* Formulaire */
-    form {
+    .form {
         display: flex;
         flex-direction: column;
         align-items: center;
