@@ -1,10 +1,19 @@
 <script setup>
     import FondDecran from '../components/FondDecran.vue';
     import ButtonIdenticator from '../components/buttons/ButtonIdenticator.vue';
+    import ButtonBack from '@/components/buttons/ButtonBack.vue';
+    import { useRouter } from 'vue-router';
+    const router = useRouter();
+
+    const handleBienvenue = () => {
+        router.push('/bienvenue');
+    }
+
 </script>
 
 <template>
     <FondDecran />
+    <ButtonBack @click="handleBienvenue"/>
     <div class="container">
 
         <div class="connectez-vous">
