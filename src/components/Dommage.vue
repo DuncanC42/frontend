@@ -1,8 +1,14 @@
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, onUnmounted, onMounted, watch } from 'vue';
 import BlurFilter from './BlurFilter.vue';
 import NavBar from './NavBar.vue';
 import ButtonEndGame from './buttons/ButtonEndGame.vue';
+import ClassementFinJeu from './ClassementFinJeu.vue';
+
+// Import pour la musique
+import ambianceSound from '@/assets/sons/musiques/ambiance/flow.mp3';
+import { volumeStore } from '@/stores/volume';
+import { useMusic } from '@/composable/volumes';
 
 // Définition des props
 const props = defineProps({
@@ -13,29 +19,87 @@ const props = defineProps({
     }
 });
 
+// Gestion de la musique
+const audio = ref(null);
+const volumes = volumeStore();
+const { switchAudio } = useMusic();
+
+const showClassement = ref(false);
+
+// Initialiser l'audio lorsque le composant est monté
+onMounted(() => {
+  switchAudio(ambianceSound);
+});
+
+onUnmounted(() => {
+  if (audio.value) {
+    audio.value.pause();
+    audio.value = null;
+  }
+});
+
+// Surveillance du volume
+watch(
+  () => volumes.effet_sonore,
+  (newVolume) => {
+    if (audio.value) audio.value.volume = newVolume
+  }
+)
+
+const showRanking = () => {
+  showClassement.value = true;
+};
+
+const emit = defineEmits(['retry', 'quit']);
 </script>
 
 <template>
     <div id="panel">
       <BlurFilter :is-open="true" style="z-index: 100;" />
-      <div class="dommage">
-        <div class="titre">
+      
+      <Transition name="fade" mode="out-in">
+        <div v-if="!showClassement" key="dommage" class="dommage">
           <div class="titre">Dommage !</div>
+          <div class="contenu">
+            <p>Le temps est écoulé !</p>
+            <p class="big-message">{{ message }}</p>
+          </div>
+          <div class="bouton">
+            <ButtonEndGame @click="$emit('retry')" :classArray="['retry']" />
+            <ButtonEndGame 
+              @click="showRanking" 
+              text="Voir le classement" 
+              :classArray="['continue']"
+            />
+          </div>
         </div>
-        <div class="contenu">
-          <p>Le temps est écoulé !</p>
-          <p class="big-message">{{ message }}</p>
-        </div>
-        <div class="bouton">
-          <ButtonEndGame @click="$emit('retry')" :classArray="['retry']" />
-          <ButtonEndGame @click="$emit('quit')" :classArray="['continue']" />
-        </div>
-      </div>
+        
+        <ClassementFinJeu
+          v-else
+          key="classement"
+          :currentPlayerId="'joueur-actuel'"
+          :currentScore="0"
+          :joueurs="[]"
+          @quit="$emit('quit')"
+        />
+      </Transition>
+      
       <NavBar />
     </div>
 </template>
 
 <style scoped>
+/* Animation de transition */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
 #panel {
   z-index: 101;
   position: fixed;

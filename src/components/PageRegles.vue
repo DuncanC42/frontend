@@ -1,28 +1,20 @@
 <script setup>
 import BlurFilter from './BlurFilter.vue';
-import ButtonBack from './buttons/ButtonBack.vue';
 
 const emit = defineEmits(['back', 'pageClicked'])
 
-const handleBack = () => {
-    emit('back')
-}
-
-const handlePageClick = (event) => {
-    if (!event.target.closest('.back')) {
-        emit('pageClicked')
-    }
+const handlePageClick = () => {
+    emit('pageClicked')
 }
 </script>
 
 <template>
-    <div class="menu-regles" @click="handlePageClick">
+    <div class="menu-regles">
         <BlurFilter :is-open="true"></BlurFilter>
-        <ButtonBack @click="handleBack" class="back"></ButtonBack>
-        <div class="content-regles">
+        <div class="content-regles" @click="handlePageClick">
             <slot></slot>
         </div>
-        <span>Appuyer pour continuer</span>
+        <span @click="handlePageClick">Appuyer pour continuer</span>
     </div>
 </template>
 
@@ -30,12 +22,11 @@ const handlePageClick = (event) => {
 .menu-regles {
     z-index: 100;
     position: absolute;
-    top: 0;
+    top: -5em;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: 8vh;
+    gap: 4vh;
     height: 100%;
     left: 0;
 }
@@ -76,6 +67,7 @@ span {
     color: white;
     font-size: x-large;
     padding: 5vw;
+    padding-top: 20vh;
     text-align: center;
 }
 </style>

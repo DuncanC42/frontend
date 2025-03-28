@@ -1,56 +1,71 @@
 <template>
-  <!--  <FondEcran image="assets/mon-fond.jpg" />-->
-  <BlurFilter :isOpen="true" />
-  <div class="classement-component-container">
-    <div class="classement-container">
-      <div class="podium">
-        <div v-if="podium[1]" class="place second">
-          <div class="circle">2</div>
-          <div class="name">{{ podium[1].name ? podium[1].name : "-"}}</div>
+  <div class="root-container">
+    <div class="classement-component-container">
+      <div class="classement-container">
+        <div class="podium">
+          <div v-if="podium[1]" class="place second">
+            <div class="circle">2</div>
+            <div class="name">{{ podium[1].name ? podium[1].name : "-"}}</div>
+          </div>
+          <div v-if="podium[0]" class="place first">
+            <div class="crown">👑</div>
+            <div class="circle">1</div>
+            <div class="name">{{ podium[0].name ? podium[0].name : "-"}}</div>
+          </div>
+          <div v-if="podium[2]" class="place third">
+            <div class="circle">3</div>
+            <div class="name">{{ podium[2].name ? podium[2].name : "-" }}</div>
+          </div>
         </div>
-        <div v-if="podium[0]" class="place first">
-          <div class="crown">👑</div>
-          <div class="circle">1</div>
-          <div class="name">{{ podium[0].name ? podium[0].name : "-"}}</div>
-        </div>
-        <div v-if="podium[2]" class="place third">
-          <div class="circle">3</div>
-          <div class="name">{{ podium[2].name ? podium[2].name : "-" }}</div>
-        </div>
-      </div>
-
-      <div class="classement-list">
-        <h3>Classement :</h3>
-
-        <div
-            v-for="(joueur) in podium"
-            :key="joueur.rank"
-            :class="{
-          'you': joueur.id === currentPlayerId,
-          'first-place': joueur.rank === 1,
-          'second-place': joueur.rank === 2,
-          'third-place': joueur.rank === 3
-        }"
-        >
-          <span>{{ joueur.rank ? joueur.rank : "-" }}. {{ joueur.name ? joueur.name : "-" }}</span>
-          <span>{{ joueur.score ? joueur.score : "-" }}</span>
-        </div>
-
-        <hr v-if="yourIndex >= 3" class="white-separator" />
-
-        <div
-            v-for="joueur in joueurContexte"
-            v-if="yourIndex >= 3"
-            :key="'context-' + joueur.rank"
-            :class="{
+  
+        <div class="classement-list">
+          <h3>Classement :</h3>
+  
+          <div
+              v-for="(joueur) in podium"
+              :key="joueur.rank"
+              :class="{
             'you': joueur.id === currentPlayerId,
             'first-place': joueur.rank === 1,
             'second-place': joueur.rank === 2,
             'third-place': joueur.rank === 3
           }"
-        >
+          >
+            <span>{{ joueur.rank ? joueur.rank : "-" }}. {{ joueur.name ? joueur.name : "-" }}</span>
+            <span>{{ joueur.score ? joueur.score : "-" }}</span>
+          </div>
+          
+          <hr v-if="yourIndex >= 3" class="white-separator" />
+          
+          <div
+            v-for="joueur in joueurContexte"
+            v-if="yourIndex >= 3"
+            :key="'context-' + joueur.rank"
+            :class="{
+              'you': joueur.id === currentPlayerId,
+              'first-place': joueur.rank === 1,
+              'second-place': joueur.rank === 2,
+              'third-place': joueur.rank === 3
+            }"
+          >
           <span>{{ joueur.rank ? joueur.rank : "-" }}. {{ joueur.name ? joueur.name : "-" }}</span>
           <span>{{ joueur.score ?joueur.score : "-" }}</span>
+        </div>
+        </div>
+
+        <div class="boutons">
+          <ButtonEndGame 
+            :classArray="['share']" 
+            id="boutons"
+            @click="handleShare"
+            text="Partager"
+          />
+          <ButtonEndGame 
+            :classArray="['continue']" 
+            id="boutons"
+            @click="handleContinue"
+            text="Continuer"
+          />
         </div>
       </div>
     </div>
@@ -59,28 +74,42 @@
 
 <script setup>
 import {computed} from 'vue';
-import BlurFilter from './BlurFilter.vue';
+import ButtonEndGame from './buttons/ButtonEndGame.vue';
+import { useRouter } from 'vue-router';
+import { useToast } from 'vue-toastification';
+
+const router = useRouter();
+const toast = useToast();
 
 const props = defineProps({
   joueurs: {
     type: Array,
-    required: true,
-    default: () => []
+    required: false,  
+    default: () => [],
   },
   currentPlayerId: {
     type: String,
     required: true
+  },
+  currentScore: {
+    type: Number,
+    required: false,
+    default: 0
   }
 });
 
 
 const classementComplet = computed(() => {
-  return [...props.joueurs]
-      .sort((a, b) => parseFloat(a.score.replace(',', '.')) - parseFloat(b.score.replace(',', '.')))
-      .map((joueur, index) => ({
-        ...joueur,
-        rank: index + 1
-      }));
+  const baseJoueurs = props.joueurs.length ? props.joueurs : [
+    { id: props.currentPlayerId, name: "Vous", score: props.currentScore }
+  ];
+  
+  return [...baseJoueurs]
+    .sort((a, b) => b.score - a.score)
+    .map((joueur, index) => ({
+      ...joueur,
+      rank: index + 1
+    }));
 });
 
 const podium = computed(() => classementComplet.value.slice(0, 3));
@@ -99,9 +128,75 @@ const joueurContexte = computed(() => {
   // Filtrer pour ne pas afficher les joueurs déjà présents dans le podium
   return joueurs.filter(joueur => !podium.value.some(podiumJoueur => podiumJoueur.id === joueur.id));
 });
+
+const emit = defineEmits(['quit']);
+
+const handleContinue = () => {
+  router.push('/home'); 
+};
+
+const handleShare = async () => {
+  const shareData = {
+    title: 'Mon score',
+    text: `J'ai obtenu ${props.currentScore} points !`,
+    url: window.location.href,
+  };
+
+  try {
+    // 1. Essayer l'API Web Share (mobile)
+    if (navigator.share) {
+      await navigator.share(shareData);
+      return;
+    }
+    
+    // 2. Fallback pour desktop/navigateurs non supportés
+    if (navigator.clipboard) {
+      await navigator.clipboard.writeText(
+        `${shareData.text}\n${shareData.url}`
+      );
+      toast.success('Score copié dans le presse-papiers !'); // Ou alert()
+      return;
+    }
+    
+    // 3. Fallback ultime
+    fallbackShare(shareData.text);
+  } catch (err) {
+    console.error('Erreur de partage:', err);
+    fallbackShare(shareData.text);
+  }
+};
+
+const fallbackShare = (text) => {
+  // Solution alternative pour les vieux navigateurs
+  const textArea = document.createElement('textarea')
+  textArea.value = `${text}\n${window.location.href}`
+  document.body.appendChild(textArea)
+  textArea.select()
+  
+  try {
+    document.execCommand('copy')
+    toast.info('Score copié !') // Ou alert()
+  } catch (err) {
+    toast.error('Impossible de copier le score') // Ou alert()
+    console.error('Fallback copy failed:', err)
+  }
+  
+  document.body.removeChild(textArea)
+  
+  // Option: Ouvrir un mail ou autre
+  window.open(
+    `mailto:?subject=Mon score&body=${encodeURIComponent(text)}`,
+    '_blank'
+  )
+};
 </script>
 
 <style scoped>
+
+.root-container {
+  position: relative;
+  width: 100%;
+}
 
 .classement-component-container {
   width: 100vw;
@@ -217,5 +312,15 @@ const joueurContexte = computed(() => {
   border: none;
   border-top: 1px solid white;
   margin: 0.5rem 0;
+}
+
+.boutons{
+  z-index: 100;
+  display: flex;
+  padding-top: 2em;
+}
+
+#boutons{
+  margin: 0em 1em;
 }
 </style>
