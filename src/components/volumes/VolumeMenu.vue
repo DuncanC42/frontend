@@ -42,11 +42,38 @@ watch(effets_sonores_volume, () => {
 </template>
 
 <style scoped>
+/* Global styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
+body {
+    background: #292929;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#app {
+    font-family: Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-align: center;
+    color: #2c3e50;
+    margin-top: 60px;
+}
+
+/* Component-specific styles */
 .page {
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
+    height: 100%;
     gap: 10vh;
     margin-top: 20vh;
     color: white;
@@ -69,18 +96,18 @@ watch(effets_sonores_volume, () => {
 
 .slash {
     position: absolute;
-    translate:  -7px;
+    translate: -7px;
 }
 
 span {
     width: 20px;
 }
 
-
 .slider {
     width: 80vw;
-    --slider-height: 6px;
-    --slider-bg: rgb(184, 184, 184);
+    --slider-height: 12px;
+    /* Increased height */
+    --slider-bg: rgba(251, 251, 251, 0.189);
     --slider-border-radius: 999px;
     --level-color: #ffffff;
     --level-transition-duration: .1s;
@@ -106,6 +133,7 @@ span {
     appearance: none;
     width: 100%;
     height: var(--slider-height);
+    /* Apply the increased height */
     background: var(--slider-bg);
     overflow: hidden;
     border-radius: var(--slider-border-radius);
