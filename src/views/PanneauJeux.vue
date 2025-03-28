@@ -13,8 +13,8 @@ const status = {
     jeux1: 'completed',
     jeux2: 'completed',
     jeux3: 'unlocked',
-    jeux4: 'locked',
-    jeux5: 'locked',
+    jeux4: 'unlocked',
+    jeux5: 'unlocked',
 }
 
 const ready = ref(false)
@@ -66,15 +66,6 @@ onMounted(() => {
 
         }, 600);
     }, 2500);
-
-    // Deuxième clignement d'oeil
-    setTimeout(() => {
-        document.getElementById('blur').classList.add('blur');
-        setTimeout(() => {
-
-            document.getElementById('blur').classList.remove('blur');
-        }, 300);
-    }, 4000);
 })
 </script>
 
