@@ -21,6 +21,7 @@ const router = createRouter({
 			path: '/home',
 			name: 'home',
 			component: Home,
+			props: (route) => ({ loader: route?.query?.loader === 'true' }),
 		},
 		{
 			path: '/erreur',
@@ -76,9 +77,9 @@ const router = createRouter({
 			component: Dents
 		},
 		{
-			path : '/recompenses',
-			name:"recompenses",
-			component : Recompenses,
+			path: '/recompenses',
+			name: "recompenses",
+			component: Recompenses,
 		},
 		{
 			path: '/:pathMatch(.*)*',

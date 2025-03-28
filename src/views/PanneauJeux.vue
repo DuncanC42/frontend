@@ -4,8 +4,16 @@ import Appartement from '@/assets/images/Appartement.png'
 import FondEcran from '@/components/FondEcran.vue';
 import JeuxStatus from '@/components/JeuxStatus.vue'
 import { ref, onMounted } from 'vue';
-
+import NavBar from '@/components/NavBar.vue';
 import { useRouter } from 'vue-router'
+import VolumeButton from '@/components/volumes/VolumeButton.vue';
+const props = defineProps({
+    loader: {
+        type: Boolean,
+        default: false
+    }
+});
+
 const router = useRouter();
 
 // Tableau temporaire renvoyé plus tard par l'api : completed / locked / unlocked
@@ -46,6 +54,10 @@ const handleClick = (numero, status) => {
 }
 
 onMounted(() => {
+    if (!props.loader) {
+        ready.value = true;
+        return
+    }
     const appartementWrapper = document.getElementById('appartement-wrapper');
     if (appartementWrapper) {
         appartementWrapper.classList.add('zoom-in'); // Trigger zoom animation
@@ -83,6 +95,8 @@ onMounted(() => {
         </div>
     </div>
     <div id="blur"></div>
+    <NavBar></NavBar>
+    <VolumeButton></VolumeButton>
 </template>
 
 <style scoped>

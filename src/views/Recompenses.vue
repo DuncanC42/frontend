@@ -6,6 +6,7 @@ import FondEcran from '@/components/FondEcran.vue';
 import BlurFilter from '@/components/BlurFilter.vue';
 import CompteRebours from '@/components/temps/CompteRebours.vue';
 import { ref } from 'vue';
+import NavBar from '@/components/NavBar.vue';
 
 //TO DO : fetch la fin en base
 const limit = ref('04/01/2025')
@@ -23,28 +24,28 @@ const limit = ref('04/01/2025')
             <img :src="gift_1" alt="Image cadeau n°1">
             <img :src="gift_2" alt="Image cadeau n°2">
         </div>
-        
+        <NavBar></NavBar>
     </div>
 
 </template>
 
 <style scoped>
-.main{
+.main {
     display: flex;
     justify-content: space-evenly;
-    color:white;
+    color: white;
     text-align: center;
 }
 
-.main *{
+.main * {
     z-index: 100;
 }
 
-.countdown{
+.countdown {
     padding: 0 10px;
 }
 
-.countdown h1{
+.countdown h1 {
     text-decoration: underline;
     font-size: xx-large;
     font-weight: 500;
@@ -54,18 +55,18 @@ const limit = ref('04/01/2025')
     display: flex;
     justify-content: space-between;
     padding: 2vw;
-    height:40vw;
+    height: 40vw;
 }
 
 img {
     width: 45vw;
 }
 
-img:first-of-type{
+img:first-of-type {
     align-self: flex-start;
 }
 
-img:last-of-type{
+img:last-of-type {
     align-self: flex-end;
 }
 </style>
