@@ -5,7 +5,7 @@
       ref="minuteur"
       couleur="white" 
       :duree="60"
-      :isPaused="isGamePaused"
+      :isPaused="isGamePaused || !timerReady"
       @timeUpdate="updateTime"
     />
 
@@ -150,8 +150,15 @@ import { volumeStore } from '@/stores/volume';
 import { useMusic } from '@/composable/volumes';
 import { watch } from 'vue';
  
+import applauseSound from '@/assets/Jeu5/applaudissementFin.mp3';
 
 export default {
+  props: {
+    isActive: {
+      type: Boolean,
+      default: false
+    }
+  },
   components: {
     MinuteurDent,
     PagePause,
@@ -228,7 +235,10 @@ export default {
       brushSound: null,
       score: 0,
       teethCleanedPercentage: 0,
-      enemiesRemaining: 0
+      enemiesRemaining: 0,
+      timerReady: false,
+      applauseAudio: null,
+      hasPlayedApplause: false,
     };
   },
   computed: {
@@ -246,6 +256,84 @@ export default {
     }
   },
   methods: {
+    startTimer() {
+      this.isPaused = false;
+      this.startTime = Date.now();
+      if (!this.timerInterval) {
+        this.runTimer();
+      }
+    },
+    initGame() {
+      // Initialiser le canvas
+      const canvas = this.$refs.dentsCanvas;
+      const ctx = canvas.getContext("2d");
+      const img = new Image();
+
+      img.onload = () => {
+        canvas.width = img.width; 
+        canvas.height = img.height; 
+        ctx.drawImage(img, 0, 0);
+        ctx.globalCompositeOperation = "source-over";
+        this.selectRandomPattern();
+      };
+      img.src = this.imgDents;
+
+      // Initialiser le son (version corrigée)
+      if (this.brushSound) {
+        this.brushSound.pause();
+        this.brushSound = null;
+      }
+
+      // Initialiser le son
+      this.brushSound = new Audio(brossageSound);
+      this.brushSound.loop = true;
+      this.brushSound.volume = volumeStore().effet_sonore;
+
+      // Précharger le son
+      this.brushSound.load();
+
+      this.hasToothpaste = false;
+      this.toothbrushFixedImage = brossefixe;
+
+      this.timerReady = false;
+      this.currentTime = 60; // Réinitialiser le temps
+      
+      // Si vous avez accès au MinuteurDent, ajoutez cette ligne :
+      if (this.$refs.minuteur && this.$refs.minuteur.resetTimer) {
+        this.$refs.minuteur.resetTimer();
+      }
+    },
+    resetTimer() {
+      this.stopTimer();
+      this.timeRemaining = this.duree;
+      this.isPaused = true;
+    },
+    resetGame() {
+      // Arrêter le timer
+      if (this.$refs.minuteur) {
+        this.$refs.minuteur.stopTimer();
+      }
+      
+      // Réinitialiser l'état du jeu
+      this.gameWon = false;
+      this.gameLost = false;
+      this.isGamePaused = false;
+      this.foamImages = [];
+      this.microbes = [];
+      this.caries = [];
+      
+      // Arrêter les sons
+      if (this.brushSound) {
+        this.brushSound.pause();
+        this.brushSound.currentTime = 0;
+      }
+
+      if (this.applauseAudio) {
+        this.applauseAudio.pause();
+        this.applauseAudio.currentTime = 0;
+      }
+      this.hasPlayedApplause = false;
+    },
     handleLeave() {
       this.$router.push('/home');
     },
@@ -290,6 +378,9 @@ export default {
       this.$nextTick(() => {
         this.selectRandomPattern();
       });
+      if (this.$refs.minuteur) {
+        this.$refs.minuteur.resetTimer(); // Réinitialise sans démarrer
+      }
     },
     resetTeethCanvas() {
       const canvas = this.$refs.dentsCanvas;
@@ -308,8 +399,13 @@ export default {
       };
     },
     applyToothpaste() {
-      this.toothbrushFixedImage = brossefixedentifrice; // Change l'image pour la version avec dentifrice
+      this.toothbrushFixedImage = brossefixedentifrice;
       this.hasToothpaste = true;
+      this.timerReady = true; 
+
+      if (this.$refs.minuteur) {
+        this.$refs.minuteur.startTimer(); // Démarre le minuteur
+      }
     },
     togglePause() {
       this.isGamePaused = !this.isGamePaused;
@@ -331,16 +427,29 @@ export default {
       }
     },
     startBrush() {
-      if (!this.isGamePaused) {
-        this.isBrushing = true;
-        this.isTouchingBrush = true;
-        // Jouer le son
-        if (this.brushSound) {
-          this.brushSound.currentTime = 0; // Remet le son au début
-          this.brushSound.play().catch(e => console.log("Erreur de lecture audio:", e));
+    if (!this.isGamePaused) {
+      this.isBrushing = true;
+      this.isTouchingBrush = true;
+      
+      // Version robuste avec vérification
+      if (this.brushSound) {
+        try {
+          this.brushSound.currentTime = 0;
+          const playPromise = this.brushSound.play();
+          
+          if (playPromise !== undefined) {
+            playPromise.catch(e => {
+              console.error("Erreur de lecture audio:", e);
+              // Fallback: réessayer après interaction utilisateur
+              document.addEventListener('click', this.retryPlaySound, { once: true });
+            });
+          }
+        } catch (e) {
+          console.error("Erreur audio:", e);
         }
       }
-    },
+    }
+  },
     moveBrush(event) {
       if (this.isBrushing && !this.isGamePaused) {
         if (this.isBrushing) {
@@ -363,7 +472,6 @@ export default {
       const ctx = canvas.getContext("2d");
 
       if (!canvas || !ctx) {
-        console.error("Erreur : canvas ou ctx non trouvés !");
         return;
       }
 
@@ -483,10 +591,10 @@ export default {
       const mouthContainer = this.$el.querySelector(".mouth-container");
 
       if (!mouthContainer) {
-        console.error("❌ mouth-container introuvable !");
         return;
       }
 
+      const mouthRect = mouthContainer.getBoundingClientRect();
       const mouthWidth = mouthContainer.clientWidth;
       const mouthHeight = mouthContainer.clientHeight;
 
@@ -498,14 +606,17 @@ export default {
       this.caries = [];
 
       selectedPattern.forEach((item) => {
-        const position = {
-          x: item.xRatio * mouthWidth,
-          y: item.yRatio * mouthHeight,
-          src: item.src,
-          strength: item.hits || 5, // Nombre de passages nécessaires
-          currentSize: item.initialSize || 8, // Taille initiale pour les microbes
-        };
+        // Calcule les positions relatives à la bouche
+        const x = item.xRatio * mouthWidth;
+        const y = item.yRatio * mouthHeight;
 
+        const position = {
+          x: x,
+          y: y,
+          src: item.src,
+          strength: item.hits || 5,
+          currentSize: item.initialSize || 8,
+        };
         if (item.type === "microbe") {
           this.microbes.push(position);
         } else if (item.type === "carie") {
@@ -556,6 +667,12 @@ export default {
         this.calculateScore();
         this.gameWon = true;
         this.pauseGame();
+
+        if (!this.hasPlayedApplause) {
+          this.playApplauseSound();
+          this.hasPlayedApplause = true;
+        }
+
         return true;
       }
 
@@ -586,27 +703,45 @@ export default {
       const teethCleanedPercentage = (cleanCount / sampleSize) * 100;
       const cleanlinessBonus = teethCleanedPercentage * 5; // 5 points par % de propreté
       
-      // 3. Calcul du score total
+      // 3. Calcul du score total 
       this.score = Math.max(0, timeBonus + cleanlinessBonus - enemiesPenalty);
       
       // Stockage des valeurs intermédiaires pour le débogage (optionnel)
       this.teethCleanedPercentage = teethCleanedPercentage;
       this.enemiesRemaining = enemiesRemaining;
-    }
+    },
+    playApplauseSound() {
+      if (!this.applauseAudio) return;
+      
+      try {
+        this.applauseAudio.currentTime = 0; // Remettre au début
+        const playPromise = this.applauseAudio.play();
+        
+        if (playPromise !== undefined) {
+          playPromise.catch(error => {
+            console.error("Erreur lecture applaudissements:", error);
+            // Fallback pour mobile
+            if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+              document.addEventListener('click', this.playApplauseSound, { once: true });
+              document.addEventListener('touchstart', this.playApplauseSound, { once: true });
+            }
+          });
+        }
+      } catch (e) {
+        console.error("Erreur audio:", e);
+      }
+    },
   },
   mounted() {
+    this.initGame();
     const canvas = this.$refs.dentsCanvas;
     const ctx = canvas.getContext("2d");
 
     const img = new Image();
-    img.src = this.imgDents;
 
     img.onload = () => {
-      // Définir la taille du canvas pour qu'elle corresponde à l'image des dents jaunes
-      canvas.width = img.width; // 1077 pixels
-      canvas.height = img.height; // 1668 pixels
-
-      // Dessiner l'image des dents jaunes sur le canvas
+      canvas.width = img.width; 
+      canvas.height = img.height; 
       ctx.drawImage(img, 0, 0);
       ctx.globalCompositeOperation = "source-over"; // Mode par défaut
 
@@ -614,6 +749,8 @@ export default {
         this.selectRandomPattern();
       });
     };
+    img.src = this.imgDents;
+
     this.resetTeethCanvas();
     this.$nextTick(() => {
       this.selectRandomPattern();
@@ -626,14 +763,20 @@ export default {
     this.brushSound.volume = volumes.effet_sonore;
 
     watch(
-        () => volumes.effet_sonore,
-        (newVolume) => {
+      () => volumes.effet_sonore,
+      (newVolume) => {
+        if (this.brushSound) {
           this.brushSound.volume = newVolume;
         }
+      }
     );
 
     const { switchAudio, pause, resume } = useMusic();
     switchAudio(amibanceJeu);
+
+    this.applauseAudio = new Audio(applauseSound);
+    this.applauseAudio.volume = volumes.effet_sonore;
+    this.applauseAudio.load();
   },
   watch: {
     currentTime(newVal) {
@@ -645,6 +788,21 @@ export default {
         if (this.$refs.minuteur && typeof this.$refs.minuteur.stopTimer === 'function') {
           this.$refs.minuteur.stopTimer();
         }
+      }
+    },
+    isActive(newVal) {
+      if (newVal) {
+        this.initGame();
+      } else {
+        this.resetGame();
+      }
+    },
+    'volumes.effet_sonore'(newVolume) {
+      if (this.applauseAudio) {
+        this.applauseAudio.volume = newVolume;
+      }
+      if (this.brushSound) {
+        this.brushSound.volume = newVolume;
       }
     }
   }

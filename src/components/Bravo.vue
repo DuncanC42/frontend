@@ -4,11 +4,12 @@ import NavBar from './NavBar.vue';
 import ButtonEndGame from './buttons/ButtonEndGame.vue';
 import { ref, onUnmounted, onMounted, watch } from 'vue' 
 
-import applaudissementSound from '@/assets/Jeu5/applaudissementFin.mp3';
 import ambianceSound from '@/assets/sons/musiques/ambiance/flow.mp3';
 
 import { volumeStore } from '@/stores/volume';
 import { useMusic } from '@/composable/volumes';
+
+import ClassementFinJeu from './ClassementFinJeu.vue';
 
 // Définition des props dans le bloc `<script setup>`
 const props = defineProps({
@@ -24,19 +25,16 @@ const props = defineProps({
   }
 });
 
+
 const audio = ref(null);
 const volumes = volumeStore();
-const { switchAudio, pauseAudio } = useMusic();
+const { switchAudio } = useMusic();
+
+const showClassement = ref(false);
 
 // Initialiser l'audio lorsque le composant est monté
 onMounted(() => {
-  // Musique d'ambiance
-  switchAudio(ambianceSound)
-  
-  // Son d'applaudissement
-  audio.value = new Audio(applaudissementSound)
-  audio.value.volume = volumes.effet_sonore
-  playSound()
+  switchAudio(ambianceSound);
 });
 
 onUnmounted(() => {
@@ -54,43 +52,60 @@ watch(
   }
 )
 
-// Jouer le son
-const playSound = () => {
-  if (!audio.value) return
-  
-  try {
-    audio.value.currentTime = 0
-    audio.value.play().catch(e => console.error("Erreur lecture audio:", e))
-  } catch (e) {
-    console.error("Erreur audio:", e)
-  }
-}
+const showRanking = () => {
+  showClassement.value = true;
+};
+const emit = defineEmits(['quit']);
 </script>
 
 <template>    
   <div>
     <div id="panel">
       <BlurFilter :is-open="true" style="z-index: 100;"></BlurFilter>
-      <div class="dommage">
-        <div class="titre">
+      
+      <Transition name="fade" mode="out-in">
+        <div v-if="!showClassement" key="bravo" class="bravo">
           <div class="titre">Bravo !</div>
+          <div class="contenu">
+            <p><u>Ton score :</u> {{ score }}pts</p>
+            <p class="big-message">{{ message }}</p>
+          </div>
+          <!-- Bouton pour afficher le classement manuellement -->
+          <div class="bouton">
+            <ButtonEndGame 
+              @click="showRanking" 
+              text="Voir le classement" 
+              :classArray="['continue']"
+            />
+          </div>
         </div>
-        <div class="contenu">
-          <!-- Affichage du temps -->
-          <p><u>Ton score :</u> {{ score }}pts</p>
-          <!-- Message personnalisé -->
-          <p class="big-message">{{ message }}</p>
-        </div>
-        <div class="bouton">
-          <ButtonEndGame @click="$emit('quit')" :classArray="['continue']" />
-        </div>
-      </div>
+        
+        <ClassementFinJeu
+          v-else
+          key="classement"
+          :currentPlayerId="'joueur-actuel'"
+          :currentScore="score"
+          :joueurs="[]"
+          @quit="$emit('quit')"
+        />
+      </Transition>
       <NavBar />
     </div>
   </div>
 </template>
 
 <style scoped>
+/* Animation de transition */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
 #panel {
   z-index: 101;
   position: fixed;
@@ -99,7 +114,7 @@ const playSound = () => {
   width: 100vw;
   padding-top: 10vh;
 }
-.dommage {
+.bravo {
   display: flex;
   flex-direction: column;
   justify-content: space-evenly;

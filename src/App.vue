@@ -14,7 +14,7 @@ useMusic(audio_mp3);
     <!-- <NavBar /> -->
     <Header></Header>
     <RouterView></RouterView>
-    <VolumeButton></VolumeButton>
+    <!--<VolumeButton></VolumeButton>-->
   </div>
   
 </template>
