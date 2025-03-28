@@ -9,9 +9,15 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 
 const props = defineProps({
-    couleur: String,  
-    duree: Number,    
-    isPaused: Boolean 
+  couleur: String,
+  duree: {
+    type: Number,
+    default: 60
+  },
+  isPaused: {
+    type: Boolean,
+    default: false
+  }
 });
 
 const emit = defineEmits(['finTimer', 'timeUpdate']);

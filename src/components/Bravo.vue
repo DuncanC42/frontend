@@ -1,75 +1,111 @@
 <script setup>
-import { computed } from 'vue';
 import BlurFilter from './BlurFilter.vue';
 import NavBar from './NavBar.vue';
 import ButtonEndGame from './buttons/ButtonEndGame.vue';
-import { ref } from 'vue' // Ajoutez cette ligne
+import { ref, onUnmounted, onMounted, watch } from 'vue' 
+
+import ambianceSound from '@/assets/sons/musiques/ambiance/flow.mp3';
+
+import { volumeStore } from '@/stores/volume';
+import { useMusic } from '@/composable/volumes';
+
+import ClassementFinJeu from './ClassementFinJeu.vue';
 
 // Définition des props dans le bloc `<script setup>`
 const props = defineProps({
-    time: {
-        type: Number,
-        required: true,
-        default: 0
-    },
-    message: {
-        type: String,
-        required: true,
-        default: "Félicitations !"
-    }
+  score: {
+    type: Number,
+    required: true,
+    default: 0
+  },
+  message: {
+    type: String,
+    required: true,
+    default: "Félicitations !"
+  }
 });
 
-const formattedTime = computed(() => {
-    const minutes = Math.floor(props.time / 60);
-    const seconds = props.time % 60;
-    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+const audio = ref(null);
+const volumes = volumeStore();
+const { switchAudio } = useMusic();
+
+const showClassement = ref(false);
+
+// Initialiser l'audio lorsque le composant est monté
+onMounted(() => {
+  switchAudio(ambianceSound);
 });
 
-const time = ref(0); // Temps du minuteur, à adapter selon votre logique
-const isGameLost = ref(false); // État pour afficher ou masquer l'écran "perdu"
+onUnmounted(() => {
+  if (audio.value) {
+    audio.value.pause();
+    audio.value = null;
+  }
+});
 
-const startTimer = () => {
-  // Exemple simple de minuterie pour tester
-  const interval = setInterval(() => {
-    if (time.value > 0) {
-      time.value--;
-    } else {
-      clearInterval(interval);
-      isGameLost.value = true; // Le jeu est perdu une fois que le timer atteint 0
-    }
-  }, 1000);
+// Surveillance du volume
+watch(
+  () => volumes.effet_sonore,
+  (newVolume) => {
+    if (audio.value) audio.value.volume = newVolume
+  }
+)
+
+const showRanking = () => {
+  showClassement.value = true;
 };
-
-// Démarrer le timer (c'est à vous d'adapter cela selon la logique de votre jeu)
-startTimer();
-
-
+const emit = defineEmits(['quit']);
 </script>
 
 <template>    
   <div>
-    <div v-if="isGameLost" id="panel">
+    <div id="panel">
       <BlurFilter :is-open="true" style="z-index: 100;"></BlurFilter>
-      <div class="dommage">
-        <div class="titre">
+      
+      <Transition name="fade" mode="out-in">
+        <div v-if="!showClassement" key="bravo" class="bravo">
           <div class="titre">Bravo !</div>
+          <div class="contenu">
+            <p><u>Ton score :</u> {{ score }}pts</p>
+            <p class="big-message">{{ message }}</p>
+          </div>
+          <!-- Bouton pour afficher le classement manuellement -->
+          <div class="bouton">
+            <ButtonEndGame 
+              @click="showRanking" 
+              text="Voir le classement" 
+              :classArray="['continue']"
+            />
+          </div>
         </div>
-        <div class="contenu">
-          <!-- Affichage du temps -->
-          <p><u>Ton score :</u> {{ formattedTime }}</p>
-          <!-- Message personnalisé -->
-          <p class="big-message">{{ message }}</p>
-        </div>
-        <div class="bouton">
-          <ButtonEndGame @click="$emit('quit')" :classArray="['continue']" />
-        </div>
-      </div>
+        
+        <ClassementFinJeu
+          v-else
+          key="classement"
+          :currentPlayerId="'joueur-actuel'"
+          :currentScore="score"
+          :joueurs="[]"
+          @quit="$emit('quit')"
+        />
+      </Transition>
       <NavBar />
     </div>
   </div>
 </template>
 
 <style scoped>
+/* Animation de transition */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
 #panel {
   z-index: 101;
   position: fixed;
@@ -78,7 +114,7 @@ startTimer();
   width: 100vw;
   padding-top: 10vh;
 }
-.dommage {
+.bravo {
   display: flex;
   flex-direction: column;
   justify-content: space-evenly;
