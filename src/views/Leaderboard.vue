@@ -65,7 +65,7 @@ import ButtonNextPrevious from '@/components/buttons/ButtonNextPrevious.vue';
 }
 
 .leaderboard {
-    background-color: #ffffffa5;
+    background-color: #ffffff78;
     height: 60vh;
     width: 85vw;
     border-radius: 20px;
@@ -91,6 +91,7 @@ import ButtonNextPrevious from '@/components/buttons/ButtonNextPrevious.vue';
     display: flex;
     width: 100%;
     justify-content: space-between;
+    /* Remove the global outline */
 }
 
 hr {
@@ -111,26 +112,23 @@ hr {
 .dot {
     height: 20px;
     width: 20px;
-    background-color: #ffffffa5;
+    background-color: #ffffff78;
     border-radius: 30px;
 }
 
 /* Medal colors for top three ranks */
 .gold-text {
-    color: #c5a400;
-    /* Gold color */
+    color: rgb(255, 217, 0);
     font-weight: bold;
 }
 
 .silver-text {
-    color: #767676;
-    /* Silver color */
+    color: #ffffff;
     font-weight: bold;
 }
 
 .copper-text {
-    color: #a44f00;
-    /* Copper/Bronze color */
+    color: #ffa938;
     font-weight: bold;
 }
 </style>
