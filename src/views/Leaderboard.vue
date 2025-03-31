@@ -5,6 +5,39 @@ import FondEcran from '@/components/FondEcran.vue';
 import appartement from '@/assets/images/Appartement.png';
 import BlurFilter from '@/components/BlurFilter.vue';
 import ButtonNextPrevious from '@/components/buttons/ButtonNextPrevious.vue';
+import { fetchBackend } from '@/composable/fetchBackend';
+import { useInfiniteScroll } from '@vueuse/core'
+import { ref, useTemplateRef } from 'vue';
+
+const props = defineProps({
+    route: {
+        type: String,
+        required: true,
+    },
+    title: {
+        type: String,
+        required: true,
+    },
+    page: {
+        type: Number,
+        required: true,
+    }
+})
+
+const list = ref(null)
+
+useInfiniteScroll(list, () => {
+    console.log('fetch new data')
+},
+    {
+        distance: 10,
+        canLoadMore: () => {
+            return true
+        },
+    }
+)
+
+
 </script>
 
 <template>
@@ -12,23 +45,23 @@ import ButtonNextPrevious from '@/components/buttons/ButtonNextPrevious.vue';
         <div class="content">
             <div class="title">
                 <img :src="podium" :alt="podium">
-                <h2>Leaderboard</h2>
+                <h2>{{ title }}</h2>
             </div>
-            <div class="leaderboard">
-                <div v-for="r in 100">
+            <div class="leaderboard" ref="list">
+                <div v-for="(r, index) in 100" :key="index">
                     <div class="row" :class="{ 'gold-text': r === 1, 'silver-text': r === 2, 'copper-text': r === 3 }">
                         <span>{{ r }}</span>
                         <span>Joueur {{ r }}</span>
                         <span>{{ (100 - Number(r)) * 100 }} pts</span>
                     </div>
-                    <hr>
+                    <!-- Only add hr if not the last item -->
+                    <hr v-if="index < 99">
                 </div>
-
             </div>
             <div class="pagination">
-                <ButtonNextPrevious :classArray="['previous']" />
-                <div class="dot" v-for="i in 6" :id="i + 1"></div>
-                <ButtonNextPrevious :classArray="['next']" />
+                <ButtonNextPrevious :class="page === 1 ? 'hidden' : ''" :classArray="['previous']" />
+                <div class="dot" v-for="i in 6" :id="i + 1" :class="i === page ? 'lighter-dot' : ''"></div>
+                <ButtonNextPrevious :class="page === 6 ? 'hidden' : ''" :classArray="['next']" />
             </div>
         </div>
         <FondEcran style="z-index : 10; " :image="appartement"></FondEcran>
@@ -76,10 +109,7 @@ import ButtonNextPrevious from '@/components/buttons/ButtonNextPrevious.vue';
     flex-direction: column;
     align-items: center;
     padding: 15px 0;
-    /* Remove justify-content: center which causes content to be vertically centered */
-    /* Add proper padding and starting position */
     z-index: 102;
-    /* Ensure it's above other elements */
 }
 
 .leaderboard>div {
@@ -96,7 +126,7 @@ import ButtonNextPrevious from '@/components/buttons/ButtonNextPrevious.vue';
 
 hr {
     height: 1px;
-    background-color: black;
+    background-color: rgba(0, 0, 0, 0.523);
     border: none;
     margin: 0;
     margin: 10px 0;
@@ -116,19 +146,30 @@ hr {
     border-radius: 30px;
 }
 
+.lighter-dot {
+    background-color: #ffffff;
+}
+
+.hidden {
+    visibility: hidden;
+}
+
 /* Medal colors for top three ranks */
 .gold-text {
     color: rgb(255, 217, 0);
-    font-weight: bold;
 }
 
 .silver-text {
     color: #ffffff;
-    font-weight: bold;
 }
 
 .copper-text {
     color: #ffa938;
+}
+
+.copper-text,
+.silver-text,
+.gold-text {
     font-weight: bold;
 }
 </style>

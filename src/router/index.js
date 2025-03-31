@@ -86,6 +86,7 @@ const router = createRouter({
 			path: '/classement',
 			name: 'leaderboard',
 			component: Leaderboard,
+			props: { title: 'Général', route: '/general', page: 1 }
 		},
 		{
 			path: '/:pathMatch(.*)*',
