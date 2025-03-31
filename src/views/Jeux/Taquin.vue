@@ -166,6 +166,7 @@ const handleLeave = () => {
 }
 
 const handleGameOver = () => {
+  
   // Logique de fin de jeu quand le temps est écoulé
   if (phaserScene.value) {
     phaserScene.value.scene.pause()

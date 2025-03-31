@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, onUnmounted } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
 import { useLoader } from '@/composable/loader'; // Import the loader store
 import { useRouter } from 'vue-router';
 import NavBar from './components/NavBar.vue';
