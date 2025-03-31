@@ -42,6 +42,7 @@ const currentColor = computed(() => {
     flex-direction: row;
     gap: 5px;
     align-items: center;
+    padding: 5px;
 }
 
 /* Couleurs dynamiques */

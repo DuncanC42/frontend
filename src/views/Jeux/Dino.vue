@@ -73,7 +73,7 @@ const handleBackClick = () => {
   
   <!-- Étape 3: Jeu (préchargé mais masqué) -->
   <div v-if="currentStep === 2" class="jeu-dino">
-    <DinoGame v-if="shouldShowGame" :key="gameKey"/>
+    <DinoGame :key="gameKey"/>
   </div>
 </div>
 </template>

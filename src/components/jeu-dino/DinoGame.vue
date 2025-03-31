@@ -23,7 +23,7 @@
         <Bravo 
             v-if="gameWon" 
             :score="score" 
-            message="L'Assurance Maladie offre des rendez-vous de prévention avec le dentiste appelés « M'T dents » aux jeunes de âgés de 18, 21 et 24 ans !"
+            message="Les remboursements de l’Assurance Maladie se font par virement bancaire. Depuis ton compte ameli, enregistrer ton RIB c’est être sûr de recevoir les remboursements sur ton propre compte bancaire !"
             @retry="handleRetry" 
             @quit="handleLeave" 
         />
@@ -82,6 +82,15 @@ const phaserScene = ref(null)
 const gameOver = ref(false)
 const defeatMessage = ref('')
 const gameWon = ref(false)
+const score = ref(0)
+
+// Constants
+const SCORE_VALUES = {
+  NUMBER_COLLECTED: 40,    // 10 nombres × 40 = 400 points
+  CACTUS_AVOIDED: 5,       // Environ 20 cactus × 5 = 100 points
+  VICTORY_BONUS: 400,      // Bonus de base pour victoire
+  TIME_BONUS_MULTIPLIER: 4 // Points par seconde restante
+}
 
 // Game state
 const ibanCompleted = ref(false)
@@ -102,7 +111,6 @@ let missedNumbers = []
 
 // Game timer management
 const startGameTimer = () => {
-  console.log('Démarrage du timer principal');
   if (gameTimer.value) {
     clearInterval(gameTimer.value);
     gameTimer.value = null;
@@ -111,6 +119,7 @@ const startGameTimer = () => {
   gameTimer.value = setInterval(() => {
     if (!isGamePaused.value) {
       gameTime.value = Math.max(0, gameTime.value - 1);
+
       
       if (gameTime.value <= 0) {
         clearInterval(gameTimer.value);
@@ -185,6 +194,7 @@ const resetGame = () => {
     gameOver.value = false
     gameWon.value = false
     defeatMessage.value = ''
+    score.value = 0
     collectedNumbers = []
     currentNumberIndex = 0
     currentNumber = null
@@ -239,6 +249,13 @@ const create = function() {
   setupEnvironment.call(this, groundY);
   setupPlayer.call(this, groundY);
   setupGameMechanics.call(this);
+
+  this.scoreText = this.add.text(20, 20, `Score: ${score.value}`, {
+    fontSize: '24px',
+    fill: '#000',
+    fontFamily: 'Arial'
+  }).setScrollFactor(0).setDepth(10);
+
   
   // Démarrer le timer seulement après un court délai
     if (!gameTimer.value && !isGamePaused.value && !gameOver.value) {
@@ -253,6 +270,8 @@ const create = function() {
 const update = function() {
     
   if (this.isGameOver || this.scene.isPaused()) return
+
+  this.scoreText.setText(`Score: ${score.value}`);
   
   handlePlayerMovement.call(this)
   handleScrolling.call(this)
@@ -269,6 +288,8 @@ const triggerDefeat = (reason) => {
     console.log('GameOver déjà déclenché, on ignore')
     return
   }
+
+  score.value = 0;
   
   gameOver.value = true
   
@@ -314,6 +335,9 @@ const triggerVictory = () => {
   }
   
   gameWon.value = true;
+  const timeBonus = gameTime.value * SCORE_VALUES.TIME_BONUS_MULTIPLIER;
+  score.value += SCORE_VALUES.VICTORY_BONUS + timeBonus;
+  score.value = Math.min(score.value, 1000);
   
   // Vérification de la scène Phaser
   if (game.value.instance && game.value.scene) {
@@ -460,9 +484,11 @@ function setupGameMechanics() {
   obstacles = this.physics.add.group()
   numbers = this.physics.add.group()
 
+  this.cactusAvoided = 0;
+
   this.baseSpeed = 3
   this.speedMultiplier = 1.0
-  this.speedIncrement = 0.05
+  this.speedIncrement = 0.15
 
   this.speeds = {
     ground: this.baseSpeed,
@@ -531,6 +557,8 @@ function handleScrolling() {
 function cleanupObjects() {
   obstacles.getChildren().forEach(obstacle => {
     if (obstacle && obstacle.x > 530) {
+      this.cactusAvoided++;
+      score.value += SCORE_VALUES.CACTUS_AVOIDED;
       obstacle.destroy()
     }
   })
@@ -616,6 +644,8 @@ function collectNumber(dino, number) {
   
   number.destroy()
   this.speedMultiplier += this.speedIncrement
+
+  score.value += SCORE_VALUES.NUMBER_COLLECTED;
   
   if (collectedNumbers.length === NUMBER_ORDER.length - 1) {
     // Utiliser endGame au lieu de gameOver directement
@@ -720,6 +750,7 @@ const endGame = () => {
     gameTimer.value = null;
     ibanCompleted.value = true;
     triggerVictory(); // Utilisez triggerVictory au lieu de triggerDefeat
+
 }
 
 // Lifecycle hooks
