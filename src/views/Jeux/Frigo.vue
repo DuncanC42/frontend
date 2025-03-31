@@ -22,7 +22,7 @@ import brocoli from '@/assets/fruit-ninja/images/brocoli.png';
 import carotte from '@/assets/fruit-ninja/images/carotte.png';
 import eau from '@/assets/fruit-ninja/images/eau.png';
 
-import frigo from '@/assets/fruit-ninja/images/frigo_Plan de travail 1.png';
+import frigo from '@/assets/fruit-ninja/images/frigo_Plan_de_travail_1.png';
 
 const width = ref(window.innerWidth);
 const currentStep = ref(0); // 0 = intro, 1 = règles, 2 = jeu, 3 = bravo, 4 = leaderboard
