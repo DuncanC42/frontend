@@ -7,6 +7,7 @@ import PageConnexion from '@/views/PageConnexion.vue'
 import PageInscription from '@/views/PageInscription.vue'
 import PageErreur from '@/views/PageErreur.vue'
 import NotFound from '@/views/NotFound.vue'
+import Leaderboard from '@/views/Leaderboard.vue'
 
 import Dino from '@/views/Jeux/Dino.vue'
 import Frigo from '@/views/Jeux/Frigo.vue'
@@ -80,6 +81,11 @@ const router = createRouter({
 			path: '/recompenses',
 			name: "recompenses",
 			component: Recompenses,
+		},
+		{
+			path: '/classement',
+			name: 'leaderboard',
+			component: Leaderboard,
 		},
 		{
 			path: '/:pathMatch(.*)*',
