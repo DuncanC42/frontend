@@ -1,6 +1,6 @@
 <script setup>
 
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { fetchBackend } from '@/composable/fetchBackend';
 import { useInfiniteScroll } from '@vueuse/core'
 
@@ -16,12 +16,14 @@ const props = defineProps({
 let page = 1
 const myPlace = ref(0)
 const isLoading = ref(false)
+const classement = ref([])
 
-useInfiniteScroll(list, () => {
+// Function to fetch leaderboard data
+const fetchLeaderboardData = async() => {
     if (isLoading.value) return
 
     isLoading.value = true
-    fetchBackend(`api/leaderboard/${props.route}`, 'GET', null, { limit: 25, page: page })
+    return fetchBackend(`api/leaderboard/${props.route}`, 'GET', null, { limit: 25, page: page })
         .then(response => {
             if (response.status === 200) {
                 const data = response.data
@@ -42,6 +44,15 @@ useInfiniteScroll(list, () => {
         .finally(() => {
             isLoading.value = false
         })
+}
+
+// Initial fetch when component mounts
+onMounted(() => {
+    fetchLeaderboardData()
+})
+
+useInfiniteScroll(list, () => {
+    fetchLeaderboardData()
 },
     {
         distance: 1,
@@ -50,8 +61,6 @@ useInfiniteScroll(list, () => {
         },
     }
 )
-
-const classement = ref([])
 
 </script>
 
