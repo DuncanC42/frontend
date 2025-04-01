@@ -21,7 +21,7 @@ useInfiniteScroll(list, () => {
     if (isLoading.value) return
 
     isLoading.value = true
-    fetchBackend(`api/leaderboard/${props.route}`, 'GET', null, { limit: 10, page: page })
+    fetchBackend(`api/leaderboard/${props.route}`, 'GET', null, { limit: 25, page: page })
         .then(response => {
             if (response.status === 200) {
                 const data = response.data

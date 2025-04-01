@@ -8,31 +8,15 @@ import ButtonNextPrevious from '@/components/buttons/ButtonNextPrevious.vue';
 import TableauLeaderboard from '@/components/TableauLeaderboard.vue';
 import { ref } from 'vue';
 
-
-const props = defineProps({
-    route: {
-        type: String,
-        required: true,
-    },
-    title: {
-        type: String,
-        required: true,
-    },
-    page: {
-        type: Number,
-        required: true,
-    }
-})
-
 const page = ref(2)
 
 const title_ref = {
-    1: 'Général',
-    2: 'Carte vitale',
-    3: 'C2S',
-    4: 'RIB',
-    5: 'Examen de prévention',
-    6: 'M\'T dents'
+    1: { title: 'Général', route: '' },
+    2: { title: 'Carte vitale', route: 'taquin' },
+    3: { title: 'C2S', route: 'tirelire' },
+    4: { title: 'RIB', route: 'dino' },
+    5: { title: 'Examen de prévention', route: 'fruitninja' },
+    6: { title: 'M\'T dents', route: 'dents' }
 }
 
 
@@ -43,9 +27,11 @@ const title_ref = {
         <div class="content">
             <div class="title">
                 <img :src="podium" :alt="podium">
-                <h2>{{ title_ref[page] }}</h2>
+                <h2>{{ title_ref[page].title }}</h2>
             </div>
-            <TableauLeaderboard route="taquin"></TableauLeaderboard>
+            <div>
+                <TableauLeaderboard :route="info.route" :key="index" v-for="(info, index) in title_ref"></TableauLeaderboard>
+            </div>
             <div class="pagination">
                 <ButtonNextPrevious :class="page === 1 ? 'hidden' : ''" :classArray="['previous']" />
                 <div class="dot" v-for="i in 6" :id="i + 1" :class="i === page ? 'lighter-dot' : ''"></div>
