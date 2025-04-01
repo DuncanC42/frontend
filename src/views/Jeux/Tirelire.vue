@@ -175,6 +175,7 @@ const handleBackClick = () => {
   display: flex;
   flex-direction: column;
   gap: 0.5em;
+  margin-top: 0 !important;
 }
 
 .contenu-regles p{
@@ -195,4 +196,7 @@ const handleBackClick = () => {
   z-index: 0;
 }
 
+.content-regles{
+  padding-top: 0vh !important;
+}
 </style>

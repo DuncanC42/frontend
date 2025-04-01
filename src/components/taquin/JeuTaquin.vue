@@ -627,6 +627,7 @@
     transform: translateX(-50%);
     z-index: 10;
     padding: 5px;
+    width: 3.25em;
 }
 
 .modal {

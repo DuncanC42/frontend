@@ -33,6 +33,10 @@ import PagePause from '../PagePause.vue';
 import Bravo from '@/components/Bravo.vue';
 import Dommage from '@/components/Dommage.vue';
 
+import applause from '@/assets/jeu-dino/applause.mp3'
+
+let applauseSoundEffect;
+
 const gameContainer = ref(null);
 const timeElapsed = ref(0);
 const gameWon = ref(false);
@@ -147,6 +151,7 @@ const initializeGame = () => {
 
     function preload() {
         preloadAssets(this);
+        this.load.audio('applause', applause);
     }
 
     function create() {
@@ -175,11 +180,13 @@ const initializeGame = () => {
             goodSoundEffect = this.sound.add('goodSound');
             wrongSoundEffect = this.sound.add('wrongSound');
             clapSoundEffect = this.sound.add('clap');
+            applauseSoundEffect = this.sound.add('applause');
 
             const volumes = volumeStore();
             goodSoundEffect.volume = volumes.effet_sonore;
             wrongSoundEffect.volume = volumes.effet_sonore;
             clapSoundEffect.volume = volumes.effet_sonore;
+            applauseSoundEffect.volume = volumes.effet_sonore;
 
             watch(
                 () => volumes.effet_sonore,
@@ -187,6 +194,7 @@ const initializeGame = () => {
                     goodSoundEffect.volume = newVolume;
                     wrongSoundEffect.volume = newVolume;
                     clapSoundEffect.volume = newVolume;
+                    applauseSoundEffect.volume = newVolume;
                 }
             );
         });
@@ -362,6 +370,7 @@ const initializeGame = () => {
         
         if (isVictory) {
             clapSoundEffect.play();
+            applauseSoundEffect.play();
             gameWon.value = true;
         } else {
             calculateFinalScore();
