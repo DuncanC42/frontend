@@ -153,4 +153,8 @@ const handleBackClick = () => {
   height: 4em;
   padding: 0 5px;
 }
+
+.contenu-regles{
+  margin-top: 0vh !important;
+}
 </style>
