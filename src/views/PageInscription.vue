@@ -29,7 +29,7 @@
         }
 
 
-        fetchBackend('register', 'POST', {email : email.value, pseudo : pseudo.value}).then((response) => {
+        fetchBackend('api/register', 'POST', {email : email.value, pseudo : pseudo.value}).then((response) => {
             if (response.status === 201){
                 router.push('/bienvenue');
             }else {
