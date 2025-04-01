@@ -798,11 +798,6 @@ const initGame = () => {
 </script>
 
 <style>
-.game-container {
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
-}
 
 .timer-position {
   position: absolute;
