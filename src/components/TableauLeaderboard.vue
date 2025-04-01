@@ -140,17 +140,28 @@ hr {
     position: relative;
     backdrop-filter: blur(4px);
     font-weight: bold;
-    color: rgb(0, 47, 255);
+    color: rgb(0, 68, 24);
 }
 
 .sticky span {
-    animation: pulse-self 5s infinite;
+    animation: pulse-self 3s linear infinite;
+}
+
+.gold-text, .silver-text, .copper-text, .sticky>span {
+    animation: ping 1s linear infinite;
 }
 
 @keyframes pulse-self {
     50% {
-        color: rgb(0, 7, 39);
-    }
+        color: rgb(24, 0, 54);
+        }
+}
+
+@keyframes ping {
+
+    50% {
+        scale: 1.02;    }
+
 }
 
 /* Make the container of the sticky row also sticky */
