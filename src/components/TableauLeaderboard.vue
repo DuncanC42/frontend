@@ -62,7 +62,7 @@ const classement = ref([])
 
 <style scoped>
 .leaderboard {
-    background-color: #ffffff78;
+    background-color: #ffffff9f;
     height: 60vh;
     width: 85vw;
     border-radius: 20px;
@@ -72,7 +72,7 @@ const classement = ref([])
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 15px 0;
+    padding: 0;
     z-index: 102;
     /* Added for sticky to work correctly */
     position: relative;
@@ -85,11 +85,15 @@ const classement = ref([])
     /* Important for sticky positioning context */
 }
 
+.row-container:first-of-type {
+    padding-top: 10px;
+}
+
 .row {
     display: grid;
     grid-template-columns: 2fr 4fr 3fr;
     width: 100%;
-    padding: 5px 0;
+    padding: 15px 0;
 }
 
 .rank {
@@ -109,11 +113,11 @@ hr {
     background-color: rgba(0, 0, 0, 0.523);
     border: none;
     margin: 0;
-    margin: 10px 0;
 }
 
 .gold-text {
     color: rgb(255, 217, 0);
+    animation: pulse-gold 5s infinite;
 }
 
 .silver-text {
@@ -121,7 +125,7 @@ hr {
 }
 
 .copper-text {
-    color: #ffa938;
+    color: #ff9100;
 }
 
 .copper-text,
@@ -134,7 +138,19 @@ hr {
     position: sticky;
     top: 0;
     position: relative;
+    backdrop-filter: blur(4px);
+    font-weight: bold;
+    color: rgb(0, 47, 255);
+}
 
+.sticky span {
+    animation: pulse-self 5s infinite;
+}
+
+@keyframes pulse-self {
+    50% {
+        color: rgb(0, 7, 39);
+    }
 }
 
 /* Make the container of the sticky row also sticky */
