@@ -65,6 +65,10 @@ import nuages from '@/assets/jeu-dino/nuages.png'
 import herbe from '@/assets/jeu-dino/herbe.png'
 import FR from '@/assets/jeu-dino/FR.png'
 
+import applause from '@/assets/jeu-dino/applause.mp3'
+
+const applauseSound = ref(null)
+
 // Constants
 const TIME_LIMIT = 60
 const NUMBER_ORDER = ['12', '34', '56', '78', '9', '11', '11', '12', '13', '14']
@@ -133,7 +137,6 @@ const startGameTimer = () => {
 
 // Pause management
 const handlePause = () => {
-  console.log('Mise en pause');
   isGamePaused.value = true;
   remainingTimeBeforePause.value = gameTime.value;
   clearInterval(gameTimer.value);
@@ -145,7 +148,6 @@ const handlePause = () => {
 };
 
 const handleUnpause = () => {
-  console.log('Reprise du jeu');
   isGamePaused.value = false;
   gameTime.value = remainingTimeBeforePause.value;
   startGameTimer(); // Redémarrez le timer principal
@@ -160,7 +162,6 @@ const handleUnpause = () => {
 };
 
 const handleRetry = () => {
-    console.log('handleRetry called');
     try {
         clearInterval(gameTimer.value);
         resetGame();
@@ -172,20 +173,17 @@ const handleRetry = () => {
         
         initGame();
     } catch (error) {
-        console.error('Error during retry:', error);
         location.reload();
     }
 }
 
 const handleLeave = () => {
-    console.log('handleLeave called');
   clearInterval(gameTimer.value)
   router.push('home')
 }
 
 
 const resetGame = () => {
-    console.log('resetGame called');
     clearInterval(gameTimer.value)
     gameTime.value = TIME_LIMIT
     isGamePaused.value = false
@@ -203,7 +201,6 @@ const resetGame = () => {
 
 // Phaser game functions
 const preload = function() {
-    console.log('preload called');
   this.load.image('background', background)
   this.load.image('dino', dinoImage)
   this.load.image('cactus1', cactus1)
@@ -225,11 +222,10 @@ const preload = function() {
   this.load.image('number78', number78)
   this.load.audio('ambiance', ambiance)
   this.load.audio('saut', saut)
+  this.load.audio('applause', applause)
 }
 
-const create = function() {
-  console.log('create called - initializing game scene');
-  
+const create = function() {  
   // Nettoyage du timer existant
   if (gameTimer.value) {
     clearInterval(gameTimer.value);
@@ -258,13 +254,16 @@ const create = function() {
 
   
   // Démarrer le timer seulement après un court délai
-    if (!gameTimer.value && !isGamePaused.value && !gameOver.value) {
-      console.log('Starting game timer from create');
-      startGameTimer();
-    }
-    this.time.delayedCall(2000, () => { // Délai de 2s avant le premier spawn
-        spawnNumber.call(this);
-    }, [], this);
+  if (!gameTimer.value && !isGamePaused.value && !gameOver.value) {
+    startGameTimer();
+  }
+  this.time.delayedCall(2000, () => { // Délai de 2s avant le premier spawn
+      spawnNumber.call(this);
+  }, [], this);
+
+  if (this.sound && this.sound.get('applause')) {
+    this.sound.get('applause').setVolume(volumes.effet_sonore || 1.0);
+  }
 }
 
 const update = function() {
@@ -280,12 +279,9 @@ const update = function() {
 
 
 const triggerDefeat = (reason) => {
-  console.log('triggerDefeat called');
-  console.log('Déclenchement de la défaite, raison:', reason) // Debug
   clearInterval(gameTimer.value);
   gameTimer.value = null;
   if (gameOver.value) {
-    console.log('GameOver déjà déclenché, on ignore')
     return
   }
 
@@ -311,12 +307,10 @@ const triggerDefeat = (reason) => {
     scene.isGameOver = true
     
     if (scene.obstacles) {
-      console.log('Arrêt des obstacles')
       scene.obstacles.getChildren().forEach(obstacle => obstacle.setVelocity(0, 0))
     }
     
     if (scene.numbers) {
-      console.log('Arrêt des nombres')
       scene.numbers.getChildren().forEach(number => number.setVelocity(0, 0))
     }
   } else {
@@ -326,11 +320,9 @@ const triggerDefeat = (reason) => {
 
 
 const triggerVictory = () => {
-  console.log('triggerVictory called');
   clearInterval(gameTimer.value);
   gameTimer.value = null;
   if (gameOver.value || gameWon.value) {
-    console.log('Victoire déjà déclenchée, on ignore');
     return;
   }
   
@@ -339,6 +331,17 @@ const triggerVictory = () => {
   score.value += SCORE_VALUES.VICTORY_BONUS + timeBonus;
   score.value = Math.min(score.value, 1000);
   
+  // Jouer le son d'applaudissement
+  if (game.value.instance && game.value.scene) {
+    const scene = game.value.scene;
+    if (scene.sound && !scene.sound.locked) {
+      if (!scene.sound.get('applause')) {
+        scene.sound.add('applause', applause);
+      }
+      scene.sound.play('applause');
+    }
+  }
+
   // Vérification de la scène Phaser
   if (game.value.instance && game.value.scene) {
     const scene = game.value.scene;
@@ -346,12 +349,10 @@ const triggerVictory = () => {
     scene.isGameOver = true;
     
     if (scene.obstacles) {
-      console.log('Arrêt des obstacles');
       scene.obstacles.getChildren().forEach(obstacle => obstacle.setVelocity(0, 0));
     }
     
     if (scene.numbers) {
-      console.log('Arrêt des nombres');
       scene.numbers.getChildren().forEach(number => number.setVelocity(0, 0));
     }
   } else {
@@ -658,7 +659,6 @@ function collectNumber(dino, number) {
 }
 
 function handleGameCompletion(number) {
-  console.log('handleGameCompletion called');
   const numberValue = number.texture.key.replace('number', '')
   const numberSprite = this.add.image(
     this.nextNumberX, 
@@ -686,7 +686,6 @@ function handleNumberCollection(number) {
 
   const numberValue = number.texture.key.replace('number', '')
   collectedNumbers.push(numberValue)
-  console.log('handleNumberCollection - variables en entrée :', { numberValue, collectedNumbers });
   
   const numberSprite = this.add.image(
     this.nextNumberX, 
@@ -745,7 +744,6 @@ function missedNumber() {
 
 
 const endGame = () => {
-    console.log('endGame called');
     clearInterval(gameTimer.value);
     gameTimer.value = null;
     ibanCompleted.value = true;
@@ -771,9 +769,7 @@ onBeforeUnmount(() => {
 });
 
 const initGame = () => {
-    console.log('initGame called');
   // Détruire l'ancien jeu s'il existe
-
   game.value.instance = new Phaser.Game({
     type: Phaser.AUTO,
     scale: {

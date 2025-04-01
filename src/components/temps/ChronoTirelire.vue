@@ -39,7 +39,7 @@ div {
     font-weight: bold;
     background-color: rgba(255, 255, 255, 0.5);
     backdrop-filter: blur(4px);
-    padding: 5px 20px;
+    padding: 5px 5px;
     border-radius: 10px;
     color: rgb(52, 52, 52);
 }

@@ -22,6 +22,10 @@ import { ref, computed } from 'vue';
 import ButtonMenu from './buttons/ButtonMenu.vue';
 import BlurFilter from './BlurFilter.vue';
 import { useRouter } from 'vue-router';
+import ambiance from '@/assets/sons/musiques/ambiance/chill.mp3'
+import { useMusic } from '@/composable/volumes';
+
+const { switchAudio } = useMusic();
 
 const router = useRouter()
 
@@ -57,6 +61,7 @@ const handleUnpause = () => {
 }
 
 const handleLeave = () => {
+    switchAudio(ambiance)
     emit('leave')
     router.push('home')
 }
