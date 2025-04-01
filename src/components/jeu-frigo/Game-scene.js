@@ -185,6 +185,9 @@ export default class GameScene extends Phaser.Scene {
             callback: () => this.launchFood()
         });
 
+        // Émettre le score initial
+        this.events.emit('scoreUpdate', this.score);
+
         // Afficher le score
         this.scoreText = this.add.text(10, 10, 'Score: 0', { 
             fontFamily: 'Arial', 
@@ -192,6 +195,8 @@ export default class GameScene extends Phaser.Scene {
             fill: '#ffffff' 
         });
         this.scoreText.setDepth(20);
+
+
     }
 
     startCut(pointer) {
@@ -286,6 +291,7 @@ export default class GameScene extends Phaser.Scene {
     }
 
     launchFood() {
+
         const foodType = Phaser.Utils.Array.GetRandom(this.foodTypes);
         const x = Phaser.Math.Between(100, 700); // Position aléatoire en X
         const food = this.foods.create(x, 600, foodType); // Création à hauteur de 600px
