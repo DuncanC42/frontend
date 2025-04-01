@@ -6,38 +6,52 @@ import { useInfiniteScroll } from '@vueuse/core'
 
 const list = ref(null)
 
-let counter = 1
-
-
 const props = defineProps({
     route: {
         type: String,
         required: true,
-    },
-    myPlace: {
-        type: Number,
-        required: true,
     }
 })
 
+let page = 1
+const myPlace = ref(0)
+const isLoading = ref(false)
+
 useInfiniteScroll(list, () => {
-    classement.value.push({
-        place: counter,
-        pseudo: 'Player ' + counter,
-        points: Math.round(2000 / counter),
-    })
-    counter++
+    if (isLoading.value) return
+
+    isLoading.value = true
+    fetchBackend(`api/leaderboard/${props.route}`, 'GET', null, { limit: 10, page: page })
+        .then(response => {
+            if (response.status === 200) {
+                const data = response.data
+                if (data.leaderboard && data.leaderboard.players && data.leaderboard.players.length > 0) {
+                    classement.value.push(...data.leaderboard.players)
+                    page++
+                }
+                if (data.currentPlayer) {
+                    myPlace.value = data.currentPlayer.position
+                }
+            } else {
+                console.error('Error fetching leaderboard:', response.statusText)
+            }
+        })
+        .catch(error => {
+            console.error('Failed to fetch leaderboard:', error)
+        })
+        .finally(() => {
+            isLoading.value = false
+        })
 },
     {
         distance: 1,
         canLoadMore: () => {
-            return true
+            return !isLoading.value
         },
     }
 )
 
 const classement = ref([])
-
 
 </script>
 
@@ -45,15 +59,15 @@ const classement = ref([])
     <div class="leaderboard" ref="list">
         <div v-for="(score, index) in classement" :key="index" class="row-container">
 
-            <hr v-if="score.place - 1 == myPlace" />
+            <hr v-if="index == myPlace" />
             <div class="row"
-                :class="{ 'gold-text': score.place === 1, 'silver-text': score.place === 2, 'copper-text': score.place === 3, 'sticky': myPlace == score.place }">
-                <span>{{ score.place }}</span>
-                <span>{{ score.pseudo }}</span>
-                <span>{{ score.points }} pts</span>
+                :class="{ 'gold-text': index === 0, 'silver-text': index === 1, 'copper-text': index === 2, 'sticky': index > 2 && myPlace == index + 1 }">
+                <span>{{ index + 1 }}</span>
+                <span>{{ score.username }}</span>
+                <span>{{ score.score }} pts</span>
             </div>
             <!-- Only add hr if not the last item -->
-            <hr v-if="index !== classement.length - 1 && score.place != myPlace" />
+            <hr v-if="index !== classement.length - 1 && index + 1 != myPlace" />
         </div>
     </div>
 
@@ -138,29 +152,26 @@ hr {
     position: sticky;
     top: 0;
     position: relative;
-    backdrop-filter: blur(4px);
+    backdrop-filter: blur(10px);
     font-weight: bold;
-    color: rgb(0, 68, 24);
 }
 
 .sticky span {
-    animation: pulse-self 3s linear infinite;
+    color: #0a004e;
 }
 
-.gold-text, .silver-text, .copper-text, .sticky>span {
+.gold-text,
+.silver-text,
+.copper-text,
+.sticky>span {
     animation: ping 1s linear infinite;
-}
-
-@keyframes pulse-self {
-    50% {
-        color: rgb(24, 0, 54);
-        }
 }
 
 @keyframes ping {
 
     50% {
-        scale: 1.02;    }
+        scale: 1.02;
+    }
 
 }
 

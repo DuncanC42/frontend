@@ -6,6 +6,7 @@ import appartement from '@/assets/images/Appartement.png';
 import BlurFilter from '@/components/BlurFilter.vue';
 import ButtonNextPrevious from '@/components/buttons/ButtonNextPrevious.vue';
 import TableauLeaderboard from '@/components/TableauLeaderboard.vue';
+import { ref } from 'vue';
 
 
 const props = defineProps({
@@ -23,6 +24,18 @@ const props = defineProps({
     }
 })
 
+const page = ref(2)
+
+const title_ref = {
+    1: 'Général',
+    2: 'Carte vitale',
+    3: 'C2S',
+    4: 'RIB',
+    5: 'Examen de prévention',
+    6: 'M\'T dents'
+}
+
+
 </script>
 
 <template>
@@ -30,9 +43,9 @@ const props = defineProps({
         <div class="content">
             <div class="title">
                 <img :src="podium" :alt="podium">
-                <h2>{{ title }}</h2>
+                <h2>{{ title_ref[page] }}</h2>
             </div>
-            <TableauLeaderboard route="general" my-place="26"></TableauLeaderboard>
+            <TableauLeaderboard route="taquin"></TableauLeaderboard>
             <div class="pagination">
                 <ButtonNextPrevious :class="page === 1 ? 'hidden' : ''" :classArray="['previous']" />
                 <div class="dot" v-for="i in 6" :id="i + 1" :class="i === page ? 'lighter-dot' : ''"></div>
