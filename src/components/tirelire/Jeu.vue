@@ -4,6 +4,19 @@
         <PagePause :time="timeElapsed" @pause="pauseGame" @unpause="unpauseGame" @leave="handleLeave"
             @retry="handleRetry">
         </PagePause>
+        <Bravo 
+            v-if="gameWon" 
+            :score="finalScore" 
+            message="La complémentaire santé solidaire (C2S) est une aide pour payer ses dépenses de santé, si tes ressources sont faibles. Avec la C2S tu ne paies pas le médecin, ni tes médicaments en pharmacie. La plupart des lunettes et des soins dentaires sont pris en charge. Tu peux faire une simulation sur ameli.fr pour savoir si tu y as droit !"
+            @retry="handleRetry" 
+            @quit="handleLeave" 
+        />
+        <Dommage 
+            v-if="gameLost" 
+            message="La complémentaire santé solidaire (C2S) est une aide pour payer ses dépenses de santé, si tes ressources sont faibles. Avec la C2S tu ne paies pas le médecin, ni tes médicaments en pharmacie. La plupart des lunettes et des soins dentaires sont pris en charge. Tu peux faire une simulation sur ameli.fr pour savoir si tu y as droit !"
+            @retry="handleRetry" 
+            @quit="handleLeave" 
+        />
     </div>
 </template>
 
@@ -11,33 +24,35 @@
 import { onMounted, ref, watch } from 'vue';
 import Phaser from 'phaser';
 import { useMusic } from '@/composable/volumes';
-import { preloadAssets, assets } from '@/composable/tirelire/assetsLoader'; // Import the centralized asset loader
+import { preloadAssets, assets } from '@/composable/tirelire/assetsLoader';
 import { volumeStore } from '@/stores/volume';
 import ambiance from '@/assets/tirelire/sons/ambiance.mp3';
 import chill from '@/assets/sons/musiques/ambiance/chill.mp3';
 import Chrono from '@/components/temps/ChronoTirelire.vue';
 import PagePause from '../PagePause.vue';
+import Bravo from '@/components/Bravo.vue';
+import Dommage from '@/components/Dommage.vue';
 
 const gameContainer = ref(null);
 const timeElapsed = ref(0);
+const gameWon = ref(false);
+const gameLost = ref(false);
+const score = ref(0);
+const finalScore = ref(0);
+const requiredPictograms = 20;
+const maxTime = 300;
 
-const { switchAudio, pause, resume } = useMusic();
+const { switchAudio, pause } = useMusic();
 switchAudio(ambiance);
 
-// Declare game as a global variable so it can be accessed by pauseGame and unpauseGame
 let game;
 
-// Define pauseGame and unpauseGame functions
 function pauseGame() {
-    if (game) {
-        game.pause();
-    }
+    if (game) game.pause();
 }
 
 function unpauseGame() {
-    if (game) {
-        game.resume();
-    }
+    if (game) game.resume();
 }
 
 const handleLeave = () => {
@@ -45,37 +60,40 @@ const handleLeave = () => {
 }
 
 const handleRetry = () => {
+    resetGameState();
     if (game) {
-        timeElapsed.value = 0
-        game.destroy(true)
-        initializeGame()
+        game.destroy(true);
+        initializeGame();
     }
 }
 
+const resetGameState = () => {
+    timeElapsed.value = 0;
+    score.value = 0;
+    finalScore.value = 0;
+    gameWon.value = false;
+    gameLost.value = false;
+}
+
 const initializeGame = () => {
-    // Reference resolution (base resolution)
     const referenceWidth = 4510;
     const referenceHeight = 8014;
-
-    // Aspect ratio of the game (width / height)
     const aspectRatio = referenceWidth / referenceHeight;
 
-    // Function to calculate canvas dimensions
     const calculateCanvasSize = () => {
-        const screenWidth = window.innerWidth; // Always use 100vw for width
-        const screenHeight = screenWidth / aspectRatio; // Calculate height based on aspect ratio
+        const screenWidth = window.innerWidth;
+        const screenHeight = screenWidth / aspectRatio;
         return { width: screenWidth, height: screenHeight };
     };
 
-    // Initial canvas size
     const { width: initialWidth, height: initialHeight } = calculateCanvasSize();
 
-    // Calculate scaling factors
     const getScalingFactors = (currentWidth, currentHeight) => {
-        const widthScale = currentWidth / referenceWidth * 2.2;
-        const heightScale = currentHeight / referenceHeight * 2.2;
-        const bgHeight = currentHeight / referenceHeight;
-        return { widthScale, heightScale, bgHeight };
+        return {
+            widthScale: currentWidth / referenceWidth * 2.2,
+            heightScale: currentHeight / referenceHeight * 2.2,
+            bgHeight: currentHeight / referenceHeight
+        };
     };
 
     const config = {
@@ -84,60 +102,66 @@ const initializeGame = () => {
         height: initialHeight,
         parent: gameContainer.value,
         scale: {
-            mode: Phaser.Scale.NONE, // Disable automatic scaling
-            resizeInterval: 0, // Prevent frequent resizing
+            mode: Phaser.Scale.NONE,
+            resizeInterval: 0,
         },
         physics: {
             default: 'arcade',
             arcade: {
-                gravity: { y: initialHeight },
+                gravity: { y: initialHeight * 0.5 },
                 debug: false,
             },
         },
         scene: {
             preload,
             create,
+            update,
         },
     };
 
-    // Initialize the game and assign it to the global variable
     game = new Phaser.Game(config);
     let scalingFactors = getScalingFactors(initialWidth, initialHeight);
 
-    // Handle window resize events
     const handleResize = () => {
         const { width, height } = calculateCanvasSize();
-        game.scale.resize(width, height); // Resize the game canvas
-        scalingFactors = getScalingFactors(width, height); // Update scaling factors
+        game.scale.resize(width, height);
+        scalingFactors = getScalingFactors(width, height);
     };
 
     window.addEventListener('resize', handleResize);
 
     let tirelire;
     let isDragging = false;
-    let score = 0;
-    let collectedPictograms = {};
     let gameOver = false;
     let gauge;
     let goodSoundEffect;
     let wrongSoundEffect;
     let clapSoundEffect;
     let isGameStarted = false;
+    let fallingObjects = [];
+    let spawnInterval = 1000;
+    let difficultyTimer;
+    let timeLimitReached = false;
+    let goodPictogramsCollected = 0;
+    let badPictogramsCollected = 0;
 
     function preload() {
-        preloadAssets(this); // Use the centralized asset loader
+        preloadAssets(this);
     }
 
     function create() {
+        goodPictogramsCollected = 0; // Réinitialisation du compteur
         setUpBackground.call(this);
 
-        const startTextBg = this.add.rectangle(0, 0, game.config.width, game.config.height, 0x000000).setOrigin(0).setAlpha(0.4); // Full-screen background
+        const startTextBg = this.add.rectangle(0, 0, game.config.width, game.config.height, 0x000000)
+            .setOrigin(0).setAlpha(0.4);
         const startText = this.add.text(game.config.width / 2, game.config.height / 2, 'Appuyer pour démarrer !', {
             fontSize: `${150 * scalingFactors.widthScale}px`,
             fontFamily: '\'Source Sans Pro\', sans-serif',
             fontWeight: 'bolder',
             fill: '#fff',
         }).setOrigin(0.5);
+        
         this.input.once('pointerdown', () => {
             startText.destroy();
             startTextBg.destroy();
@@ -145,6 +169,7 @@ const initializeGame = () => {
             setUpTirelire.call(this);
             setUpGauge.call(this);
             setUpTimer.call(this);
+            startDifficultyIncrease.call(this);
             spawnFallingObjects.call(this);
 
             goodSoundEffect = this.sound.add('goodSound');
@@ -167,6 +192,15 @@ const initializeGame = () => {
         });
     }
 
+    function update() {
+        if (isGameStarted && !gameOver) {
+            if (timeElapsed.value >= maxTime && !timeLimitReached) {
+                timeLimitReached = true;
+                endGame(false);
+            }
+        }
+    }
+
     function setUpBackground() {
         const bg = this.add.image(game.config.width / 2, game.config.height / 2, 'background');
         bg.setScale(scalingFactors.widthScale, scalingFactors.bgHeight);
@@ -175,7 +209,7 @@ const initializeGame = () => {
     function setUpTirelire() {
         const tirelireYPosition = game.config.height - 700 * scalingFactors.heightScale;
         tirelire = this.physics.add.sprite(game.config.width / 2, tirelireYPosition, 'tirelire');
-        tirelire.setScale(0.07 * scalingFactors.widthScale); // Scale the sprite
+        tirelire.setScale(0.07 * scalingFactors.widthScale);
         const tirelireBody = tirelire.body;
         tirelireBody.setSize(tirelire.displayWidth, tirelire.displayHeight * 0.7);
         tirelire.body.setCollideWorldBounds(true);
@@ -185,23 +219,17 @@ const initializeGame = () => {
 
     function setUpGauge() {
         gauge = this.add.image(150 * scalingFactors.widthScale, 550 * scalingFactors.heightScale, 'jauge0');
-        gauge.setScale(0.15 * scalingFactors.widthScale); // Scale the gauge
+        gauge.setScale(0.15 * scalingFactors.widthScale);
     }
 
     function updateGauge() {
-        let gaugeKey;
-        if (score === 0) {
-            gaugeKey = 'jauge0';
-        } else if (score === 1) {
-            gaugeKey = 'jauge1';
-        } else if (score === 2 || score === 3) {
-            gaugeKey = 'jauge2';
-        } else if (score === 4 || score === 5) {
-            gaugeKey = 'jauge3';
-        } else {
-            gaugeKey = 'jauge4';
+        // Calcul brut du niveau de jauge (0 à 4)
+        const gaugeLevel = Math.min(4, Math.floor(goodPictogramsCollected / (requiredPictograms / 5)));
+
+        if (gauge && gauge.texture.key !== `jauge${gaugeLevel}`) {
+            gauge.setTexture(`jauge${gaugeLevel}`);
+            gauge.setScale(0.15 * scalingFactors.widthScale);
         }
-        gauge.setTexture(gaugeKey);
     }
 
     function setUpTimer() {
@@ -209,16 +237,27 @@ const initializeGame = () => {
             delay: 1000,
             loop: true,
             callback: () => {
-                if (!gameOver) {
+                if (!gameOver && isGameStarted) {
                     timeElapsed.value += 1;
                 }
             },
         });
     }
 
+    function startDifficultyIncrease() {
+        difficultyTimer = this.time.addEvent({
+            delay: 10000,
+            loop: true,
+            callback: () => {
+                spawnInterval = Math.max(300, spawnInterval - 100);
+            }
+        });
+    }
+
     function makeTirelireDraggable(tirelire) {
         tirelire.setInteractive();
         let tirelire_size = tirelire.displayWidth;
+        
         this.input.on('pointerdown', () => {
             isDragging = true;
         });
@@ -236,12 +275,7 @@ const initializeGame = () => {
         });
 
         this.input.on('pointerout', (pointer) => {
-            if (
-                pointer.x < 0 ||
-                pointer.x > game.config.width ||
-                pointer.y < 0 ||
-                pointer.y > game.config.height
-            ) {
+            if (pointer.x < 0 || pointer.x > game.config.width || pointer.y < 0 || pointer.y > game.config.height) {
                 isDragging = false;
             }
         });
@@ -249,10 +283,14 @@ const initializeGame = () => {
 
     function spawnFallingObjects() {
         this.time.addEvent({
-            delay: 1000,
+            delay: spawnInterval,
             loop: true,
             callback: () => {
-                const isGood = Phaser.Math.Between(0, 1) === 1;
+                if (gameOver) return;
+                
+                const badProbability = Math.min(0.7, 0.3 + (timeElapsed.value / maxTime) * 0.4);
+                const isGood = Phaser.Math.FloatBetween(0, 1) > badProbability;
+                
                 let pictogramKey;
                 if (isGood) {
                     const randomIndex = Phaser.Math.Between(0, assets.goodPictograms.length - 1);
@@ -262,50 +300,79 @@ const initializeGame = () => {
                 }
 
                 const fallingObject = this.physics.add.sprite(0, 0, pictogramKey);
-                fallingObject.setScale(0.7 * scalingFactors.widthScale); // Scale the falling object
+                fallingObject.setScale(0.7 * scalingFactors.widthScale);
                 const pictogramWidth = fallingObject.displayWidth;
-                const randomX = Phaser.Math.Between(pictogramWidth / 2, game.config.width - pictogramWidth / 2);
+                
+                // Position aléatoire mais pas trop près des bords
+                const margin = pictogramWidth * 1.5;
+                const randomX = Phaser.Math.Between(
+                    margin, 
+                    game.config.width - margin
+                );
+                
                 fallingObject.setPosition(randomX, 0);
-                fallingObject.setVelocityY(Phaser.Math.Between(50, 100));
+                
+                const baseSpeed = 50 + (timeElapsed.value / maxTime) * 150;
+                fallingObject.setVelocityY(Phaser.Math.Between(baseSpeed, baseSpeed + 50));
                 fallingObject.isGood = isGood;
 
                 this.physics.add.overlap(tirelire, fallingObject, collectObject, null, this);
+                fallingObjects.push(fallingObject);
             },
         });
     }
 
     function collectObject(tirelire, fallingObject) {
         fallingObject.disableBody(true, true);
+        
         if (fallingObject.isGood) {
-            const pictogramKey = fallingObject.texture.key;
-            if (!collectedPictograms[pictogramKey]) {
-                collectedPictograms[pictogramKey] = true;
-                score += 1;
-                updateGauge.call(this);
-                goodSoundEffect.play();
+            goodPictogramsCollected++;
+            score.value = goodPictogramsCollected;
+            
+            // Mise à jour immédiate de la jauge
+            updateGauge.call(this);
+            goodSoundEffect.play();
 
-                if (Object.keys(collectedPictograms).length === assets.goodPictograms.length) {
-                    pause();
-                    gameOver = true;
-                    this.add.rectangle(0, 0, game.config.width, game.config.height, 0x000000).setOrigin(0).setAlpha(0.4); // Full-screen background
-                    this.add.text(game.config.width / 2, game.config.height / 2, 'Jeu terminé !', {
-                        fontSize: `${150 * scalingFactors.widthScale}px`,
-                        fontFamily: '\'Source Sans Pro\', sans-serif',
-                        fontWeight: 'bolder',
-                        fill: '#fff',
-                    }).setOrigin(0.5);
-                    clapSoundEffect.play();
-                    setTimeout(() => switchAudio(chill), 4500);
-                }
+            if (goodPictogramsCollected >= requiredPictograms) {
+                calculateFinalScore();
+                endGame(true);
             }
         } else {
-            timeElapsed.value += 10;
+            badPictogramsCollected++;
+            const penalty = 10 + Math.floor(timeElapsed.value / maxTime * 5);
+            timeElapsed.value += penalty;
             wrongSoundEffect.play();
         }
     }
+
+    function calculateFinalScore() {
+        // 1000 points maximum
+        const timePenalty = Math.min(400, timeElapsed.value * 2); // Pénalité temporelle
+        finalScore.value = 1000 - timePenalty;
+    }
+
+    function endGame(isVictory) {
+        gameOver = true;
+        pause();
+        
+        if (difficultyTimer) difficultyTimer.destroy();
+        
+        fallingObjects.forEach(obj => obj.destroy());
+        fallingObjects = [];
+        
+        if (isVictory) {
+            clapSoundEffect.play();
+            gameWon.value = true;
+        } else {
+            calculateFinalScore();
+            gameLost.value = true;
+        }
+        
+        setTimeout(() => switchAudio(chill), 4500);
+    }
 }
 
-onMounted(initializeGame)
+onMounted(initializeGame);
 </script>
 
 <style scoped>
@@ -315,5 +382,6 @@ onMounted(initializeGame)
     height: 100vh;
     margin: 0 auto;
     background-color: lightgray;
+    overflow: hidden;
 }
 </style>

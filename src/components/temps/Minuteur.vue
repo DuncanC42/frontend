@@ -7,13 +7,13 @@
     {{ formattedTime }}
     <font-awesome-icon :icon="['fas', 'stopwatch']" :class="currentColor" />
   </div>
-  <div v-else class="message">
-    <h1>🚀 Temps écoulé !</h1>
-  </div>
 </template>
 
 <script setup>
 import {computed, onMounted, onUnmounted} from 'vue';
+import Dommage from '@/components/Dommage.vue'
+
+const emit = defineEmits(['timeup']);
 
 // Recevoir la couleur en prop
 const props = defineProps({
@@ -47,6 +47,7 @@ const startTimer = () => {
       timeLeft.value--;
     } else {
       clearInterval(timer);
+      emit('timeup');
     }
   }, 1000);
 }
@@ -58,10 +59,17 @@ const pauseTimer = () => {
   }
 }
 
-// Exposer les méthodes pour le parent
+const stopTimer = () => {
+  if (timer) {
+    clearInterval(timer);
+    timer = null;
+  }
+}
+
 defineExpose({
   startTimer,
-  pauseTimer
+  pauseTimer,
+  stopTimer // Ajoutez cette ligne
 });
 
 onMounted(startTimer);
@@ -71,20 +79,28 @@ onUnmounted(() => {
     clearInterval(timer);
   }
 });
+
+
 </script>
   
 <style scoped>
+
+    .dommage-overlay {
+      border: 3px solid red; /* Temporaire pour le débogage */
+      background-color: rgba(255,0,0,0.3); /* Temporaire */
+    }
+
     .minuteur {
-        font-size: 32px;
-        text-align: center;
-        background-color: #c4c4c448;
-        border-radius: 10px;
-        margin: 0 150px;
-        filter: drop-shadow(0px 4px 4px #00000040);
-        display: flex;
-        flex-direction: row;
-        gap: 5px;
-        align-items: center;
+      font-size: 30px;
+      text-align: center;
+      background-color: #c4c4c448;
+      border-radius: 10px;
+      margin: 0 150px;
+      filter: drop-shadow(0px 4px 4px #00000040);
+      display: flex;
+      flex-direction: row;
+      gap: 5px;
+      align-items: center;
     }
   
     /* Couleurs dynamiques */
