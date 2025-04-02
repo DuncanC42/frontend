@@ -12,7 +12,7 @@ const page = ref(2);
 const scrollContainer = ref(null);
 
 const title_ref = {
-    1: { title: 'Général', route: '' },
+    1: { title: 'Général', route: 'general' },
     2: { title: 'Carte vitale', route: 'taquin' },
     3: { title: 'C2S', route: 'tirelire' },
     4: { title: 'RIB', route: 'dino' },
