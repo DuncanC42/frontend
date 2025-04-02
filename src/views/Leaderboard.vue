@@ -8,7 +8,7 @@ import ButtonNextPrevious from '@/components/buttons/ButtonNextPrevious.vue';
 import TableauLeaderboard from '@/components/TableauLeaderboard.vue';
 import { ref, onMounted } from 'vue';
 
-const page = ref(2);
+const page = ref(1);
 const scrollContainer = ref(null);
 
 const title_ref = {

@@ -1,6 +1,6 @@
 <script setup>
 
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { fetchBackend } from '@/composable/fetchBackend';
 import { useInfiniteScroll } from '@vueuse/core'
 
@@ -14,9 +14,9 @@ const props = defineProps({
 })
 
 let page = 1
-const myPlace = ref(0)
 const isLoading = ref(false)
 const classement = ref([])
+const myPlacement = ref(null)
 
 // Function to fetch leaderboard data
 const fetchLeaderboardData = async() => {
@@ -32,7 +32,7 @@ const fetchLeaderboardData = async() => {
                     page++
                 }
                 if (data.currentPlayer) {
-                    myPlace.value = data.currentPlayer.position
+                    myPlacement.value = data.currentPlayer
                 }
             } else {
                 console.error('Error fetching leaderboard:', response.statusText)
@@ -62,21 +62,33 @@ useInfiniteScroll(list, () => {
     }
 )
 
+const isUserLoaded = computed(() => {
+    return classement.value.some(score => score.position == myPlacement.value.position)
+})
+
 </script>
 
 <template>
     <div class="leaderboard" ref="list">
         <div v-for="(score, index) in classement" :key="index" class="row-container">
 
-            <hr v-if="index == myPlace" />
+            <hr v-if="index == myPlacement.position" />
             <div class="row"
-                :class="{ 'gold-text': index === 0, 'silver-text': index === 1, 'copper-text': index === 2, 'sticky': index > 2 && myPlace == index + 1 }">
+                :class="{ 'gold-text': index === 0, 'silver-text': index === 1, 'copper-text': index === 2, 'sticky': index > 2 && myPlacement.position == index + 1 }">
                 <span>{{ index + 1 }}</span>
                 <span>{{ score.username }}</span>
                 <span>{{ score.score }} pts</span>
             </div>
             <!-- Only add hr if not the last item -->
-            <hr v-if="index !== classement.length - 1 && index + 1 != myPlace" />
+            <hr v-if="(index !== classement.length - 1 && index + 1 != myPlacement.position) || (!isUserLoaded && index == classement.length - 1)" />
+        </div>
+        <div class="row-container" v-if="!isUserLoaded && myPlacement?.position">
+            <div class="row sticky">
+                <span>{{ myPlacement.position }}</span>
+                <span>{{ myPlacement.username }}</span>
+                <span>{{ myPlacement.score }} pts</span>
+            </div>
+
         </div>
     </div>
 
