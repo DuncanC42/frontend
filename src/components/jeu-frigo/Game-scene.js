@@ -1,5 +1,4 @@
-import Phaser from "phaser";
-
+    import Phaser from "phaser";
 
     import epeeSound from '@/assets/fruit-ninja/sons/Epée.mp3'
     import splashSound from '@/assets/fruit-ninja/sons/Splash.mp3'
@@ -74,6 +73,9 @@ import Phaser from "phaser";
     constructor() {
         super({ key: "GameScene" });
         this.score = 0;
+        this.trailPoints = [];
+        this.trailGraphics = null;
+        this.currentTime = Date.now();
     }
 
     preload() {
@@ -81,21 +83,11 @@ import Phaser from "phaser";
         // Chargement des sons
         this.load.audio("epee", epeeSound);
         this.load.audio("splash", splashSound);
-
-       // Effets de coupe
-       this.load.image("coupe-diagonale-droite", coupeDiagonaleDroite);
-       this.load.image("coupe-diagonale-gauche", coupeDiagonaleGauche);
-       this.load.image("coupe-horizontale", coupeHorizontale);
-       this.load.image("coupe-verticale", coupeVerticale);
        
        // Frites
        this.load.image("frite1", frite1);
        this.load.image("frite2", frite2);
        this.load.image("frite3", frite3);
-       this.load.image("frite4", frite4);
-       this.load.image("frite5", frite5);
-       this.load.image("frite6", frite6);
-       this.load.image("frites", frites);
        this.load.image("paquet-frites", paquetFrites);
        
        // Hamburger
@@ -132,7 +124,6 @@ import Phaser from "phaser";
         this.load.image("soda2", soda2);
         this.load.image("soda-casse-1", sodaCasse1);
         this.load.image("soda-casse-2", sodaCasse2);
-        this.load.image("eau", eau);
         
         // Fruits
         this.load.image("pomme1", pomme1);
@@ -161,13 +152,11 @@ import Phaser from "phaser";
         this.foods = this.physics.add.group();
 
         this.foodTypes = [
-            "frite1",
             "frites",
             "hamburger",
             "pizza",
             "kebab",
             "soda1", "soda2",
-            "eau",
             "pomme1", "pomme2",
             "banane",
             "brocoli",
@@ -194,6 +183,8 @@ import Phaser from "phaser";
             callback: () => this.launchFood()
         });
 
+        this.trailGraphics = this.add.graphics();
+
         // Émettre le score initial
         this.events.emit('scoreUpdate', this.score);
 
@@ -214,9 +205,13 @@ import Phaser from "phaser";
 
     startCut(pointer) {
         this.isCutting = true;
-        this.cutLine = this.add.line(0, 0, pointer.x, pointer.y, pointer.x, pointer.y, 0xffffff); // à modifier
-        this.cutLine.setLineWidth(2);
-        this.cutLine.setDepth(15);
+
+        this.trailPoints = [{
+            x: pointer.x,
+            y: pointer.y,
+            time: Date.now() // Ajouter un timestamp pour l'effet de fondu
+        }];
+
         this.cutStartX = pointer.x;
         this.cutStartY = pointer.y;
         this.lastPointerPosition = { x: pointer.x, y: pointer.y };
@@ -228,8 +223,18 @@ import Phaser from "phaser";
 
     updateCut(pointer) {
         if (this.isCutting) {
-            // Mettre à jour la ligne de coupe
-            this.cutLine.setTo(this.cutStartX, this.cutStartY, pointer.x, pointer.y);
+            
+            this.trailPoints.push({
+                x: pointer.x,
+                y: pointer.y,
+                time: Date.now()
+            });
+
+            if (this.trailPoints.length > 15) {
+                this.trailPoints.shift();
+            }
+
+            this.drawTrail();
             
             // Vérifier les collisions avec les aliments
             const dx = pointer.x - this.lastPointerPosition.x;
@@ -243,11 +248,72 @@ import Phaser from "phaser";
         }
     }
 
-    endCut() {
-        if (this.cutLine) {
-            this.cutLine.destroy();
+    drawTrail(){
+        this.trailGraphics.clear();
+
+        if(this.trailPoints.length < 2) return;
+
+        const currrentTime = Date.now();
+
+        for (let thickness = 14; thickness > 0; thickness -= 3) {
+            const color = thickness > 10 ? 0x87CEEB : (thickness > 5 ? 0xADD8E6 : 0xFFFFFF);
+            let alpha = thickness / 14;
+            
+            this.trailGraphics.lineStyle(thickness, color, alpha);
+            
+            // Dessiner une ligne courbe pour un effet plus fluide
+            this.trailGraphics.beginPath();
+            
+            // Commencer au premier point
+            this.trailGraphics.moveTo(this.trailPoints[0].x, this.trailPoints[0].y);
+            
+            // Dessiner à travers tous les points
+            for (let i = 1; i < this.trailPoints.length; i++) {
+                const point = this.trailPoints[i];
+                const timeDiff = this.currentTime - point.time;
+                
+                // Ajuster l'alpha en fonction du temps (points plus anciens plus transparents)
+                const fadeAlpha = Math.max(0, 1 - (timeDiff / 300));
+                
+                if (fadeAlpha > 0) {
+                    this.trailGraphics.lineTo(point.x, point.y);
+                }
+            }
+            
+            this.trailGraphics.strokePath();
         }
+
+        const latestPoints = this.trailPoints.slice(-3);
+        latestPoints.forEach(point => {
+            // Ajouter 2-3 étincelles à chaque point récent
+            for (let i = 0; i < Phaser.Math.Between(1, 3); i++) {
+                const sparkX = point.x + Phaser.Math.Between(-10, 10);
+                const sparkY = point.y + Phaser.Math.Between(-10, 10);
+                const sparkSize = Phaser.Math.FloatBetween(1, 3);
+                
+                this.trailGraphics.fillStyle(0xFFFFFF, Phaser.Math.FloatBetween(0.3, 0.7));
+                this.trailGraphics.fillCircle(sparkX, sparkY, sparkSize);
+            }
+        });
+    
+        this.trailGraphics.setDepth(20);
+    }
+
+    endCut() {
         this.isCutting = false;
+
+        if (this.trailPoints.length > 0) {
+            this.tweens.add({
+                targets: this.trailGraphics,
+                alpha: 0,
+                duration: 300,
+                onComplete: () => {
+                    this.trailGraphics.clear();
+                    this.trailGraphics.alpha = 1;
+                    this.trailPoints = [];
+                }
+            });
+        }
     }
 
     checkFoodCollisions(pointer) {
@@ -267,70 +333,196 @@ import Phaser from "phaser";
     }
 
     cutFood(food, pointer) {
-        // Déterminer le type de coupe en fonction de la direction
+        //Déterminer le type de coupe en fonction de la direction
         const dx = pointer.x - this.lastPointerPosition.x;
         const dy = pointer.y - this.lastPointerPosition.y;
-        let cutType = "coupe-horizontale";
-        
-        if (Math.abs(dx) > Math.abs(dy)) {
-            cutType = "coupe-horizontale";
-        } else if (dx > 0 && dy < 0 || dx < 0 && dy > 0) {
-            cutType = "coupe-diagonale-gauche";
-        } else {
-            cutType = "coupe-diagonale-droite";
-        }
-        
-        // Afficher l'effet de coupe
-        const cutEffect = this.add.image(food.x, food.y, cutType);
-        cutEffect.setScale(0.5);
-        cutEffect.setDepth(5);
-        cutEffect.setAlpha(0.8);
+
+        const angle = Math.atan2(dy, dx);
+        const foodType = food.texture.key;
 
         if (this.splashSound) {
-            this.splashSound.play();
+            this.splashSound.play({
+                volume: Phaser.Math.FloatBetween(0.4, 0.6), 
+                rate: Phaser.Math.FloatBetween(0.9, 1.1)
+            });
         }
-        
-        // Faire disparaître l'effet de coupe après un moment
-        this.tweens.add({
-            targets: cutEffect,
-            alpha: 0,
-            duration: 300,
-            onComplete: () => {
-                cutEffect.destroy();
-            }
+
+        // Créer un effet de particules pour le jus/explosion
+        const particles = this.add.particles(food.x, food.y, {
+            speed: { min: 50, max: 150 },
+            scale: { start: 0.2, end: 0 },
+            lifespan: 600,
+            blendMode: 'ADD',
+            tint: [0xFFFFFF, 0xFFFFAA, 0xFFDDAA]
         });
-        
-        // Désactiver la nourriture coupée
+
+        // Émission brève
+        particles.explode(15);
+
+        this.createFoodPieces(food, foodType, angle);
+
         food.disableBody(true, true);
         
         // Augmenter le score
         this.score += 10;
         this.scoreText.setText('Score: ' + this.score);
+
+        // Afficher un +10 flottant (test)
+        const scorePopup = this.add.text(food.x, food.y - 30, '+10', {
+            fontFamily: 'Segoe UI',
+            fontSize: '24px',
+            fill: '#FFFFFF',
+            stroke: '#000000',
+            strokeThickness: 3
+        });
+        scorePopup.setDepth(15);
+
+        // Animation du score
+        this.tweens.add({
+            targets: scorePopup,
+            y: scorePopup.y - 50,
+            alpha: 0,
+            duration: 800,
+            ease: 'Power1',
+            onComplete: () => {
+                scorePopup.destroy();
+            }
+        });
         
         // Envoyer le nouveau score aux écouteurs
         this.events.emit('scoreUpdate', this.score);
     }
 
+    createFoodPieces(food, foodType, angle) {
+        const pieces = this.getFoodPieces(foodType);
+
+        if (!pieces) return;
+
+        const velocityX = Math.cos(angle) * 200;
+        const velocityY = Math.sin(angle) * 200;
+
+        pieces.forEach((pieceKey, index) => {
+            if (!pieceKey) return;
+            
+            // Créer la pièce
+            const piece = this.physics.add.image(food.x, food.y, pieceKey);
+            piece.setScale(food.scale);
+            piece.setDepth(food.depth);
+            
+            // Direction de la pièce: gauche ou droite
+            const directionX = index === 0 ? -velocityX : velocityX;
+            const directionY = -100 + velocityY * 0.5; // Toujours un peu vers le haut avec un peu d'influence de l'angle
+            
+            // Appliquer la vitesse et la gravité
+            piece.setVelocity(directionX, directionY);
+            piece.setGravityY(600);
+            
+            // Ajouter une rotation basée sur la direction
+            piece.setAngularVelocity((index === 0 ? -1 : 1) * Phaser.Math.Between(90, 180));
+            
+            // Faire disparaître la pièce après un délai
+            this.time.delayedCall(2000, () => {
+                this.tweens.add({
+                    targets: piece,
+                    alpha: 0,
+                    duration: 300,
+                    onComplete: () => piece.destroy()
+                });
+            });
+        });
+    }
+
+    getFoodPieces(foodType) {
+        // Définir les correspondances entre les aliments et leurs pièces
+        const piecesMap = {
+            'hamburger': ['hamburger-pain-dessus', 'hamburger-pain-bas', 'hamburger-steak', 'hamburger-fromage', 'hamburger-salade', 'hamburger-tomate', 'hamburger-oignon-droite', 'hamburger-oignon-gauche'],
+            'kebab': ['kebab-partie-haut', 'kebab-partie-bas'],
+            'banane': ['banane-partie-haut', 'banane-partie-bas'],
+            'brocoli': ['brocoli-partie-haut', 'brocoli-partie-bas'],
+            'carotte': ['carotte-partie-haut', 'carotte-partie-bas'],
+            'pomme1': ['pomme1-gauche', 'pomme1-droite'],
+            'pomme2': ['pomme2-gauche', 'pomme2-droite'],
+            'soda1': ['soda-casse-1'],
+            'soda2': ['soda-casse-2'],
+            'pizza': ['pizza1', 'pizza2'],
+            'frites': ['frite1', 'frite2', 'frites3', 'paquet-frites'],
+        };
+        
+        return piecesMap[foodType];
+    }
+
+    getParticleColor(foodType) {
+        // Définir les correspondances entre les aliments et les couleurs de leurs particules
+        const colorMap = {
+            'hamburger': [0xC4A484, 0x8B4513], // Marron
+            'kebab': [0xC4A484, 0xFF6347],     // Marron et rouge
+            'banane': [0xFFFF00, 0xFFD700],     // Jaune
+            'brocoli': [0x00FF00, 0x006400],    // Vert
+            'carotte': [0xFFA500, 0xFF4500],    // Orange
+            'pomme1': [0xFF0000, 0x8B0000],     // Rouge
+            'pomme2': [0x00FF00, 0x006400],     // Vert
+            'soda1': [0x8B4513, 0x654321],      // Marron
+            'soda2': [0x8B4513, 0x654321],      // Marron
+            'pizza': [0xFF6347, 0xFFD700],      // Rouge-orange et jaune
+            'frite1': [0xFFD700, 0xF4A460],     // Jaune doré
+            'frites': [0xFFD700, 0xF4A460],     // Jaune doré
+        };
+        
+        return colorMap[foodType] || [0xFFFFFF, 0xFFFFAA];
+    }
+
     launchFood() {
 
+        const largeurFenetre = this.sys.game.canvas.width;
+        const hauteurFenetre = this.sys.game.canvas.height;
+
         const foodType = Phaser.Utils.Array.GetRandom(this.foodTypes);
-        const x = Phaser.Math.Between(100, 700); // Position aléatoire en X
-        const food = this.foods.create(x, 600, foodType); // Création à hauteur de 600px
+
+        const marge = 50;
+        const x = Phaser.Math.Between(marge, largeurFenetre - marge); // Position aléatoire en X dans le cadre de la fenetre
+        const y = hauteurFenetre + marge; // Position aléatoire en Y
+
+        const food = this.foods.create(x, y, foodType);
+
         food.setScale(0.5); // Modifie la taille des images
         food.setDepth(1); // S'assurer que la nourriture est devant d'autres éléments
 
-        food.setVelocityY(-500); // Propulsion vers le haut
-        food.setGravityY(1000); // Applique une gravité
+        const velocityY = -Math.max(500, hauteurFenetre * 0.8);
+        const angle = Phaser.Math.Between(-15, 15);
+        const velocityX = Math.tan(Phaser.Math.DegToRad(angle)) * Math.abs(velocityY) * 0.3;
+
+        food.setVelocityY(velocityY);
+        food.setVelocityX(velocityX);
+
+        const gravity = Math.max(900, hauteurFenetre * 1.3);
+        food.setGravityY(gravity);
+
+        food.setAngularVelocity(Phaser.Math.Between(-120, 120));
         food.setInteractive(); // Permet de cliquer/couper
+
+        food.setCollideWorldBounds(false);
+        food.body.setCircle(food.width / 3, food.width / 3, food.height / 3);
     }
 
     update() {
-        // Supprimer les aliments qui sont tombés hors de l'écran
+        // Supprime les aliments qui sont tombés hors de l'écran
         this.foods.getChildren().forEach(food => {
             if (food.y > this.sys.game.canvas.height + 100) {
                 food.destroy();
             }
         });
-    }
 
+        // Mettre à jour la traînée si elle est active
+        if (this.isCutting && this.trailPoints.length > 0) {
+            // Supprimer les points trop anciens (plus de 300ms)
+            this.trailPoints = this.trailPoints.filter(point => {
+                return (this.currentTime - point.time) < 300;
+            });
+            
+            // Redessiner la traînée si des points sont encore présents
+            if (this.trailPoints.length > 0) {
+                this.drawTrail();
+            }
+        }
+    }
 }

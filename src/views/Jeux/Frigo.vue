@@ -136,6 +136,10 @@ const handleBackClick = () => {
         margin-bottom: 20px;
     }
 
+    .contenu-regles {
+      margin-top: 60px !important;
+    }
+
     .fond-frigo {
         position: absolute;
         width: 80%;
