@@ -1,14 +1,9 @@
 <script setup>
-import { ref, onUnmounted, onMounted, watch } from 'vue';
+import { ref } from 'vue';
 import BlurFilter from './BlurFilter.vue';
 import NavBar from './NavBar.vue';
 import ButtonEndGame from './buttons/ButtonEndGame.vue';
 import ClassementFinJeu from './ClassementFinJeu.vue';
-
-// Import pour la musique
-import ambianceSound from '@/assets/sons/musiques/ambiance/flow.mp3';
-import { volumeStore } from '@/stores/volume';
-import { useMusic } from '@/composable/volumes';
 
 // Définition des props
 const props = defineProps({
@@ -19,32 +14,7 @@ const props = defineProps({
     }
 });
 
-// Gestion de la musique
-const audio = ref(null);
-const volumes = volumeStore();
-const { switchAudio } = useMusic();
-
 const showClassement = ref(false);
-
-// Initialiser l'audio lorsque le composant est monté
-onMounted(() => {
-  switchAudio(ambianceSound);
-});
-
-onUnmounted(() => {
-  if (audio.value) {
-    audio.value.pause();
-    audio.value = null;
-  }
-});
-
-// Surveillance du volume
-watch(
-  () => volumes.effet_sonore,
-  (newVolume) => {
-    if (audio.value) audio.value.volume = newVolume
-  }
-)
 
 const showRanking = () => {
   showClassement.value = true;

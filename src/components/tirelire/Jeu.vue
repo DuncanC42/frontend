@@ -27,7 +27,6 @@ import { useMusic } from '@/composable/volumes';
 import { preloadAssets, assets } from '@/composable/tirelire/assetsLoader';
 import { volumeStore } from '@/stores/volume';
 import ambiance from '@/assets/tirelire/sons/ambiance.mp3';
-import chill from '@/assets/sons/musiques/ambiance/chill.mp3';
 import Chrono from '@/components/temps/ChronoTirelire.vue';
 import PagePause from '../PagePause.vue';
 import Bravo from '@/components/Bravo.vue';
@@ -60,7 +59,6 @@ function unpauseGame() {
 }
 
 const handleLeave = () => {
-    switchAudio(chill);
 }
 
 const handleRetry = () => {
@@ -361,7 +359,6 @@ const initializeGame = () => {
 
     function endGame(isVictory) {
         gameOver = true;
-        pause();
         
         if (difficultyTimer) difficultyTimer.destroy();
         
@@ -376,8 +373,6 @@ const initializeGame = () => {
             calculateFinalScore();
             gameLost.value = true;
         }
-        
-        setTimeout(() => switchAudio(chill), 4500);
     }
 }
 

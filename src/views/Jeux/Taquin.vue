@@ -23,6 +23,7 @@
       @pageClicked="nextStep"
     >
       <div class="contenu-regles">
+        <div class="space"></div>
         <p class="big">Aide Amélie à la reconstituer au plus vite !</p>
         <div class="puzzle-section">
           <p>Voici à quoi doit ressembler la carte vitale d’Amélie.</p>
@@ -73,6 +74,10 @@ const handleBackClick = () => {
 </script>
 
 <style scoped>
+.space{
+  margin-top: -3em;
+}
+
 .carte{
   width: 80%;
 }

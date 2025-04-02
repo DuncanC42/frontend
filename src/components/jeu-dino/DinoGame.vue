@@ -140,7 +140,6 @@ const handlePause = () => {
   isGamePaused.value = true;
   remainingTimeBeforePause.value = gameTime.value;
   clearInterval(gameTimer.value);
-  pause();
 
   if (game.value.instance && game.value.scene) {
     game.value.scene.scene.pause();

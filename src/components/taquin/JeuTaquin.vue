@@ -164,7 +164,6 @@
         isGamePaused.value = true
         remainingTimeBeforePause.value = gameTime.value // Sauvegarde le temps restant
         minuteurRef.value.pauseTimer() // Mettre en pause le minuteur
-        pause() // Mettre en pause la musique
         
         // Mettre en pause la scène Phaser si elle existe
         if (phaserScene.value) {
