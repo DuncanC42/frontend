@@ -99,7 +99,10 @@ const trimUsername = (username) => {
                 <span :title="myPlacement.username">{{ trimUsername(myPlacement.username) }}</span>
                 <span v-if="route !== 'general'">{{ myPlacement.score }} pts</span>
             </div>
-
+        </div>
+        <div v-if="classement.length === 0" class="loading">
+            <font-awesome-icon :icon="['fas', 'spinner']" />
+            <span>Chargement...</span>
         </div>
     </div>
 
@@ -123,6 +126,31 @@ const trimUsername = (username) => {
     /* Added for sticky to work correctly */
     position: relative;
     /* Add padding at the top of the scroll area */
+}
+
+.loading {
+    color: #1f1948;
+    font-size: xx-large;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    height: 100%;
+    font-weight: bold;
+}
+
+.loading svg {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 .row-container {
