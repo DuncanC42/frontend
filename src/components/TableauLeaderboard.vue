@@ -19,7 +19,7 @@ const classement = ref([])
 const myPlacement = ref(null)
 
 // Function to fetch leaderboard data
-const fetchLeaderboardData = async() => {
+const fetchLeaderboardData = async () => {
     if (isLoading.value) return
 
     isLoading.value = true
@@ -66,6 +66,16 @@ const isUserLoaded = computed(() => {
     return classement.value.some(score => score.position == myPlacement.value.position)
 })
 
+// Function to trim username and add ellipsis if longer than 7 characters
+const trimUsername = (username) => {
+    if (props.route === 'general' && username.length > 15) {
+        return username.substring(0, 15) + '...';
+    } else if (props.route !== 'general' && username.length > 10) {
+        return username.substring(0, 10) + '...';
+    }
+    return username;
+}
+
 </script>
 
 <template>
@@ -76,17 +86,18 @@ const isUserLoaded = computed(() => {
             <div class="row"
                 :class="{ 'gold-text': index === 0, 'silver-text': index === 1, 'copper-text': index === 2, 'sticky': index > 2 && myPlacement.position == index + 1 }">
                 <span>{{ index + 1 }}</span>
-                <span>{{ score.username }}</span>
-                <span>{{ score.score }} pts</span>
+                <span :title="score.username">{{ trimUsername(score.username) }}</span>
+                <span v-if="route !== 'general'">{{ score.score }} pts</span>
             </div>
             <!-- Only add hr if not the last item -->
-            <hr v-if="(index !== classement.length - 1 && index + 1 != myPlacement.position) || (!isUserLoaded && index == classement.length - 1)" />
+            <hr
+                v-if="(index !== classement.length - 1 && index + 1 != myPlacement.position) || (!isUserLoaded && index == classement.length - 1)" />
         </div>
         <div class="row-container" v-if="!isUserLoaded && myPlacement?.position">
             <div class="row sticky">
                 <span>{{ myPlacement.position }}</span>
-                <span>{{ myPlacement.username }}</span>
-                <span>{{ myPlacement.score }} pts</span>
+                <span :title="myPlacement.username">{{ trimUsername(myPlacement.username) }}</span>
+                <span v-if="route !== 'general'">{{ myPlacement.score }} pts</span>
             </div>
 
         </div>
