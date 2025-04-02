@@ -24,7 +24,7 @@ const fetchLeaderboardData = async () => {
 
     isLoading.value = true
     return fetchBackend(`api/leaderboard/${props.route}`, 'GET', null, { limit: 25, page: page })
-        .then(response => {
+        .then(async response => {
             if (response.status === 200) {
                 const data = response.data
                 if (data.leaderboard && data.leaderboard.players && data.leaderboard.players.length > 0) {
@@ -35,7 +35,8 @@ const fetchLeaderboardData = async () => {
                     myPlacement.value = data.currentPlayer
                 }
             } else {
-                console.error('Error fetching leaderboard:', response.statusText)
+                console.error('Error fetching leaderboard:', response.status)
+                await new Promise(resolve => setTimeout(resolve, 1000))
             }
         })
         .catch(error => {
@@ -91,7 +92,7 @@ const trimUsername = (username) => {
             </div>
             <!-- Only add hr if not the last item -->
             <hr
-                v-if="(index !== classement.length - 1 && index + 1 != myPlacement.position) || (!isUserLoaded && index == classement.length - 1)" />
+                v-if="(index !== classement.length - 1) && index + 1 != myPlacement.position" />
         </div>
         <div class="row-container" v-if="!isUserLoaded && myPlacement?.position">
             <div class="row sticky">
@@ -187,6 +188,7 @@ hr {
     background-color: rgba(0, 0, 0, 0.523);
     border: none;
     margin: 0;
+    margin-bottom: 1px;
 }
 
 .gold-text {
@@ -246,7 +248,6 @@ hr {
 }
 
 /* Fix for the last item's hr condition */
-.row-container:last-child hr {
-    display: none;
+.row-container:last-child hr {display: none;
 }
 </style>

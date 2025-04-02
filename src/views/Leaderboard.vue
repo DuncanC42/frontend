@@ -24,9 +24,9 @@ const title_ref = {
 const scrollToPage = (targetPage) => {
     if (targetPage < 1) targetPage = 1;
     if (targetPage > Object.keys(title_ref).length) targetPage = Object.keys(title_ref).length;
-    
+
     page.value = targetPage;
-    
+
     // Get the element to scroll to
     const targetElement = document.getElementById(`leaderboard-${targetPage}`);
     if (targetElement && scrollContainer.value) {
@@ -55,14 +55,14 @@ onMounted(() => {
     if (scrollContainer.value) {
         // Scroll to initial page on mount
         scrollToPage(page.value);
-        
+
         // Add scroll event listener
         scrollContainer.value.addEventListener('scroll', () => {
             if (!scrollContainer.value) return;
-            
+
             const scrollPosition = scrollContainer.value.scrollLeft;
             const containerWidth = scrollContainer.value.offsetWidth;
-            
+
             // Calculate which page is most visible
             const newPage = Math.round(scrollPosition / containerWidth) + 1;
             if (newPage !== page.value) {
@@ -81,28 +81,18 @@ onMounted(() => {
                 <h2>{{ title_ref[page].title }}</h2>
             </div>
             <div class="leaderboard-container" ref="scrollContainer">
-                <div v-for="(info, index) in title_ref" :key="index" class="leaderboard-item" :id="`leaderboard-${index}`">
+                <div v-for="(info, index) in title_ref" :key="index" class="leaderboard-item"
+                    :id="`leaderboard-${index}`">
                     <TableauLeaderboard :route="info.route"></TableauLeaderboard>
                 </div>
             </div>
             <div class="pagination">
-                <ButtonNextPrevious 
-                    :class="page === 1 ? 'hidden' : ''" 
-                    :classArray="['previous']" 
-                    @click="handleNavigation('previous')" 
-                />
-                <div 
-                    class="dot" 
-                    v-for="i in 6" 
-                    :key="i" 
-                    :class="i === page ? 'lighter-dot' : ''" 
-                    @click="handleDotClick(i)"
-                ></div>
-                <ButtonNextPrevious 
-                    :class="page === 6 ? 'hidden' : ''" 
-                    :classArray="['next']" 
-                    @click="handleNavigation('next')" 
-                />
+                <ButtonNextPrevious class="disapear" :class="page === 1 ? 'opacity-0' : ''"
+                    :classArray="['previous']" @click="handleNavigation('previous')" />
+                <div class="dot" v-for="i in 6" :key="i" :class="i === page ? 'lighter-dot' : ''"
+                    @click="handleDotClick(i)"></div>
+                <ButtonNextPrevious class="disapear" :class="page === 6 ? 'opacity-0' : ''" :classArray="['next']"
+                    @click="handleNavigation('next')" />
             </div>
         </div>
         <FondEcran style="z-index : 10; " :image="appartement"></FondEcran>
@@ -118,6 +108,16 @@ onMounted(() => {
     /* Remove negative z-index as it can cause interaction issues */
     height: 100%;
     position: relative;
+}
+
+.disapear{
+    transition: all 0.3s;
+}
+
+.opacity-0{
+    opacity: 0;
+    scale: 0.5;
+    pointer-events: none;
 }
 
 .content {
@@ -143,12 +143,15 @@ onMounted(() => {
     display: flex;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
-    scrollbar-width: none; /* Hide scrollbar for Firefox */
-    -ms-overflow-style: none; /* Hide scrollbar for IE and Edge */
+    scrollbar-width: none;
+    /* Hide scrollbar for Firefox */
+    -ms-overflow-style: none;
+    /* Hide scrollbar for IE and Edge */
 }
 
 .leaderboard-container::-webkit-scrollbar {
-    display: none; /* Hide scrollbar for Chrome, Safari, and Opera */
+    display: none;
+    /* Hide scrollbar for Chrome, Safari, and Opera */
 }
 
 .leaderboard-item {
