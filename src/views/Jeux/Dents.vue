@@ -72,15 +72,16 @@ const handleBackClick = () => {
       @pageClicked="nextStep"
     >
       <div class="contenu-regles">
-        <p>Brosse ses dents avec du dentifrice pour enlever les restes alimentaires et lui faire retrouver le sourire !</p>
+        <p class="big">Brosse ses dents avec du dentifrice pour enlever les restes alimentaires et lui faire retrouver le sourire !</p>
         <div class="microbes-section">
           <p>Élimine les saletés et les carries :</p>
-          <div class="list-images">
+          <div class="list-images-dents">
             <img :src="bacterie1" alt="bacterie 1">
             <img :src="carie" alt="carie">
             <img :src="bacterie2" alt="bacterie 2">
           </div>
         </div>
+        <p class="">Clique sur le dentifrice puis la brosse à dent pour commencer à les brosser !</p>
       </div>
     </PageRegles>
     
@@ -93,7 +94,7 @@ const handleBackClick = () => {
   </div>
 </template>
 
-<style>
+<style scoped>
 .jeu-dents {
   background-color: #1A203B;
   position: fixed;
@@ -113,10 +114,6 @@ const handleBackClick = () => {
 .fade-leave-to {
   opacity: 0;
 }
-.list-images img {
-  width: 4em;
-  padding: 0em 0.4em;
-}
 
 .regles-container {
   position: relative;
@@ -124,6 +121,7 @@ const handleBackClick = () => {
   height: 100vh;
   background-color: #1A203B;
 }
+
 .fond-bouche {
   position: absolute;
   width: 80%;
@@ -140,5 +138,23 @@ const handleBackClick = () => {
   left: 20px;
   z-index: 101 !important; 
   cursor: pointer;
+}
+
+.big{
+  font-size: 1.2em;
+}
+
+.microbes-section{
+  padding: 1em 0em;
+}
+
+.list-images-dents img{
+  width: 4em;
+  height: 4em;
+  padding: 0 5px;
+}
+
+.contenu-regles{
+  margin-top: 0vh !important;
 }
 </style>

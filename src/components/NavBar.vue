@@ -34,7 +34,7 @@ const links = ref([
   bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
-  background: #757575c2;
+  background: #ffffffad;
   padding: 8px 40px;
   border-radius: 50px;
   width: fit-content;

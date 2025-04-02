@@ -67,7 +67,7 @@ span {
     color: white;
     font-size: x-large;
     padding: 5vw;
-    padding-top: 20vh;
+    padding-top: 15vh;
     text-align: center;
 }
 </style>

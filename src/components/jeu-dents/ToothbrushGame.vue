@@ -392,7 +392,7 @@ export default {
       img.onload = () => {
         canvas.width = img.width;
         canvas.height = img.height;
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(img, 0, 0);
         ctx.globalCompositeOperation = "source-over";
@@ -434,13 +434,12 @@ export default {
       // Version robuste avec vérification
       if (this.brushSound) {
         try {
+          this.brushSound.pause();
           this.brushSound.currentTime = 0;
           const playPromise = this.brushSound.play();
           
           if (playPromise !== undefined) {
             playPromise.catch(e => {
-              console.error("Erreur de lecture audio:", e);
-              // Fallback: réessayer après interaction utilisateur
               document.addEventListener('click', this.retryPlaySound, { once: true });
             });
           }
@@ -735,7 +734,7 @@ export default {
   mounted() {
     this.initGame();
     const canvas = this.$refs.dentsCanvas;
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
 
     const img = new Image();
 
