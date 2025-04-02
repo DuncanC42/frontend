@@ -5,7 +5,10 @@
     import { useRouter } from 'vue-router';
     import {fetchBackend} from '@/composable/fetchBackend.js';
     import {ref} from 'vue';
+    import { useToast } from 'vue-toastification';
+
     const router = useRouter();
+    const toast = useToast();
 
     const handleBienvenue = () => {
         router.push('/bienvenue');
@@ -14,62 +17,132 @@
     const pseudo = ref('');
     const email = ref('');
     const acceptConditions = ref(false);
+    const isLoading = ref(false);
 
-
-    const handleInscription = () => {
-
-        if (!acceptConditions.value) {
-            errorMessage.value = "Veuillez accepter les conditions d'utilisation";
-            return;
-        }
-
-        if (!pseudo.value || !email.value) {
-            errorMessage.value = "Veuillez remplir tous les champs";
-            return;
-        }
-
-
-        fetchBackend('api/register', 'POST', {email : email.value, pseudo : pseudo.value}).then((response) => {
-            if (response.status === 201){
-                router.push('/bienvenue');
-            }else {
-                errorMessage.value = "Une erreur s'est produite lors de l'inscription";
-            }
-        }).catch(error => {
-            errorMessage.value = "Erreur de connexion au serveur";
-            console.error(error);
-        });
+    const validateEmail = (email) => {
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(email);
     }
 
+    const validatePseudo = (pseudo) => {
+        return pseudo.length >= 3;
+    }
+
+    const handleInscription = async () => {
+        // On efface tous les toasts précédents
+        toast.dismiss();
+        
+        let hasError = false;
+
+        // Validation des champs
+        if (!pseudo.value.trim()) {
+            toast.error("Veuillez saisir un pseudo");
+            hasError = true;
+        } else if (!validatePseudo(pseudo.value)) {
+            toast.error("Le pseudo doit contenir au moins 3 caractères");
+            hasError = true;
+        }
+
+        if (!email.value.trim()) {
+            toast.error("Veuillez saisir un email");
+            hasError = true;
+        } else if (!validateEmail(email.value)) {
+            toast.error("Veuillez entrer une adresse email valide");
+            hasError = true;
+        }
+
+        if (!acceptConditions.value) {
+            toast.error("Veuillez accepter les conditions d'utilisation");
+            hasError = true;
+        }
+
+        if (hasError) return;
+
+        isLoading.value = true;
+
+        try {
+            const response = await fetchBackend('api/register', 'POST', {
+                email: email.value,
+                pseudo: pseudo.value
+            });
+
+            if (response.status === 201) {
+                toast.success("Inscription réussie ! Vous pouvez maintenant vous connecter");
+                router.push('/connexion');
+            } else if (response.status === 409) {
+                const data = await response.json();
+                if (data.error.includes('pseudo')) {
+                    toast.error("Ce pseudo est déjà utilisé");
+                }
+                if (data.error.includes('email')) {
+                    toast.error("Cet email est déjà utilisé");
+                }
+            } else {
+                toast.error("Une erreur s'est produite lors de l'inscription");
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error("Erreur de connexion au serveur");
+        } finally {
+            isLoading.value = false;
+        }
+    }
 </script>
 
 <template>
-    <FondDecran />
-    <ButtonBack @click="handleBienvenue"/>
-    <div class="container">
+    <div class="page-container">
+        <FondDecran />
+        <ButtonBack @click="handleBienvenue"/>
+        <div class="container">
 
-        <div class="inscrivez-vous">
-            <p>Inscrivez-vous</p>
-        </div>
-
-        <div class="form">
-
-            <div class="input-container">
-                <img src="../assets/images/pseudo.png" alt="Pseudo Icon" class="input-icon">
-                <input v-model="pseudo" type="text" id="pseudo" name="pseudoname" placeholder="Pseudo">
-            </div>
-            <div class="input-container">
-                <img src="../assets/images/email.png" alt="Email Icon" class="input-icon">
-                <input v-model="email" type="email" id="email" name="email" placeholder="Email">
+            <div class="inscrivez-vous">
+                <p>Inscrivez-vous</p>
             </div>
 
-            <div class="conditions">
-                <input id="conditions" type="checkbox" name="conditions" value="conditions" v-model="acceptConditions">
-                <label for="conditions">J'accepte les <a href="#">conditions d'utilisation</a></label>
-            </div>
-            
-            <div class="button-container">
-                <ButtonIdenticator id="btn-primary" label="S'inscrire" classArray="primary" @click="handleInscription"></ButtonIdenticator>
+            <div class="form">
+
+                <div class="input-container">
+                    <img src="../assets/images/pseudo.png" alt="Pseudo Icon" class="input-icon">
+                    <input 
+                        v-model="pseudo" 
+                        type="text" 
+                        id="pseudo" 
+                        name="pseudoname" 
+                        placeholder="Pseudo"
+                        @blur="validatePseudoOnBlur"
+                    >
+                </div>
+                <div class="input-container">
+                    <img src="../assets/images/email.png" alt="Email Icon" class="input-icon">
+                    <input 
+                        v-model="email" 
+                        type="email" 
+                        id="email" 
+                        name="email" 
+                        placeholder="Email"
+                        @blur="validateEmailOnBlur"
+                    >
+                </div>
+                <div class="conditions">
+                    <input 
+                        id="conditions" 
+                        type="checkbox" 
+                        name="conditions" 
+                        value="conditions" 
+                        v-model="acceptConditions"
+                    >
+                    <label for="conditions">J'accepte les <a href="#">conditions d'utilisation</a></label>
+                </div>
+                
+                <div class="button-container">
+                    <ButtonIdenticator 
+                        id="btn-primary" 
+                        :label="isLoading ? 'Inscription en cours...' : `S'inscrire`" 
+                        classArray="primary"
+                        @click="handleInscription"
+                        :disabled="isLoading"
+                    />
+                </div>
             </div>
         </div>
     </div>
@@ -216,4 +289,23 @@
         font-size: 0.9em;
     }
 
+    .input-container {
+        margin-bottom: 15px;
+    }
+
+    .conditions {
+        margin-top: 10px;
+    }
+
+    .button-container {
+        margin-top: 30px;
+    }
+
+    .page-container {
+        position: relative;
+        width: 100%;
+        height: 100%;
+    }
+
+    
 </style>
