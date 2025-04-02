@@ -95,6 +95,7 @@
     const gameWon = ref(false);
     const score = ref(0);
     const currentTime = ref('01\'00');
+    const formattedTimeForPause = ref('01\'00');
     const timerReady = ref(false);
 
     const SCORE_TO_WIN = 10; // Score à atteindre pour gagner
@@ -129,26 +130,45 @@
     };
     
     const updateTime = (time) => {
-
-        // Debug
-        console.log("Temps reçu du minuteur:", time);
         
         // S'assurer que c'est une chaîne valide
         if (typeof time === 'string') {
+            // Stocker la valeur d'origine
             currentTime.value = time;
             
+            // Formater pour la page de pause (convertir MM:SS en MM'SS si nécessaire)
+            if (time.includes(':')) {
+                const [minutes, seconds] = time.split(':');
+                formattedTimeForPause.value = `${minutes}'${seconds}`;
+            } else if (time.includes("'")) {
+                formattedTimeForPause.value = time;
+            } else {
+                formattedTimeForPause.value = time;
+            }
+            
             // Vérifier si le temps est écoulé
-            if (time === "00'00") {
+            if (time === "00:00" || time === "00'00") {
+                onTimerEnd();
+            }
+        } else if (typeof time === 'number') {
+            // Si on reçoit un nombre, le formater
+            const minutes = Math.floor(time / 60);
+            const seconds = time % 60;
+            
+            // Stocker à la fois la version d'origine et la version formatée
+            currentTime.value = time;
+            formattedTimeForPause.value = `${String(minutes).padStart(2, '0')}'${String(seconds).padStart(2, '0')}`;
+            
+            if (time === 0) {
                 onTimerEnd();
             }
         } else {
-            console.warn("Format de temps invalide reçu:", time);
+            formattedTimeForPause.value = currentTime.value;
         }
     };
 
     const updateScore = (newScore) => {
         score.value = newScore;
-        console.log("Score mis à jour:", score.value);
     };
 
     const onTimerEnd = () => {
@@ -207,7 +227,7 @@
         setTimeout(() => {
             // Calculer les dimensions en fonction de la fenêtre
             const gameWidth = window.innerWidth;
-            const gameHeight = window.innerHeight - 84; // Soustraire la hauteur du header
+            const gameHeight = window.innerHeight - 80; // Soustraire la hauteur du header
             
             // Configurer et créer le jeu Phaser
             gameConfig.value = new Phaser.Game({
@@ -234,7 +254,6 @@
                 if (gameConfig.value && gameConfig.value.scene.scenes.length > 0) {
                     const scene = gameConfig.value.scene.getScene('GameScene');
                     if (scene) {
-                        console.log("Ajout de l'écouteur de score");
                         scene.events.on('scoreUpdate', updateScore);
                     }
                 }
@@ -317,7 +336,7 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        background-color: black;
+        background-color: white;
     }
 
     #game-container {

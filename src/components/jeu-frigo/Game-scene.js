@@ -1,6 +1,10 @@
 import Phaser from "phaser";
 
-import coupeDiagonaleDroite from '@/assets/fruit-ninja/images/coupe_daigonale_droite.png';
+
+    import epeeSound from '@/assets/fruit-ninja/sons/Epée.mp3'
+    import splashSound from '@/assets/fruit-ninja/sons/Splash.mp3'
+
+    import coupeDiagonaleDroite from '@/assets/fruit-ninja/images/coupe_daigonale_droite.png';
     import coupeDiagonaleGauche from '@/assets/fruit-ninja/images/coupe_diagonale_gauche.png';
     import coupeHorizontale from '@/assets/fruit-ninja/images/coupe_horizontale.png';
     import coupeVerticale from '@/assets/fruit-ninja/images/coupe_verticale.png';
@@ -66,13 +70,18 @@ import coupeDiagonaleDroite from '@/assets/fruit-ninja/images/coupe_daigonale_dr
     import carottePartieHaut from '@/assets/fruit-ninja/images/Carotte_coupee_haut.png';
     import carottePartieBas from '@/assets/fruit-ninja/images/Carotte_coupee_bas.png';
 
-export default class GameScene extends Phaser.Scene {
+    export default class GameScene extends Phaser.Scene {
     constructor() {
         super({ key: "GameScene" });
         this.score = 0;
     }
 
     preload() {
+
+        // Chargement des sons
+        this.load.audio("epee", epeeSound);
+        this.load.audio("splash", splashSound);
+
        // Effets de coupe
        this.load.image("coupe-diagonale-droite", coupeDiagonaleDroite);
        this.load.image("coupe-diagonale-gauche", coupeDiagonaleGauche);
@@ -101,29 +110,29 @@ export default class GameScene extends Phaser.Scene {
        this.load.image("hamburger-steak", hamburgerSteak);
 
 
-         // Kebab
-         this.load.image("kebab", kebab);
-         this.load.image("kebab-partie-haut", kebabPartieHaut);
-         this.load.image("kebab-partie-bas", kebabPartieBas);
+        // Kebab
+        this.load.image("kebab", kebab);
+        this.load.image("kebab-partie-haut", kebabPartieHaut);
+        this.load.image("kebab-partie-bas", kebabPartieBas);
          
-         // Pizza
-         this.load.image("pizza", pizza);
-         this.load.image("pizza1", pizza1);
-         this.load.image("pizza2", pizza2);
-         this.load.image("pizza3", pizza3);
-         this.load.image("pizza4", pizza4);
-         this.load.image("pizza5", pizza5);
-         this.load.image("pizza6", pizza6);
-         this.load.image("pizza7", pizza7);
-         this.load.image("pizza8", pizza8);
-         this.load.image("pizza9", pizza9);
+        // Pizza
+        this.load.image("pizza", pizza);
+        this.load.image("pizza1", pizza1);
+        this.load.image("pizza2", pizza2);
+        this.load.image("pizza3", pizza3);
+        this.load.image("pizza4", pizza4);
+        this.load.image("pizza5", pizza5);
+        this.load.image("pizza6", pizza6);
+        this.load.image("pizza7", pizza7);
+        this.load.image("pizza8", pizza8);
+        this.load.image("pizza9", pizza9);
          
-         // Boissons
-         this.load.image("soda1", soda1);
-         this.load.image("soda2", soda2);
-         this.load.image("soda-casse-1", sodaCasse1);
-         this.load.image("soda-casse-2", sodaCasse2);
-         this.load.image("eau", eau);
+        // Boissons
+        this.load.image("soda1", soda1);
+        this.load.image("soda2", soda2);
+        this.load.image("soda-casse-1", sodaCasse1);
+        this.load.image("soda-casse-2", sodaCasse2);
+        this.load.image("eau", eau);
         
         // Fruits
         this.load.image("pomme1", pomme1);
@@ -189,24 +198,32 @@ export default class GameScene extends Phaser.Scene {
         this.events.emit('scoreUpdate', this.score);
 
         // Afficher le score
-        this.scoreText = this.add.text(10, 10, 'Score: 0', { 
-            fontFamily: 'Arial', 
-            fontSize: '24px', 
-            fill: '#ffffff' 
+        this.scoreText = this.add.text(10, 18, 'Score: 0', { 
+            fontFamily: 'Segoe UI', 
+            fontSize: '28px', 
+            fill: '#000000',
         });
         this.scoreText.setDepth(20);
 
+        this.epeeSound = this.sound.add("epee");
+        this.splashSound = this.sound.add("splash");
 
+        this.epeeSound.volume = 0.7;
+        this.splashSound.volume = 0.5;
     }
 
     startCut(pointer) {
         this.isCutting = true;
-        this.cutLine = this.add.line(0, 0, pointer.x, pointer.y, pointer.x, pointer.y, 0xffffff);
+        this.cutLine = this.add.line(0, 0, pointer.x, pointer.y, pointer.x, pointer.y, 0xffffff); // à modifier
         this.cutLine.setLineWidth(2);
         this.cutLine.setDepth(15);
         this.cutStartX = pointer.x;
         this.cutStartY = pointer.y;
         this.lastPointerPosition = { x: pointer.x, y: pointer.y };
+
+        if (this.epeeSound) {
+            this.epeeSound.play();
+        }
     }
 
     updateCut(pointer) {
@@ -268,6 +285,10 @@ export default class GameScene extends Phaser.Scene {
         cutEffect.setScale(0.5);
         cutEffect.setDepth(5);
         cutEffect.setAlpha(0.8);
+
+        if (this.splashSound) {
+            this.splashSound.play();
+        }
         
         // Faire disparaître l'effet de coupe après un moment
         this.tweens.add({
