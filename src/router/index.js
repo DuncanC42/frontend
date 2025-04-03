@@ -2,12 +2,13 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 import Home from '@/views/PanneauJeux.vue'
 import Recompenses from '@/views/Recompenses.vue'
-import Bienvenue from '@/views/Bienvenue.vue'
+import Stats from '@/views/PageStats.vue'
 import PageConnexion from '@/views/PageConnexion.vue'
 import PageInscription from '@/views/PageInscription.vue'
 import PageErreur from '@/views/PageErreur.vue'
 import NotFound from '@/views/NotFound.vue'
-
+import Leaderboard from '@/views/Leaderboard.vue'
+import PageBienvenue from '@/views/PageBienvenue.vue'
 import Dino from '@/views/Jeux/Dino.vue'
 import Frigo from '@/views/Jeux/Frigo.vue'
 import Dents from '@/views/Jeux/Dents.vue'
@@ -18,6 +19,11 @@ const router = createRouter({
 	history: createWebHistory(import.meta.env.BASE_URL),
 	routes: [
 		{
+			path: '/',
+			name: 'root',
+			component: PageBienvenue,
+		},
+		{
 			path: '/home',
 			name: 'home',
 			component: Home,
@@ -25,14 +31,14 @@ const router = createRouter({
 		},
 		{
 			path: '/erreur',
-			name: 'accueil',
-			component: Bienvenue,
+			name: 'erreur',
+			component: PageErreur,
 		},
 
 		{
 			path: '/bienvenue',
 			name: 'bienvenue',
-			component: Bienvenue,
+			component: PageBienvenue,
 		},
 		{
 			path: '/connexion',
@@ -80,6 +86,17 @@ const router = createRouter({
 			path: '/recompenses',
 			name: "recompenses",
 			component: Recompenses,
+		},
+		{
+			path: '/stats',
+			name: "stats",
+			component: Stats,
+    },
+    {
+			path: '/classement',
+			name: 'leaderboard',
+			component: Leaderboard,
+			props: { title: 'Général', route: '/general', page: 1 }
 		},
 		{
 			path: '/:pathMatch(.*)*',
