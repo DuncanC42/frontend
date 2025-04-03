@@ -6,6 +6,9 @@ import { useRouter } from 'vue-router';
 import { fetchBackend } from '@/composable/fetchBackend.js';
 import { ref } from 'vue';
 import { useToast } from 'vue-toastification';
+import { useLoader } from '@/composable/loader'; // Import the loader store
+
+const {  showLoader, hideLoader } = useLoader();
 import { useTokenStore } from '@/store/tokenStore';
 
 const tokenStore = useTokenStore();
@@ -49,6 +52,7 @@ const handleConnexion = async () => {
     if (hasError) return;
 
     isLoading.value = true;
+    showLoader();
 
     try {
         const response = await fetchBackend('api/login', 'POST', {
@@ -72,6 +76,7 @@ const handleConnexion = async () => {
         toast.error("Erreur de connexion au serveur");
     } finally {
         isLoading.value = false;
+        hideLoader()
     }
 }
 
