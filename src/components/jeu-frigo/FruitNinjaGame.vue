@@ -18,72 +18,6 @@
 
     import frigo from '@/assets/fruit-ninja/images/frigo_Plan_de_travail_1.png';
 
-    import coupeDiagonaleDroite from '@/assets/fruit-ninja/images/coupe_daigonale_droite.png';
-    import coupeDiagonaleGauche from '@/assets/fruit-ninja/images/coupe_diagonale_gauche.png';
-    import coupeHorizontale from '@/assets/fruit-ninja/images/coupe_horizontale.png';
-    import coupeVerticale from '@/assets/fruit-ninja/images/coupe_verticale.png';
-
-    import frite1 from '@/assets/fruit-ninja/images/frite_1.png';
-    import frite2 from '@/assets/fruit-ninja/images/frite_2.png';
-    import frite3 from '@/assets/fruit-ninja/images/frite_3.png';
-    import frite4 from '@/assets/fruit-ninja/images/frite_4.png';
-    import frite5 from '@/assets/fruit-ninja/images/frite_5.png';
-    import frite6 from '@/assets/fruit-ninja/images/frite_6.png';
-
-    import frites from '@/assets/fruit-ninja/images/frites.png';
-    import paquetFrites from '@/assets/fruit-ninja/images/paquet_de_frites.png';
-
-    import hamburger from '@/assets/fruit-ninja/images/hamburger.png';
-    import hambugerFromage from '@/assets/fruit-ninja/images/hamburger_fromage.png';
-    import hamburgerSalade from '@/assets/fruit-ninja/images/hamburger_salade.png';
-    import hamburgerTomate from '@/assets/fruit-ninja/images/hamburger_tomate_1.png';
-    import hambugerOignonDroite from '@/assets/fruit-ninja/images/hamburger_oignon_droite.png';
-    import hambugerOignonGauche from '@/assets/fruit-ninja/images/hamburger_oignon_gauche.png';
-    import hamburgerPartieHaut from '@/assets/fruit-ninja/images/hamburger_pain_dessus.png';
-    import hamburgerPartieBas from '@/assets/fruit-ninja/images/hamburger_pain_bas.png';
-    import hamburgerSteak from '@/assets/fruit-ninja/images/hamburger_steak_hache.png';
-
-    import kebab from '@/assets/fruit-ninja/images/KEBAB.png';
-    import kebabPartieHaut from '@/assets/fruit-ninja/images/kebab_partie_haut.png';
-    import kebabPartieBas from '@/assets/fruit-ninja/images/kebab_partie_bas.png';
-
-    import pizza from '@/assets/fruit-ninja/images/PIZZA.png';
-    import pizza1 from '@/assets/fruit-ninja/images/pizza_part_1.png';
-    import pizza2 from '@/assets/fruit-ninja/images/pizza_part_2.png';
-    import pizza3 from '@/assets/fruit-ninja/images/pizza_part_3.png';
-    import pizza4 from '@/assets/fruit-ninja/images/pizza_part_4.png';
-    import pizza5 from '@/assets/fruit-ninja/images/pizza_part_5.png';
-    import pizza6 from '@/assets/fruit-ninja/images/pizza_part_6.png';
-    import pizza7 from '@/assets/fruit-ninja/images/pizza_part_7.png';
-    import pizza8 from '@/assets/fruit-ninja/images/pizza_part_8.png';
-    import pizza9 from '@/assets/fruit-ninja/images/pizza_part_9.png';
-
-    import soda1 from '@/assets/fruit-ninja/images/soda_1.png';
-    import soda2 from '@/assets/fruit-ninja/images/soda_2.png';
-    import soda_casse_1 from '@/assets/fruit-ninja/images/soda_casse_1.png';
-    import soda_casse_2 from '@/assets/fruit-ninja/images/soda_casse_2.png';
-
-    import eau from '@/assets/fruit-ninja/images/eau.png';
-
-    import pomme1 from '@/assets/fruit-ninja/images/pomme_1.png';
-    import pomme2 from '@/assets/fruit-ninja/images/pomme_2.png';
-    import pomme1Droite from '@/assets/fruit-ninja/images/pomme_1_droite.png';
-    import pomme2Droite from '@/assets/fruit-ninja/images/pomme_2_droite.png';
-    import pomme1Gauche from '@/assets/fruit-ninja/images/pomme_1_gauche.png';
-    import pomme2Gauche from '@/assets/fruit-ninja/images/pomme_2_gauche.png';
-
-    import banane from '@/assets/fruit-ninja/images/BANANE.png';
-    import bananePartieBas from '@/assets/fruit-ninja/images/BANANE_.png';
-    import bananePartieHaut from '@/assets/fruit-ninja/images/BANANE_PARTIE_HAUT.png';
-
-    import brocoli from '@/assets/fruit-ninja/images/brocoli.png';
-    import brocoliPartieHaut from '@/assets/fruit-ninja/images/brocoli_coupe_haut.png';
-    import brocoliPartieBas from '@/assets/fruit-ninja/images/brocoli_coupe_bas.png';
-
-    import carotte from '@/assets/fruit-ninja/images/carotte.png';
-    import carottePartieHaut from '@/assets/fruit-ninja/images/Carotte_coupee_haut.png';
-    import carottePartieBas from '@/assets/fruit-ninja/images/Carotte_coupee_bas.png';
-
     const gameConfig = ref(null);
     const isGamePaused = ref(false);
     const minuteurRef = ref(null);
@@ -210,9 +144,13 @@
         }
     };
 
-
-    defineProps({
-        isActive: {
+    const props = defineProps({
+    difficulty: {
+        type: String,
+        default: 'normal', // 'normal' ou 'hard'
+        validator: (value) => ['normal', 'hard'].includes(value)
+    },
+    isActive: {
             type: Boolean,
             default: false
         }
@@ -233,6 +171,8 @@
             const gameWidth = window.innerWidth;
             const gameHeight = window.innerHeight - 80; // Soustraire la hauteur du header
             
+            const gameScene = new GameScene({ difficulty: props.difficulty });
+
             // Configurer et créer le jeu Phaser
             gameConfig.value = new Phaser.Game({
                 type: Phaser.AUTO,
@@ -246,7 +186,7 @@
                         debug: false 
                     },
                 },
-                scene: [GameScene],
+                scene: [gameScene],
                 transparent: true, // Fond transparent pour voir l'image du frigo
                 scale: {
                     mode: Phaser.Scale.FIT,

@@ -114,7 +114,7 @@ const handleBackClick = () => {
     </div>
     <!-- Étape 3: Jeu (préchargé mais masqué) -->
      <div v-if="currentStep === 2" class="jeu-frigo">
-       <FruitNinjaGame :key="'game-'+gameKey" />
+       <FruitNinjaGame difficulty="hard" :key="'game-'+gameKey" />
      </div>
 </template>
 

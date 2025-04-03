@@ -68,18 +68,35 @@ import carottePartieHaut from '@/assets/fruit-ninja/images/Carotte_coupee_haut.p
 import carottePartieBas from '@/assets/fruit-ninja/images/Carotte_coupee_bas.png';
 
 export default class GameScene extends Phaser.Scene {
-    constructor() {
+    constructor(config) {
         super({ key: "GameScene" });
         this.score = 0;
         this.trailPoints = [];
         this.trailGraphics = null;
         this.currentTime = Date.now();
 
+        this.difficulty = 'normal';
+
+        if (config) {
+            if (config.difficulty) {
+                this.difficulty = config.difficulty;
+            } else if (config.settings && config.settings.difficulty) {
+                this.difficulty = config.settings.difficulty;
+            }
+        }
+
         this.gameTime = 60;
         this.currentDifficultyStage = 0; // 0: normal, 1: +25%, 2: +50%
         this.spawnTimers = []; // Pour stocker les références des timers
-        this.baseSpawnRate = 800; // Taux d'apparition de base en ms
-        this.speedMultiplier = 1.0;
+        if (this.difficulty === 'normal') {
+            this.baseSpawnRate = 800; // Intervalle entre chaque apparition en ms
+            this.baseSpeedMultiplier = 1.0; // Vitesse normale
+        } else if (this.difficulty === 'hard') {
+            this.baseSpawnRate = 600; // Plus rapide en mode difficile
+            this.baseSpeedMultiplier = 1.2; // 20% plus rapide
+        }
+
+        this.speedMultiplier = this.baseSpeedMultiplier;
     }
 
     preload() {
@@ -170,7 +187,7 @@ export default class GameScene extends Phaser.Scene {
             "carotte",
         ];
 
-        this.setupSpawnTimer();
+        this.setupSpawnTimer(1.0);
 
         this.events.on('timeUpdate', this.updateGameDifficulty, this);
 
@@ -186,12 +203,6 @@ export default class GameScene extends Phaser.Scene {
 
         this.input.on('pointerup', () => {
             this.endCut();
-        });
-
-        this.time.addEvent({
-            delay: 800,
-            loop: true,
-            callback: () => this.launchFood()
         });
 
         this.trailGraphics = this.add.graphics();
@@ -217,27 +228,26 @@ export default class GameScene extends Phaser.Scene {
     // Méthode pour configurer le timer d'apparition
     setupSpawnTimer(difficultyMultiplier = 1.0) {
         // Annuler les timers existants si présents
-        if (this.spawnTimers.length > 0) {
-            this.spawnTimers.forEach(timer => {
-                if (timer) timer.remove();
-            });
-            this.spawnTimers = [];
-        }
+        this.spawnTimers.forEach(timer => {
+            if (timer) timer.remove();
+        });
+        this.spawnTimers = [];
         
-        // Calculer le nouveau taux d'apparition
-        const spawnRate = this.baseSpawnRate / difficultyMultiplier;
+        // Calculer le taux d'apparition basé sur la difficulté de base et le multiplicateur actuel
+        const currentSpawnRate = this.baseSpawnRate / difficultyMultiplier;
         
-        // Créer un nouveau timer
+        console.log(`setupSpawnTimer: Difficulté ${this.difficulty}, taux ${currentSpawnRate}ms`);
+        
+        // Créer le nouveau timer
         const timer = this.time.addEvent({
-            delay: spawnRate,
+            delay: currentSpawnRate,
             loop: true,
-            callback: () => this.launchFood(difficultyMultiplier)
+            callback: this.launchFood,
+            callbackScope: this, // Important: conserver le contexte 'this'
+            args: [this.speedMultiplier] // Passer le multiplicateur actuel
         });
         
-        // Stocker la référence du timer
         this.spawnTimers.push(timer);
-        
-        console.log(`Difficulté ajustée: Taux d'apparition ${spawnRate}ms, Vitesse x${difficultyMultiplier}`);
     }
 
     // Méthode pour mettre à jour la difficulté en fonction du temps
@@ -275,17 +285,32 @@ export default class GameScene extends Phaser.Scene {
 
         console.log("Temps mis à jour:", seconds, "secondes, stade:", this.currentDifficultyStage);
 
-        // Paliers de difficulté
-        if (seconds <= 15 && this.currentDifficultyStage < 2) {
-            // 15 dernières secondes: difficulté maximale
-            this.currentDifficultyStage = 2;
-            this.speedMultiplier = 1.5;
-            this.setupSpawnTimer(1.5);
-        } else if (seconds <= 30 && seconds > 15 && this.currentDifficultyStage < 1) {
-            // Entre 30 et 15 secondes: difficulté intermédiaire
-            this.currentDifficultyStage = 1;
-            this.speedMultiplier = 1.25;
-            this.setupSpawnTimer(1.25);
+        if (this.difficulty === 'normal') {
+            // Paliers pour le mode normal
+            if (seconds <= 15 && this.currentDifficultyStage < 2) {
+                this.currentDifficultyStage = 2;
+                this.speedMultiplier = this.baseSpeedMultiplier * 1.5;
+                this.setupSpawnTimer(1.5);
+                console.log("Mode normal: Phase finale (x1.5)");
+            } else if (seconds <= 30 && seconds > 15 && this.currentDifficultyStage < 1) {
+                this.currentDifficultyStage = 1;
+                this.speedMultiplier = this.baseSpeedMultiplier * 1.25;
+                this.setupSpawnTimer(1.25);
+                console.log("Mode normal: Phase intermédiaire (x1.25)");
+            }
+        } else if (this.difficulty === 'hard') {
+            // Paliers pour le mode difficile (plus précoces)
+            if (seconds <= 20 && this.currentDifficultyStage < 2) {
+                this.currentDifficultyStage = 2;
+                this.speedMultiplier = this.baseSpeedMultiplier * 1.5;
+                this.setupSpawnTimer(1.5);
+                console.log("Mode difficile: Phase finale (x1.5)");
+            } else if (seconds <= 40 && seconds > 20 && this.currentDifficultyStage < 1) {
+                this.currentDifficultyStage = 1;
+                this.speedMultiplier = this.baseSpeedMultiplier * 1.25;
+                this.setupSpawnTimer(1.25);
+                console.log("Mode difficile: Phase intermédiaire (x1.25)");
+            }
         }
     }
 
@@ -686,7 +711,9 @@ export default class GameScene extends Phaser.Scene {
         return colorMap[foodType] || [0xFFFFFF, 0xFFFFAA];
     }
 
-    launchFood() {
+    launchFood(speedMultiplier) {
+
+        const actualMultiplier = speedMultiplier || this.speedMultiplier;
 
         const largeurFenetre = this.sys.game.canvas.width;
         const hauteurFenetre = this.sys.game.canvas.height;
@@ -702,7 +729,7 @@ export default class GameScene extends Phaser.Scene {
         food.setScale(0.5); // Modifie la taille des images
         food.setDepth(1); // S'assurer que la nourriture est devant d'autres éléments
 
-        const heightFactor = Phaser.Math.FloatBetween(0.8, 1.6) * this.speedMultiplier;
+        const heightFactor = Phaser.Math.FloatBetween(0.8, 1.6) * actualMultiplier;
 
         const baseVelocity = -Math.max(700, hauteurFenetre * 1.2);
         const velocityY = baseVelocity * heightFactor;
