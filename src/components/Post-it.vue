@@ -40,7 +40,7 @@
     font-size: 24px;
     font-weight: bold;
     color: #333;
-    max-width: 70%;
+    max-width: 65%;
     word-wrap: break-word;
     rotate: 5deg;
 }

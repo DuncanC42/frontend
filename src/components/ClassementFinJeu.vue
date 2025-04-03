@@ -73,10 +73,40 @@
 </template>
 
 <script setup>
-import {computed} from 'vue';
-import ButtonEndGame from './buttons/ButtonEndGame.vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useToast } from 'vue-toastification';
+import ButtonEndGame from './buttons/ButtonEndGame.vue';
+
+// Import pour la musique
+import ambianceSound from '@/assets/sons/musiques/ambiance/flow.mp3';
+import { volumeStore } from '@/stores/volume';
+import { useMusic } from '@/composable/volumes';
+
+// Gestion de la musique
+const audio = ref(null);
+const volumes = volumeStore();
+const { switchAudio } = useMusic();
+
+// Initialiser l'audio lorsque le composant est monté
+onMounted(() => {
+  switchAudio(ambianceSound);
+});
+
+onUnmounted(() => {
+  if (audio.value) {
+    audio.value.pause();
+    audio.value = null;
+  }
+});
+
+// Surveillance du volume
+watch(
+  () => volumes.effet_sonore,
+  (newVolume) => {
+    if (audio.value) audio.value.volume = newVolume
+  }
+)
 
 const router = useRouter();
 const toast = useToast();
