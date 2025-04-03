@@ -47,7 +47,7 @@ const isMenuOpen = ref(false)
 
 button {
     position: absolute;
-    top: 16vh;
+    top: 100px;
     z-index: 10;
     color: white;
     border-radius: 100%;
