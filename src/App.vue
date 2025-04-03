@@ -1,12 +1,12 @@
 <script setup>
 import { onMounted, onUnmounted, ref } from 'vue';
 import { useLoader } from '@/composable/loader'; // Import the loader store
-import { useRouter } from 'vue-router';
 import Header from './components/Header.vue';
 import { useMusic } from '@/composable/volumes';
 import audio_mp3 from '@/assets/sons/musiques/ambiance/chill.mp3';
 import Loader from './components/Loader.vue';
 import PageErreur from './views/PageErreur.vue';
+import { useRouter } from 'vue-router';
 
 useMusic(audio_mp3);
 
