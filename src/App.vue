@@ -6,6 +6,7 @@ import Header from './components/Header.vue';
 import { useMusic } from '@/composable/volumes';
 import audio_mp3 from '@/assets/sons/musiques/ambiance/chill.mp3';
 import Loader from './components/Loader.vue';
+import PageErreur from './views/PageErreur.vue';
 
 useMusic(audio_mp3);
 
@@ -13,6 +14,11 @@ const { isLoading, showLoader, hideLoader } = useLoader();
 const router = useRouter();
 
 onMounted(async () => {
+	// Ajoute un écouteur pour surveiller les changements de taille d'écran
+	window.addEventListener('resize', updateScreenWidth);
+	updateScreenWidth(); // Vérifie la taille de l'écran au chargement
+
+
 	showLoader();
 	await router.isReady(); // Wait for the router to be ready
 	setTimeout(() => {
@@ -21,6 +27,9 @@ onMounted(async () => {
 });
 
 onUnmounted(() => {
+	// Supprime l'écouteur lors de la destruction du composant
+	window.removeEventListener('resize', updateScreenWidth);
+
 	showLoader(); // Show loader when the component is unmounted
 });
 
@@ -35,6 +44,14 @@ router.afterEach(async () => {
 		hideLoader();
 	}, 500); // Adjust delay for smooth transition
 });
+
+
+const screenWidth = ref(window.innerWidth);
+
+const updateScreenWidth = () => {
+	screenWidth.value = window.innerWidth;
+};
+
 </script>
 
 <template>
@@ -42,7 +59,8 @@ router.afterEach(async () => {
 		<Loader v-if="isLoading" />
 		<Header></Header>
 		<div class="gradient"></div>
-		<RouterView></RouterView>
+		<RouterView v-if="screenWidth < 700"></RouterView>
+		<PageErreur v-else/>
 	</div>
 </template>
 
