@@ -9,7 +9,7 @@ import { ref } from 'vue';
 import NavBar from '@/components/NavBar.vue';
 
 //TO DO : fetch la fin en base
-const limit = ref('04/01/2025')
+const limit = ref('04/04/2025 10:45:00');
 </script>
 
 <template>
