@@ -1,11 +1,15 @@
-const STATIC_TOKEN = 'your-static-token-here';
-/*
-* Composable pour fetch apiCodeine
-* exemple : fetchBackend('users', 'GET', {adresse_mail : '123@gmail.com', pseudo : 'moi'}, {page: 1, limit: 10})
-*/
+import { useTokenStore } from '../store/tokenStore';
+import { toast } from "vue3-toastify";
+import "vue3-toastify/dist/index.css";
+import { useRouter } from 'vue-router';
+
 export async function fetchBackend(endpoint, method = 'GET', body = null, params = {}) {
+    const router = useRouter();
+    const tokenStore = useTokenStore();
+
     try {
         const url = new URL(`http://localhost:8050/${endpoint}`);
+        //const tokenStore = useTokenStore();
 
         Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
 
@@ -13,24 +17,39 @@ export async function fetchBackend(endpoint, method = 'GET', body = null, params
             method,
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${STATIC_TOKEN}`
-            }
+            },
+            mode: 'cors',
+            credentials: 'omit'
         };
+        
+        if (tokenStore.isAuthenticated) {
+            options.headers['Authorization'] = `Bearer ${tokenStore.getToken}`;
+        }
 
         if (body) {
             options.body = JSON.stringify(body);
         }
 
         const response = await fetch(url, options);
-        const data = await response.json();
 
-        return {
-            data,
-            status: response.status,
-            headers: response.headers
-        };
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        try {
+            const data = await response.json();
+            return { data, status: response.status, headers: response.headers };
+        } catch {
+            return { data: null, status: response.status, headers: response.headers };
+        }
+        
     } catch (error) {
         console.error('Error fetching data:', error);
+
+        toast.error(error.message || "Erreur de connexion", {
+            onClick: () => router.push('/')
+        });
+
         return {
             data: null,
             status: 'error',

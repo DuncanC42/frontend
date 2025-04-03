@@ -23,6 +23,7 @@
         <Bravo 
             v-if="gameWon" 
             :score="score" 
+            :jeu="3"
             message="Les remboursements de l’Assurance Maladie se font par virement bancaire. Depuis ton compte ameli, enregistrer ton RIB c’est être sûr de recevoir les remboursements sur ton propre compte bancaire !"
             @retry="handleRetry" 
             @quit="handleLeave" 

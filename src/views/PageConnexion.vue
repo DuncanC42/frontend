@@ -5,7 +5,12 @@ import ButtonBack from '@/components/buttons/ButtonBack.vue';
 import { useRouter } from 'vue-router';
 import { fetchBackend } from '@/composable/fetchBackend.js';
 import { ref } from 'vue';
+import "vue3-toastify/dist/index.css";
+import { useTokenStore } from '@/store/tokenStore';
+
 const router = useRouter();
+
+const tokenStore = useTokenStore();
 
 const handleBienvenue = () => {
     router.push('/bienvenue');
@@ -17,6 +22,7 @@ const email = ref('');
 const handleConnexion = () => {
     fetchBackend('api/login', 'POST', { email: email.value, pseudo: pseudo.value }).then((response) => {
         if (response.status === 200) {
+            tokenStore.setToken(response.data.token);
             router.push({ name: 'home', query: { loader: true } });
         } else {
             console.log('Erreur');

@@ -11,6 +11,8 @@ import { useMusic } from '@/composable/volumes';
 
 import ClassementFinJeu from './ClassementFinJeu.vue';
 
+import { fetchBackend } from '@/composable/fetchBackend.js';
+
 // Définition des props dans le bloc `<script setup>`
 const props = defineProps({
   score: {
@@ -22,9 +24,41 @@ const props = defineProps({
     type: String,
     required: true,
     default: "Félicitations !"
+  },
+  jeu:{
+    type: Number,
+    required: true,
   }
 });
 
+const scoreSent = ref(false);
+
+
+const handleScore = async () => {
+  if (scoreSent.value) return;
+  
+  scoreSent.value = true;
+  try {
+    const { status } = await fetchBackend('api/score', 'POST', { 
+      jeu_id: props.jeu,
+      points: props.score 
+    });
+    
+    if (status === 200 || status === 201) {
+      console.log('Score enregistré avec succès');
+    } else {
+      console.warn('Le score a été envoyé mais le statut est inattendu:', status);
+    }
+  } catch (error) {
+    console.error("Échec de l'envoi du score:", error);
+    // Solution de repli : stocker le score localement pour envoi ultérieur
+    localStorage.setItem('pendingScore', JSON.stringify({
+      jeu_id: props.jeu,
+      points: props.score,
+      timestamp: new Date().toISOString()
+    }));
+  }
+};
 
 const audio = ref(null);
 const volumes = volumeStore();
@@ -35,6 +69,7 @@ const showClassement = ref(false);
 // Initialiser l'audio lorsque le composant est monté
 onMounted(() => {
   switchAudio(ambianceSound);
+  handleScore();
 });
 
 onUnmounted(() => {
