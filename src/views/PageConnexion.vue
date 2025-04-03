@@ -9,6 +9,9 @@ import { useToast } from 'vue-toastification';
 import { useLoader } from '@/composable/loader'; // Import the loader store
 
 const {  showLoader, hideLoader } = useLoader();
+import { useTokenStore } from '@/store/tokenStore';
+
+const tokenStore = useTokenStore();
 
 const router = useRouter();
 const toast = useToast();
@@ -29,7 +32,7 @@ const validateEmail = (email) => {
 const handleConnexion = async () => {
     // Effacer les toasts précédents
     toast.dismiss();
-    
+
     let hasError = false;
 
     // Validation des champs
@@ -52,13 +55,14 @@ const handleConnexion = async () => {
     showLoader();
 
     try {
-        const response = await fetchBackend('api/login', 'POST', { 
-            email: email.value, 
-            pseudo: pseudo.value 
+        const response = await fetchBackend('api/login', 'POST', {
+            email: email.value,
+            pseudo: pseudo.value
         });
 
         if (response.status === 200) {
             toast.success("Connexion réussie !");
+            tokenStore.setToken(response.data.token);
             router.push({ name: 'home', query: { loader: true } });
         } else if (response.status === 401) {
             toast.error("Identifiants incorrects");
@@ -98,36 +102,18 @@ const validateEmailOnBlur = () => {
 
                 <div class="input-container">
                     <img src="../assets/images/pseudo.png" alt="Pseudo Icon" class="input-icon">
-                    <input 
-                        v-model="pseudo" 
-                        type="text" 
-                        id="pseudo" 
-                        name="pseudoname" 
-                        placeholder="Pseudo"
-                        @keyup.enter="handleConnexion"
-                    >
+                    <input v-model="pseudo" type="text" id="pseudo" name="pseudoname" placeholder="Pseudo"
+                        @keyup.enter="handleConnexion">
                 </div>
                 <div class="input-container">
                     <img src="../assets/images/email.png" alt="Email Icon" class="input-icon">
-                    <input 
-                        v-model="email" 
-                        type="email" 
-                        id="email" 
-                        name="email" 
-                        placeholder="Email"
-                        @keyup.enter="handleConnexion"
-                        @blur="validateEmailOnBlur"
-                    >
+                    <input v-model="email" type="email" id="email" name="email" placeholder="Email"
+                        @keyup.enter="handleConnexion" @blur="validateEmailOnBlur">
                 </div>
 
                 <div class="button-container">
-                    <ButtonIdenticator 
-                        id="btn-primary" 
-                        :label="isLoading ? 'Connexion en cours...' : 'Se connecter'" 
-                        classArray="primary" 
-                        @click="handleConnexion"
-                        :disabled="isLoading"
-                    />
+                    <ButtonIdenticator id="btn-primary" :label="isLoading ? 'Connexion en cours...' : 'Se connecter'"
+                        classArray="primary" @click="handleConnexion" :disabled="isLoading" />
                 </div>
             </div>
         </div>
