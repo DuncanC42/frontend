@@ -11,6 +11,8 @@ import { useMusic } from '@/composable/volumes';
 
 import ClassementFinJeu from './ClassementFinJeu.vue';
 
+import { fetchBackend } from '@/composable/fetchBackend.js';
+
 // Définition des props dans le bloc `<script setup>`
 const props = defineProps({
   score: {
@@ -22,9 +24,46 @@ const props = defineProps({
     type: String,
     required: true,
     default: "Félicitations !"
+  },
+  jeu_id:{
+    type: Number,
+    required: true,
   }
 });
 
+const scoreSent = ref(false);
+
+
+const handleScore = async () => {
+  if (scoreSent.value) return;
+  
+  scoreSent.value = true;
+  try {
+    const { status, data, error } = await fetchBackend('api/score', 'POST', { 
+      jeu_id: props.jeu_id,
+      points: props.score 
+    });
+    
+    if (status === 200 || status === 201) {
+    } else if (error) {
+      // Stocker pour réessai ultérieur
+      storePendingScore();
+    }
+  } catch (error) {
+    storePendingScore();
+  }
+};
+
+const storePendingScore = () => {
+  const pendingScores = JSON.parse(localStorage.getItem('pendingScores') || []);
+  pendingScores.push({
+    jeu_id: props.jeu_id,
+    points: props.score,
+    timestamp: new Date().toISOString()
+  });
+  localStorage.setItem('pendingScores', JSON.stringify(pendingScores));
+  toast.warning("Score sauvegardé localement", { position: "top-center" });
+};
 
 const audio = ref(null);
 const volumes = volumeStore();
@@ -35,6 +74,7 @@ const showClassement = ref(false);
 // Initialiser l'audio lorsque le composant est monté
 onMounted(() => {
   switchAudio(ambianceSound);
+  handleScore();
 });
 
 onUnmounted(() => {
