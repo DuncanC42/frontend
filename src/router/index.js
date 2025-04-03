@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 import Home from '@/views/PanneauJeux.vue'
 import Recompenses from '@/views/Recompenses.vue'
+import Stats from '@/views/PageStats.vue'
 import Bienvenue from '@/views/Bienvenue.vue'
 import PageConnexion from '@/views/PageConnexion.vue'
 import PageInscription from '@/views/PageInscription.vue'
@@ -80,6 +81,11 @@ const router = createRouter({
 			path: '/recompenses',
 			name: "recompenses",
 			component: Recompenses,
+		},
+		{
+			path: '/stats',
+			name: "stats",
+			component: Stats,
 		},
 		{
 			path: '/:pathMatch(.*)*',
