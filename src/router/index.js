@@ -8,6 +8,7 @@ import PageConnexion from '@/views/PageConnexion.vue'
 import PageInscription from '@/views/PageInscription.vue'
 import PageErreur from '@/views/PageErreur.vue'
 import NotFound from '@/views/NotFound.vue'
+import Leaderboard from '@/views/Leaderboard.vue'
 
 import Dino from '@/views/Jeux/Dino.vue'
 import Frigo from '@/views/Jeux/Frigo.vue'
@@ -18,6 +19,11 @@ import Tirelire from '@/views/Jeux/Tirelire.vue'
 const router = createRouter({
 	history: createWebHistory(import.meta.env.BASE_URL),
 	routes: [
+		{
+			path: '/',
+			name: 'root',
+			component: Bienvenue,
+		},
 		{
 			path: '/home',
 			name: 'home',
@@ -86,6 +92,12 @@ const router = createRouter({
 			path: '/stats',
 			name: "stats",
 			component: Stats,
+    },
+    {
+			path: '/classement',
+			name: 'leaderboard',
+			component: Leaderboard,
+			props: { title: 'Général', route: '/general', page: 1 }
 		},
 		{
 			path: '/:pathMatch(.*)*',
