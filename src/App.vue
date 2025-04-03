@@ -12,10 +12,29 @@ useMusic(audio_mp3);
 
 const { isLoading, showLoader, hideLoader } = useLoader();
 const router = useRouter();
+const ws = ref(null); // Référence pour le WebSocket
 
 onMounted(async () => {
 	showLoader();
 	await router.isReady(); // Wait for the router to be ready
+
+    ws.value = new WebSocket('ws://localhost:8051');
+
+    ws.value.onopen = () => {
+        console.log('Connecté au WebSocket');
+        ws.value.send(JSON.stringify({ action: 'userConnected' })); // Envoie l'action
+    };
+
+    ws.value.onmessage = (event) => {
+        console.log('Message reçu du serveur:', event.data);
+    };
+
+    ws.value.onclose = () => {
+        console.log('Déconnecté du WebSocket');
+        ws.value.send(JSON.stringify({ action: 'userDisconnected' })); // Envoie l'action
+
+    };
+
 	setTimeout(() => {
 		hideLoader();
 	}, 500); // Adjust delay for smooth transition
@@ -23,6 +42,11 @@ onMounted(async () => {
 
 onUnmounted(() => {
 	showLoader(); // Show loader when the component is unmounted
+
+    if (ws.value) {
+        ws.value.send(JSON.stringify({action: 'userDisconnected'}));
+        ws.value.close();
+    }
 });
 
 router.beforeEach((to, from, next) => {
