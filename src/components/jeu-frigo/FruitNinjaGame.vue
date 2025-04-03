@@ -10,15 +10,12 @@
     import applauseSound from '@/assets/fruit-ninja/sons/Applaudissement de fin.mp3'
     import ambianceJeu from '@/assets/fruit-ninja/sons/Son-ambiance.mp3'
     import chill from '@/assets/sons/musiques/ambiance/chill.mp3'
-    import cutSound from '@/assets/fruit-ninja/sons/Epée.mp3'
-    import slapshSound from '@/assets/fruit-ninja/sons/Splash.mp3'
 
     import PagePause from '../PagePause.vue';
 
     import Bravo from '@/components/Bravo.vue';
     import Dommage from '@/components/Dommage.vue';
     import MinuteurDent from '../temps/MinuteurDent.vue';
-    import Minuteur from '@/components/temps/Minuteur.vue';
 
     import frigo from '@/assets/fruit-ninja/images/frigo_Plan_de_travail_1.png';
 

@@ -479,12 +479,28 @@ export default class GameScene extends Phaser.Scene {
 
         food.disableBody(true, true);
 
-        // Augmenter le score
-        this.score += 10;
+        // Gestion du score
+        const badFoodTypes = ["hamburger", "kebab", "soda1", "soda2", "frites", "pizza"];
+        const goodFoodTypes = ["pomme1", "pomme2", "banane", "brocoli", "carotte"];
+        let isPositifCut = false;
+        let scoreChange = 0;
+
+        if (badFoodTypes.includes(foodType)) {
+            scoreChange = +10;
+            isPositifCut = true;
+            this.score += scoreChange;
+        } else if (goodFoodTypes.includes(foodType)) {
+            scoreChange = -10
+            isPositifCut = false;
+            this.score += scoreChange;
+        }
+
         this.scoreText.setText('Score: ' + this.score);
 
         // Afficher un +10 flottant (test)
-        const scorePopup = this.add.text(food.x, food.y - 30, '+10', {
+
+        const scoreFlottant = isPositifCut ? '+10' : '-10';
+        const scorePopup = this.add.text(food.x, food.y - 30, scoreFlottant, {
             fontFamily: 'Segoe UI',
             fontSize: '24px',
             fill: '#FFFFFF',
