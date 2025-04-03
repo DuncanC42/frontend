@@ -5,7 +5,6 @@
     import GameScene from "@/components/jeu-frigo/Game-scene"
     import { volumeStore } from '@/stores/volume';
     import { useMusic } from '@/composable/volumes';
-    import { watch } from 'vue';
 
     import applauseSound from '@/assets/fruit-ninja/sons/Applaudissement de fin.mp3'
     import ambianceJeu from '@/assets/fruit-ninja/sons/Son-ambiance.mp3'
@@ -142,6 +141,10 @@
             } else {
                 formattedTimeForPause.value = time;
             }
+
+            if (gameConfig.value && gameConfig.value.scene.scenes[0]) {
+                gameConfig.value.scene.scenes[0].events.emit('timeUpdate', time);
+            }
             
             // Vérifier si le temps est écoulé
             if (time === "00:00" || time === "00'00") {
@@ -156,6 +159,10 @@
             currentTime.value = time;
             formattedTimeForPause.value = `${String(minutes).padStart(2, '0')}'${String(seconds).padStart(2, '0')}`;
             
+            if (gameConfig.value && gameConfig.value.scene.scenes[0]) {
+                gameConfig.value.scene.scenes[0].events.emit('timeUpdate', time);
+            }
+
             if (time === 0) {
                 onTimerEnd();
             }

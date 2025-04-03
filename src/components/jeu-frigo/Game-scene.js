@@ -48,8 +48,6 @@ import soda2 from '@/assets/fruit-ninja/images/soda_2.png';
 import sodaCasse1 from '@/assets/fruit-ninja/images/soda_casse_1.png';
 import sodaCasse2 from '@/assets/fruit-ninja/images/soda_casse_2.png';
 
-import eau from '@/assets/fruit-ninja/images/eau.png';
-
 import pomme1 from '@/assets/fruit-ninja/images/pomme_1.png';
 import pomme2 from '@/assets/fruit-ninja/images/pomme_2.png';
 import pomme1Droite from '@/assets/fruit-ninja/images/pomme_1_droite.png';
@@ -76,6 +74,12 @@ export default class GameScene extends Phaser.Scene {
         this.trailPoints = [];
         this.trailGraphics = null;
         this.currentTime = Date.now();
+
+        this.gameTime = 60;
+        this.currentDifficultyStage = 0; // 0: normal, 1: +25%, 2: +50%
+        this.spawnTimers = []; // Pour stocker les références des timers
+        this.baseSpawnRate = 800; // Taux d'apparition de base en ms
+        this.speedMultiplier = 1.0;
     }
 
     preload() {
@@ -166,6 +170,10 @@ export default class GameScene extends Phaser.Scene {
             "carotte",
         ];
 
+        this.setupSpawnTimer();
+
+        this.events.on('timeUpdate', this.updateGameDifficulty, this);
+
         this.input.on('pointerdown', (pointer) => {
             this.startCut(pointer);
         });
@@ -204,6 +212,81 @@ export default class GameScene extends Phaser.Scene {
 
         this.epeeSound.volume = 0.7;
         this.splashSound.volume = 0.5;
+    }
+
+    // Méthode pour configurer le timer d'apparition
+    setupSpawnTimer(difficultyMultiplier = 1.0) {
+        // Annuler les timers existants si présents
+        if (this.spawnTimers.length > 0) {
+            this.spawnTimers.forEach(timer => {
+                if (timer) timer.remove();
+            });
+            this.spawnTimers = [];
+        }
+        
+        // Calculer le nouveau taux d'apparition
+        const spawnRate = this.baseSpawnRate / difficultyMultiplier;
+        
+        // Créer un nouveau timer
+        const timer = this.time.addEvent({
+            delay: spawnRate,
+            loop: true,
+            callback: () => this.launchFood(difficultyMultiplier)
+        });
+        
+        // Stocker la référence du timer
+        this.spawnTimers.push(timer);
+        
+        console.log(`Difficulté ajustée: Taux d'apparition ${spawnRate}ms, Vitesse x${difficultyMultiplier}`);
+    }
+
+    // Méthode pour mettre à jour la difficulté en fonction du temps
+    updateGameDifficulty(timeString) {
+        // Convertir le format "MM'SS" en secondes
+        let seconds = 0;
+
+        if (typeof timeString === 'string') {
+            // C'est une chaîne, on peut utiliser includes()
+            if (timeString.includes("'")) {
+                const [minutes, secondsStr] = timeString.split("'");
+                seconds = parseInt(minutes) * 60 + parseInt(secondsStr);
+            } else if (timeString.includes(":")) {
+                const [minutes, secondsStr] = timeString.split(":");
+                seconds = parseInt(minutes) * 60 + parseInt(secondsStr);
+            } else {
+                // Essayer de convertir directement la chaîne en nombre
+                seconds = parseInt(timeString);
+                if (isNaN(seconds)) {
+                    console.warn("Format de temps non reconnu:", timeString);
+                    return; // Sortir de la fonction si la conversion échoue
+                }
+            }
+        } else if (typeof timeString === 'number') {
+            // C'est déjà un nombre
+            seconds = timeString;
+        } else {
+            // Type non pris en charge
+            console.warn("Type de temps non pris en charge:", typeof timeString, timeString);
+            return; // Sortir de la fonction
+        }
+        
+        // Stocker le temps actuel
+        this.gameTime = seconds;
+
+        console.log("Temps mis à jour:", seconds, "secondes, stade:", this.currentDifficultyStage);
+
+        // Paliers de difficulté
+        if (seconds <= 15 && this.currentDifficultyStage < 2) {
+            // 15 dernières secondes: difficulté maximale
+            this.currentDifficultyStage = 2;
+            this.speedMultiplier = 1.5;
+            this.setupSpawnTimer(1.5);
+        } else if (seconds <= 30 && seconds > 15 && this.currentDifficultyStage < 1) {
+            // Entre 30 et 15 secondes: difficulté intermédiaire
+            this.currentDifficultyStage = 1;
+            this.speedMultiplier = 1.25;
+            this.setupSpawnTimer(1.25);
+        }
     }
 
     startCut(pointer) {
@@ -619,17 +702,27 @@ export default class GameScene extends Phaser.Scene {
         food.setScale(0.5); // Modifie la taille des images
         food.setDepth(1); // S'assurer que la nourriture est devant d'autres éléments
 
-        const velocityY = -Math.max(500, hauteurFenetre * 0.8);
-        const angle = Phaser.Math.Between(-15, 15);
-        const velocityX = Math.tan(Phaser.Math.DegToRad(angle)) * Math.abs(velocityY) * 0.3;
+        const heightFactor = Phaser.Math.FloatBetween(0.8, 1.6) * this.speedMultiplier;
+
+        const baseVelocity = -Math.max(700, hauteurFenetre * 1.2);
+        const velocityY = baseVelocity * heightFactor;
+        
+        const maxAngle = 15 + (heightFactor - 1) * 5;
+        const angle = Phaser.Math.Between(-maxAngle, maxAngle);
+
+        const velocityX = Math.tan(Phaser.Math.DegToRad(angle)) * Math.abs(velocityY) * 
+                     (heightFactor > 1.3 ? 0.15 : 0.2); // Réduire l'influence horizontale pour les grandes hauteurs
 
         food.setVelocityY(velocityY);
         food.setVelocityX(velocityX);
 
-        const gravity = Math.max(900, hauteurFenetre * 1.3);
+        const gravityFactor = heightFactor * Phaser.Math.FloatBetween(0.95, 1.05);
+        const gravity = Math.max(1000, hauteurFenetre * 1.4) * gravityFactor;
         food.setGravityY(gravity);
 
-        food.setAngularVelocity(Phaser.Math.Between(-120, 120));
+        const rotationSpeed = Phaser.Math.Between(-120, 120) / Math.max(1, heightFactor * 0.8);
+        food.setAngularVelocity(rotationSpeed);
+
         food.setInteractive(); // Permet de cliquer/couper
 
         food.setCollideWorldBounds(false);
