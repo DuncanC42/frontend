@@ -47,7 +47,7 @@
   
   <!-- Étape 3: Jeu -->
   <div v-if="currentStep === 2" class="jeu-taquin">
-    <JeuTaquin :key="'game-'+gameKey" :difficulty="difficulty"/>
+    <JeuTaquin :key="'game-'+gameKey" :difficulty="difficulty" @retry="handleRetry"/>
   </div>
 </template>
 
@@ -86,6 +86,11 @@ const difficulty = ref('normal');
 
 const toggleDifficulty = () => {
   difficulty.value = difficulty.value === 'normal' ? 'hard' : 'normal';
+};
+
+const handleRetry = () => {
+    gameKey.value++; // Force la recréation du composant
+    currentStep.value = 2; // Retour au jeu
 };
 </script>
 

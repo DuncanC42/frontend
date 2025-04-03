@@ -51,6 +51,10 @@ const difficulty = ref('normal');
 const toggleDifficulty = () => {
   difficulty.value = difficulty.value === 'normal' ? 'hard' : 'normal';
 };
+const handleRetry = () => {
+    gameKey.value++; // Force la recréation du composant
+    currentStep.value = 2; // Retour au jeu
+};
 </script>
 
 <template>
@@ -109,6 +113,7 @@ const toggleDifficulty = () => {
     <ThootbrushGame 
       :key="'game-'+gameKey" 
       :difficulty="difficulty"
+      @retry="handleRetry"
     />
   </div>
 </template>
