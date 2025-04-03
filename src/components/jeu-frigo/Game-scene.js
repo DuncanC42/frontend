@@ -1,75 +1,75 @@
-    import Phaser from "phaser";
+import Phaser from "phaser";
 
-    import epeeSound from '@/assets/fruit-ninja/sons/Epée.mp3'
-    import splashSound from '@/assets/fruit-ninja/sons/Splash.mp3'
+import epeeSound from '@/assets/fruit-ninja/sons/Epée.mp3'
+import splashSound from '@/assets/fruit-ninja/sons/Splash.mp3'
 
-    import coupeDiagonaleDroite from '@/assets/fruit-ninja/images/coupe_daigonale_droite.png';
-    import coupeDiagonaleGauche from '@/assets/fruit-ninja/images/coupe_diagonale_gauche.png';
-    import coupeHorizontale from '@/assets/fruit-ninja/images/coupe_horizontale.png';
-    import coupeVerticale from '@/assets/fruit-ninja/images/coupe_verticale.png';
+import coupeDiagonaleDroite from '@/assets/fruit-ninja/images/coupe_daigonale_droite.png';
+import coupeDiagonaleGauche from '@/assets/fruit-ninja/images/coupe_diagonale_gauche.png';
+import coupeHorizontale from '@/assets/fruit-ninja/images/coupe_horizontale.png';
+import coupeVerticale from '@/assets/fruit-ninja/images/coupe_verticale.png';
 
-    import frite1 from '@/assets/fruit-ninja/images/frite_1.png';
-    import frite2 from '@/assets/fruit-ninja/images/frite_2.png';
-    import frite3 from '@/assets/fruit-ninja/images/frite_3.png';
-    import frite4 from '@/assets/fruit-ninja/images/frite_4.png';
-    import frite5 from '@/assets/fruit-ninja/images/frite_5.png';
-    import frite6 from '@/assets/fruit-ninja/images/frite_6.png';
+import frite1 from '@/assets/fruit-ninja/images/frite_1.png';
+import frite2 from '@/assets/fruit-ninja/images/frite_2.png';
+import frite3 from '@/assets/fruit-ninja/images/frite_3.png';
+import frite4 from '@/assets/fruit-ninja/images/frite_4.png';
+import frite5 from '@/assets/fruit-ninja/images/frite_5.png';
+import frite6 from '@/assets/fruit-ninja/images/frite_6.png';
 
-    import frites from '@/assets/fruit-ninja/images/frites.png';
-    import paquetFrites from '@/assets/fruit-ninja/images/paquet_de_frites.png';
+import frites from '@/assets/fruit-ninja/images/frites.png';
+import paquetFrites from '@/assets/fruit-ninja/images/paquet_de_frites.png';
 
-    import hamburger from '@/assets/fruit-ninja/images/hamburger.png';
-    import hambugerFromage from '@/assets/fruit-ninja/images/hamburger_fromage.png';
-    import hamburgerSalade from '@/assets/fruit-ninja/images/hamburger_salade.png';
-    import hamburgerTomate from '@/assets/fruit-ninja/images/hamburger_tomate_1.png';
-    import hambugerOignonDroite from '@/assets/fruit-ninja/images/hamburger_oignon_droite.png';
-    import hambugerOignonGauche from '@/assets/fruit-ninja/images/hamburger_oignon_gauche.png';
-    import hamburgerPartieHaut from '@/assets/fruit-ninja/images/hamburger_pain_dessus.png';
-    import hamburgerPartieBas from '@/assets/fruit-ninja/images/hamburger_pain_bas.png';
-    import hamburgerSteak from '@/assets/fruit-ninja/images/hamburger_steak_hache.png';
+import hamburger from '@/assets/fruit-ninja/images/hamburger.png';
+import hambugerFromage from '@/assets/fruit-ninja/images/hamburger_fromage.png';
+import hamburgerSalade from '@/assets/fruit-ninja/images/hamburger_salade.png';
+import hamburgerTomate from '@/assets/fruit-ninja/images/hamburger_tomate_1.png';
+import hambugerOignonDroite from '@/assets/fruit-ninja/images/hamburger_oignon_droite.png';
+import hambugerOignonGauche from '@/assets/fruit-ninja/images/hamburger_oignon_gauche.png';
+import hamburgerPartieHaut from '@/assets/fruit-ninja/images/hamburger_pain_dessus.png';
+import hamburgerPartieBas from '@/assets/fruit-ninja/images/hamburger_pain_bas.png';
+import hamburgerSteak from '@/assets/fruit-ninja/images/hamburger_steak_hache.png';
 
-    import kebab from '@/assets/fruit-ninja/images/KEBAB.png';
-    import kebabPartieHaut from '@/assets/fruit-ninja/images/kebab_partie_haut.png';
-    import kebabPartieBas from '@/assets/fruit-ninja/images/kebab_partie_bas.png';
+import kebab from '@/assets/fruit-ninja/images/KEBAB.png';
+import kebabPartieHaut from '@/assets/fruit-ninja/images/kebab_partie_haut.png';
+import kebabPartieBas from '@/assets/fruit-ninja/images/kebab_partie_bas.png';
 
-    import pizza from '@/assets/fruit-ninja/images/PIZZA.png';
-    import pizza1 from '@/assets/fruit-ninja/images/pizza_part_1.png';
-    import pizza2 from '@/assets/fruit-ninja/images/pizza_part_2.png';
-    import pizza3 from '@/assets/fruit-ninja/images/pizza_part_3.png';
-    import pizza4 from '@/assets/fruit-ninja/images/pizza_part_4.png';
-    import pizza5 from '@/assets/fruit-ninja/images/pizza_part_5.png';
-    import pizza6 from '@/assets/fruit-ninja/images/pizza_part_6.png';
-    import pizza7 from '@/assets/fruit-ninja/images/pizza_part_7.png';
-    import pizza8 from '@/assets/fruit-ninja/images/pizza_part_8.png';
-    import pizza9 from '@/assets/fruit-ninja/images/pizza_part_9.png';
+import pizza from '@/assets/fruit-ninja/images/PIZZA.png';
+import pizza1 from '@/assets/fruit-ninja/images/pizza_part_1.png';
+import pizza2 from '@/assets/fruit-ninja/images/pizza_part_2.png';
+import pizza3 from '@/assets/fruit-ninja/images/pizza_part_3.png';
+import pizza4 from '@/assets/fruit-ninja/images/pizza_part_4.png';
+import pizza5 from '@/assets/fruit-ninja/images/pizza_part_5.png';
+import pizza6 from '@/assets/fruit-ninja/images/pizza_part_6.png';
+import pizza7 from '@/assets/fruit-ninja/images/pizza_part_7.png';
+import pizza8 from '@/assets/fruit-ninja/images/pizza_part_8.png';
+import pizza9 from '@/assets/fruit-ninja/images/pizza_part_9.png';
 
-    import soda1 from '@/assets/fruit-ninja/images/soda_1.png';
-    import soda2 from '@/assets/fruit-ninja/images/soda_2.png';
-    import sodaCasse1 from '@/assets/fruit-ninja/images/soda_casse_1.png';
-    import sodaCasse2 from '@/assets/fruit-ninja/images/soda_casse_2.png';
+import soda1 from '@/assets/fruit-ninja/images/soda_1.png';
+import soda2 from '@/assets/fruit-ninja/images/soda_2.png';
+import sodaCasse1 from '@/assets/fruit-ninja/images/soda_casse_1.png';
+import sodaCasse2 from '@/assets/fruit-ninja/images/soda_casse_2.png';
 
-    import eau from '@/assets/fruit-ninja/images/eau.png';
+import eau from '@/assets/fruit-ninja/images/eau.png';
 
-    import pomme1 from '@/assets/fruit-ninja/images/pomme_1.png';
-    import pomme2 from '@/assets/fruit-ninja/images/pomme_2.png';
-    import pomme1Droite from '@/assets/fruit-ninja/images/pomme_1_droite.png';
-    import pomme2Droite from '@/assets/fruit-ninja/images/pomme_2_droite.png';
-    import pomme1Gauche from '@/assets/fruit-ninja/images/pomme_1_gauche.png';
-    import pomme2Gauche from '@/assets/fruit-ninja/images/pomme_2_gauche.png';
+import pomme1 from '@/assets/fruit-ninja/images/pomme_1.png';
+import pomme2 from '@/assets/fruit-ninja/images/pomme_2.png';
+import pomme1Droite from '@/assets/fruit-ninja/images/pomme_1_droite.png';
+import pomme2Droite from '@/assets/fruit-ninja/images/pomme_2_droite.png';
+import pomme1Gauche from '@/assets/fruit-ninja/images/pomme_1_gauche.png';
+import pomme2Gauche from '@/assets/fruit-ninja/images/pomme_2_gauche.png';
 
-    import banane from '@/assets/fruit-ninja/images/BANANE.png';
-    import bananePartieBas from '@/assets/fruit-ninja/images/BANANE_.png';
-    import bananePartieHaut from '@/assets/fruit-ninja/images/BANANE_PARTIE_HAUT.png';
+import banane from '@/assets/fruit-ninja/images/BANANE.png';
+import bananePartieBas from '@/assets/fruit-ninja/images/BANANE_.png';
+import bananePartieHaut from '@/assets/fruit-ninja/images/BANANE_PARTIE_HAUT.png';
 
-    import brocoli from '@/assets/fruit-ninja/images/brocoli.png';
-    import brocoliPartieHaut from '@/assets/fruit-ninja/images/brocoli_coupe_haut.png';
-    import brocoliPartieBas from '@/assets/fruit-ninja/images/brocoli_coupe_bas.png';
+import brocoli from '@/assets/fruit-ninja/images/brocoli.png';
+import brocoliPartieHaut from '@/assets/fruit-ninja/images/brocoli_coupe_haut.png';
+import brocoliPartieBas from '@/assets/fruit-ninja/images/brocoli_coupe_bas.png';
 
-    import carotte from '@/assets/fruit-ninja/images/carotte.png';
-    import carottePartieHaut from '@/assets/fruit-ninja/images/Carotte_coupee_haut.png';
-    import carottePartieBas from '@/assets/fruit-ninja/images/Carotte_coupee_bas.png';
+import carotte from '@/assets/fruit-ninja/images/carotte.png';
+import carottePartieHaut from '@/assets/fruit-ninja/images/Carotte_coupee_haut.png';
+import carottePartieBas from '@/assets/fruit-ninja/images/Carotte_coupee_bas.png';
 
-    export default class GameScene extends Phaser.Scene {
+export default class GameScene extends Phaser.Scene {
     constructor() {
         super({ key: "GameScene" });
         this.score = 0;
@@ -83,30 +83,33 @@
         // Chargement des sons
         this.load.audio("epee", epeeSound);
         this.load.audio("splash", splashSound);
-       
-       // Frites
-       this.load.image("frite1", frite1);
-       this.load.image("frite2", frite2);
-       this.load.image("frite3", frite3);
-       this.load.image("paquet-frites", paquetFrites);
-       
-       // Hamburger
-       this.load.image("hamburger", hamburger);
-       this.load.image("hamburger-fromage", hambugerFromage);
-       this.load.image("hamburger-salade", hamburgerSalade);
-       this.load.image("hamburger-tomate", hamburgerTomate);
-       this.load.image("hamburger-oignon-droite", hambugerOignonDroite);
-       this.load.image("hamburger-oignon-gauche", hambugerOignonGauche);
-       this.load.image("hamburger-pain-dessus", hamburgerPartieHaut);
-       this.load.image("hamburger-pain-bas", hamburgerPartieBas);
-       this.load.image("hamburger-steak", hamburgerSteak);
 
+        // Frites
+        this.load.image("frite1", frite1);
+        this.load.image("frite2", frite2);
+        this.load.image("frite3", frite3);
+        this.load.image("frite4", frite4);
+        this.load.image("frite5", frite5);
+        this.load.image("frite6", frite6);
+        this.load.image("frites", frites);
+        this.load.image("paquet-frites", paquetFrites);
+
+        // Hamburger
+        this.load.image("hamburger", hamburger);
+        this.load.image("hamburger-fromage", hambugerFromage);
+        this.load.image("hamburger-salade", hamburgerSalade);
+        this.load.image("hamburger-tomate", hamburgerTomate);
+        this.load.image("hamburger-oignon-droite", hambugerOignonDroite);
+        this.load.image("hamburger-oignon-gauche", hambugerOignonGauche);
+        this.load.image("hamburger-pain-dessus", hamburgerPartieHaut);
+        this.load.image("hamburger-pain-bas", hamburgerPartieBas);
+        this.load.image("hamburger-steak", hamburgerSteak);
 
         // Kebab
         this.load.image("kebab", kebab);
         this.load.image("kebab-partie-haut", kebabPartieHaut);
         this.load.image("kebab-partie-bas", kebabPartieBas);
-         
+
         // Pizza
         this.load.image("pizza", pizza);
         this.load.image("pizza1", pizza1);
@@ -118,13 +121,13 @@
         this.load.image("pizza7", pizza7);
         this.load.image("pizza8", pizza8);
         this.load.image("pizza9", pizza9);
-         
+
         // Boissons
         this.load.image("soda1", soda1);
         this.load.image("soda2", soda2);
         this.load.image("soda-casse-1", sodaCasse1);
         this.load.image("soda-casse-2", sodaCasse2);
-        
+
         // Fruits
         this.load.image("pomme1", pomme1);
         this.load.image("pomme2", pomme2);
@@ -137,18 +140,18 @@
         this.load.image("banane", banane);
         this.load.image("banane-partie-bas", bananePartieBas);
         this.load.image("banane-partie-haut", bananePartieHaut);
-        
+
         // Légumes
         this.load.image("brocoli", brocoli);
         this.load.image("brocoli-partie-haut", brocoliPartieHaut);
         this.load.image("brocoli-partie-bas", brocoliPartieBas);
-        
+
         this.load.image("carotte", carotte);
         this.load.image("carotte-partie-haut", carottePartieHaut);
         this.load.image("carotte-partie-bas", carottePartieBas);
     }
 
-    create(){
+    create() {
         this.foods = this.physics.add.group();
 
         this.foodTypes = [
@@ -189,9 +192,9 @@
         this.events.emit('scoreUpdate', this.score);
 
         // Afficher le score
-        this.scoreText = this.add.text(10, 18, 'Score: 0', { 
-            fontFamily: 'Segoe UI', 
-            fontSize: '28px', 
+        this.scoreText = this.add.text(10, 18, 'Score: 0', {
+            fontFamily: 'Segoe UI',
+            fontSize: '28px',
             fill: '#000000',
         });
         this.scoreText.setDepth(20);
@@ -223,7 +226,7 @@
 
     updateCut(pointer) {
         if (this.isCutting) {
-            
+
             this.trailPoints.push({
                 x: pointer.x,
                 y: pointer.y,
@@ -235,67 +238,180 @@
             }
 
             this.drawTrail();
-            
+
             // Vérifier les collisions avec les aliments
             const dx = pointer.x - this.lastPointerPosition.x;
             const dy = pointer.y - this.lastPointerPosition.y;
-            
+
             // Si le mouvement est assez significatif pour être une coupe
-            if (Math.sqrt(dx*dx + dy*dy) > 10) {
+            if (Math.sqrt(dx * dx + dy * dy) > 10) {
                 this.checkFoodCollisions(pointer);
                 this.lastPointerPosition = { x: pointer.x, y: pointer.y };
             }
         }
     }
 
-    drawTrail(){
+    drawTrail() {
         this.trailGraphics.clear();
 
-        if(this.trailPoints.length < 2) return;
+        if (this.trailPoints.length < 2) return;
 
-        const currrentTime = Date.now();
+        const currentPoints = this.trailPoints.filter(point => {
+            return this.currentTime - point.time < 300;
+        });
 
-        for (let thickness = 14; thickness > 0; thickness -= 3) {
-            const color = thickness > 10 ? 0x87CEEB : (thickness > 5 ? 0xADD8E6 : 0xFFFFFF);
-            let alpha = thickness / 14;
-            
-            this.trailGraphics.lineStyle(thickness, color, alpha);
-            
-            // Dessiner une ligne courbe pour un effet plus fluide
-            this.trailGraphics.beginPath();
-            
-            // Commencer au premier point
-            this.trailGraphics.moveTo(this.trailPoints[0].x, this.trailPoints[0].y);
-            
-            // Dessiner à travers tous les points
-            for (let i = 1; i < this.trailPoints.length; i++) {
-                const point = this.trailPoints[i];
-                const timeDiff = this.currentTime - point.time;
-                
-                // Ajuster l'alpha en fonction du temps (points plus anciens plus transparents)
-                const fadeAlpha = Math.max(0, 1 - (timeDiff / 300));
-                
-                if (fadeAlpha > 0) {
-                    this.trailGraphics.lineTo(point.x, point.y);
-                }
-            }
-            
-            this.trailGraphics.strokePath();
+        if (currentPoints.length < 2) return;
+
+        const tipPoint = currentPoints[currentPoints.length - 1];
+        const prevPoint = currentPoints[currentPoints.length - 2];
+
+        // Calcule pour l'angle de la pointe
+        const angle = Math.atan2(tipPoint.y - prevPoint.y, tipPoint.x - prevPoint.x);
+
+        const tipLength = 25;
+        const tipWidth = 12;
+
+        const tipX = tipPoint.x + Math.cos(angle) * (tipLength * 0.7);
+        const tipY = tipPoint.y + Math.sin(angle) * (tipLength * 0.7);
+        
+        const leftX = tipPoint.x - Math.cos(angle - Math.PI/2) * tipWidth/2;
+        const leftY = tipPoint.y - Math.sin(angle - Math.PI/2) * tipWidth/2;
+        
+        const rightX = tipPoint.x - Math.cos(angle + Math.PI/2) * tipWidth/2;
+        const rightY = tipPoint.y - Math.sin(angle + Math.PI/2) * tipWidth/2;
+
+        // Dessin de l'ombre exterieure
+        this.trailGraphics.lineStyle(18, 0x333333, 0.3);
+        this.trailGraphics.beginPath();
+        this.trailGraphics.moveTo(currentPoints[0].x, currentPoints[0].y);
+
+        for (let i = 1; i < currentPoints.length; i++) {
+            this.trailGraphics.lineTo(currentPoints[0].x, currentPoints[0].y);
         }
 
-        const latestPoints = this.trailPoints.slice(-3);
-        latestPoints.forEach(point => {
-            // Ajouter 2-3 étincelles à chaque point récent
-            for (let i = 0; i < Phaser.Math.Between(1, 3); i++) {
-                const sparkX = point.x + Phaser.Math.Between(-10, 10);
-                const sparkY = point.y + Phaser.Math.Between(-10, 10);
-                const sparkSize = Phaser.Math.FloatBetween(1, 3);
+        this.trailGraphics.strokePath();
+
+        // Contour principale plus petit
+        this.trailGraphics.lineStyle(14, 0x666666, 0.5);
+        this.trailGraphics.beginPath();
+        this.trailGraphics.moveTo(currentPoints[0].x, currentPoints[0].y);
+    
+        for (let i = 1; i < currentPoints.length; i++) {
+            this.trailGraphics.lineTo(currentPoints[i].x, currentPoints[i].y);
+        }
+    
+        this.trailGraphics.strokePath();
+
+        // Dessin de la lame grise métallique
+        this.trailGraphics.lineStyle(10, 0xCCCCCC, 0.7);
+        this.trailGraphics.beginPath();
+        this.trailGraphics.moveTo(currentPoints[0].x, currentPoints[0].y);
+        
+        for (let i = 1; i < currentPoints.length; i++) {
+            this.trailGraphics.lineTo(currentPoints[i].x, currentPoints[i].y);
+        }
+        
+        this.trailGraphics.strokePath();
+
+        // Eclat centrail effet métallique
+        this.trailGraphics.lineStyle(4, 0xFFFFFF, 0.9);
+        this.trailGraphics.beginPath();
+        this.trailGraphics.moveTo(currentPoints[0].x, currentPoints[0].y);
+        
+        for (let i = 1; i < currentPoints.length; i++) {
+            this.trailGraphics.lineTo(currentPoints[i].x, currentPoints[i].y);
+        }
+        
+        this.trailGraphics.strokePath();
+
+        // Ajouter la pointe triangulaire de la lame
+        // Ombre de la pointe
+        this.trailGraphics.fillStyle(0x333333, 0.5);
+        this.trailGraphics.beginPath();
+        this.trailGraphics.moveTo(tipX + Math.cos(angle) * 2, tipY + Math.sin(angle) * 2);
+        this.trailGraphics.lineTo(leftX, leftY);
+        this.trailGraphics.lineTo(rightX, rightY);
+        this.trailGraphics.closePath();
+        this.trailGraphics.fillPath();
+        
+        // Corps métallique de la pointe
+        this.trailGraphics.fillStyle(0xB0B0B0, 0.8);
+        this.trailGraphics.beginPath();
+        this.trailGraphics.moveTo(tipX, tipY);
+        this.trailGraphics.lineTo(leftX, leftY);
+        this.trailGraphics.lineTo(rightX, rightY);
+        this.trailGraphics.closePath();
+        this.trailGraphics.fillPath();
+        
+        // Reflet sur la pointe
+        this.trailGraphics.fillStyle(0xFFFFFF, 0.7);
+        this.trailGraphics.beginPath();
+        this.trailGraphics.moveTo(tipX - Math.cos(angle) * 5, tipY - Math.sin(angle) * 5);
+        
+        // Point du milieu du reflet (légèrement décalé)
+        const mx = tipX - Math.cos(angle) * tipLength * 0.3 + Math.cos(angle + Math.PI/2) * tipWidth * 0.15;
+        const my = tipY - Math.sin(angle) * tipLength * 0.3 + Math.sin(angle + Math.PI/2) * tipWidth * 0.15;
+        
+        this.trailGraphics.lineTo(mx, my);
+        this.trailGraphics.lineTo(tipX - Math.cos(angle) * tipLength * 0.6, tipY - Math.sin(angle) * tipLength * 0.6);
+        this.trailGraphics.closePath();
+        this.trailGraphics.fillPath();
+
+        // Etincelles 
+        const latestPoints = currentPoints.slice(-5); // Prendre les 5 derniers points
+    
+        latestPoints.forEach((point, index) => {
+            // Plus d'étincelles à la pointe de la lame
+            const sparkCount = index === latestPoints.length - 1 ? 6 : 2;
+            
+            for (let i = 0; i < sparkCount; i++) {
+                // Distance variable selon la position dans la traînée
+                const distance = index === latestPoints.length - 1 ? 15 : 8;
                 
-                this.trailGraphics.fillStyle(0xFFFFFF, Phaser.Math.FloatBetween(0.3, 0.7));
+                const sparkX = point.x + Phaser.Math.Between(-distance, distance);
+                const sparkY = point.y + Phaser.Math.Between(-distance, distance);
+                
+                // Taille variable des étincelles
+                const sparkSize = Phaser.Math.FloatBetween(1, index === latestPoints.length - 1 ? 3 : 2);
+                
+                // Couleur des étincelles: blanc à jaune clair
+                const sparkColor = Phaser.Math.Between(0, 1) ? 0xFFFFFF : 0xFFFF99;
+                
+                // Opacité variable
+                const sparkAlpha = Phaser.Math.FloatBetween(0.3, 0.8);
+                
+                this.trailGraphics.fillStyle(sparkColor, sparkAlpha);
                 this.trailGraphics.fillCircle(sparkX, sparkY, sparkSize);
             }
+
+            // Ajouter des étincelles supplémentaires autour de la pointe
+            if (index === latestPoints.length - 1) {
+                for (let i = 0; i < 5; i++) {
+                    const sparkX = tipX + Phaser.Math.Between(-8, 8);
+                    const sparkY = tipY + Phaser.Math.Between(-8, 8);
+                    const sparkSize = Phaser.Math.FloatBetween(1.5, 3);
+                    const sparkColor = Phaser.Math.Between(0, 1) ? 0xFFFFFF : 0xFFFF99;
+                    
+                    this.trailGraphics.fillStyle(sparkColor, 0.9);
+                    this.trailGraphics.fillCircle(sparkX, sparkY, sparkSize);
+                }
+            }
         });
-    
+
+        // Effet de la trainée / poussière
+        if (latestPoints.length > 0) {
+            const lastPoint = latestPoints[latestPoints.length - 1];
+            
+            for (let i = 0; i < 3; i++) {
+                const dustX = lastPoint.x + Phaser.Math.Between(-20, 20);
+                const dustY = lastPoint.y + Phaser.Math.Between(-20, 20);
+                const dustSize = Phaser.Math.FloatBetween(2, 5);
+                
+                this.trailGraphics.fillStyle(0xCCCCCC, Phaser.Math.FloatBetween(0.1, 0.3));
+                this.trailGraphics.fillCircle(dustX, dustY, dustSize);
+            }
+        }
+        
         this.trailGraphics.setDepth(20);
     }
 
@@ -318,14 +434,14 @@
 
     checkFoodCollisions(pointer) {
         const line = new Phaser.Geom.Line(
-            this.lastPointerPosition.x, 
-            this.lastPointerPosition.y, 
+            this.lastPointerPosition.x,
+            this.lastPointerPosition.y,
             pointer.x, pointer.y
         );
-        
+
         this.foods.getChildren().forEach(food => {
             const foodBounds = food.getBounds();
-            
+
             if (Phaser.Geom.Intersects.LineToRectangle(line, foodBounds) && food.active) {
                 this.cutFood(food, pointer);
             }
@@ -342,7 +458,7 @@
 
         if (this.splashSound) {
             this.splashSound.play({
-                volume: Phaser.Math.FloatBetween(0.4, 0.6), 
+                volume: Phaser.Math.FloatBetween(0.4, 0.6),
                 rate: Phaser.Math.FloatBetween(0.9, 1.1)
             });
         }
@@ -362,7 +478,7 @@
         this.createFoodPieces(food, foodType, angle);
 
         food.disableBody(true, true);
-        
+
         // Augmenter le score
         this.score += 10;
         this.scoreText.setText('Score: ' + this.score);
@@ -388,7 +504,7 @@
                 scorePopup.destroy();
             }
         });
-        
+
         // Envoyer le nouveau score aux écouteurs
         this.events.emit('scoreUpdate', this.score);
     }
@@ -403,23 +519,23 @@
 
         pieces.forEach((pieceKey, index) => {
             if (!pieceKey) return;
-            
+
             // Créer la pièce
             const piece = this.physics.add.image(food.x, food.y, pieceKey);
             piece.setScale(food.scale);
             piece.setDepth(food.depth);
-            
+
             // Direction de la pièce: gauche ou droite
             const directionX = index === 0 ? -velocityX : velocityX;
             const directionY = -100 + velocityY * 0.5; // Toujours un peu vers le haut avec un peu d'influence de l'angle
-            
+
             // Appliquer la vitesse et la gravité
             piece.setVelocity(directionX, directionY);
             piece.setGravityY(600);
-            
+
             // Ajouter une rotation basée sur la direction
             piece.setAngularVelocity((index === 0 ? -1 : 1) * Phaser.Math.Between(90, 180));
-            
+
             // Faire disparaître la pièce après un délai
             this.time.delayedCall(2000, () => {
                 this.tweens.add({
@@ -445,9 +561,9 @@
             'soda1': ['soda-casse-1'],
             'soda2': ['soda-casse-2'],
             'pizza': ['pizza1', 'pizza2'],
-            'frites': ['frite1', 'frite2', 'frites3', 'paquet-frites'],
+            'frites': ['frite1', 'frite2'],
         };
-        
+
         return piecesMap[foodType];
     }
 
@@ -467,7 +583,7 @@
             'frite1': [0xFFD700, 0xF4A460],     // Jaune doré
             'frites': [0xFFD700, 0xF4A460],     // Jaune doré
         };
-        
+
         return colorMap[foodType] || [0xFFFFFF, 0xFFFFAA];
     }
 
@@ -518,7 +634,7 @@
             this.trailPoints = this.trailPoints.filter(point => {
                 return (this.currentTime - point.time) < 300;
             });
-            
+
             // Redessiner la traînée si des points sont encore présents
             if (this.trailPoints.length > 0) {
                 this.drawTrail();
