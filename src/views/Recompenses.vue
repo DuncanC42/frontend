@@ -5,11 +5,26 @@ import Appartement from '@/assets/images/Appartement.png'
 import FondEcran from '@/components/FondEcran.vue';
 import BlurFilter from '@/components/BlurFilter.vue';
 import CompteRebours from '@/components/temps/CompteRebours.vue';
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import NavBar from '@/components/NavBar.vue';
+import { fetchBackend } from '@/composable/fetchBackend';
 
-//TO DO : fetch la fin en base
-const limit = ref('04/04/2025 10:45:00');
+const limit = ref(null);
+
+onMounted(() => {
+    fetchBackend('intranet/parametres', 'GET')
+        .then(response => {
+            if (response.status === 200) {
+                limit.value = response.data.dateCloture;
+            } else {
+                console.error('Erreur lors de la récupération des données :', response.status);
+            }
+        })
+        .catch(error => {
+            console.error('Erreur lors de la récupération des données :', error);
+        })
+})
+
 </script>
 
 <template>
@@ -18,7 +33,11 @@ const limit = ref('04/04/2025 10:45:00');
         <FondEcran :image="Appartement"></FondEcran>
         <div class="countdown">
             <h1>Distribution des récompenses dans</h1>
-            <CompteRebours :target-date="limit"></CompteRebours>
+            <CompteRebours v-if="limit" :target-date="limit"></CompteRebours>
+            <div v-if="!limit" class="loading">
+                <font-awesome-icon :icon="['fas', 'spinner']" />
+                <span>Chargement...</span>
+            </div>
         </div>
         <div class="gifts">
             <img :src="gift_1" alt="Image cadeau n°1">
@@ -68,5 +87,30 @@ img:first-of-type {
 
 img:last-of-type {
     align-self: flex-end;
+}
+
+.loading {
+    color: #ffffffa2;
+    font-size: xx-large;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    height: 100%;
+    font-weight: bold;
+}
+
+.loading svg {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 </style>

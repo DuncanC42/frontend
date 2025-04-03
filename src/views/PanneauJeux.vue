@@ -7,6 +7,8 @@ import { ref, onMounted } from 'vue';
 import NavBar from '@/components/NavBar.vue';
 import { useRouter } from 'vue-router'
 import VolumeButton from '@/components/volumes/VolumeButton.vue';
+import { fetchBackend } from '@/composable/fetchBackend';
+
 const props = defineProps({
     loader: {
         type: Boolean,
@@ -17,43 +19,47 @@ const props = defineProps({
 const router = useRouter();
 
 // Tableau temporaire renvoyé plus tard par l'api : completed / locked / unlocked
-const status = {
-    jeux1: 'completed',
-    jeux2: 'completed',
-    jeux3: 'unlocked',
-    jeux4: 'unlocked',
-    jeux5: 'unlocked',
-}
+const status = ref({
+    jeux1: null,
+    jeux2: null,
+    jeux3: null,
+    jeux4: null,
+    jeux5: null,
+})
 
 const ready = ref(false)
 
-const handleClick = (numero, status) => {
-    if (status !== 'locked') {
-        let route = ''
-        switch (numero) {
-            case 1:
-                route = 'taquin'
-                break;
-            case 2:
-                route = 'tirelire'
-                break;
-            case 3:
-                route = 'dino'
-                break;
-            case 4:
-                route = 'frigo'
-                break;
-            case 5:
-                route = 'dents'
-                break;
-            default:
-                break;
-        }
-        router.push(route)
+const handleClick = (numero) => {
+    let route = ''
+    switch (numero) {
+        case 1:
+            route = 'taquin'
+            break;
+        case 2:
+            route = 'tirelire'
+            break;
+        case 3:
+            route = 'dino'
+            break;
+        case 4:
+            route = 'frigo'
+            break;
+        case 5:
+            route = 'dents'
+            break;
+        default:
+            break;
     }
+    router.push(route)
 }
 
 onMounted(() => {
+    fetchBackend('api/status/jeux', 'GET').then(response => {
+        if (response.status === 200) {
+            status.value = response.data;
+        }
+    })
+
     if (!props.loader) {
         ready.value = true;
         return
@@ -89,9 +95,9 @@ onMounted(() => {
     </Transition>
     <div v-show="ready">
         <FondEcran :image="Image"></FondEcran>
-        <div v-for="i in 5" @click="handleClick(i, status['jeux' + i])" :key="'jeux-' + i" :id="'jeux-' + i"
-            :class="status['jeux' + i] === 'locked' && 'locked'">
-            <JeuxStatus :status="status['jeux' + i]"></JeuxStatus>
+        <div v-for="i in 5" @click="handleClick(i, status['jeux' + i])" :key="'jeux-' + i" :id="'jeux-' + i">
+            <JeuxStatus v-if="status['jeux' + i] !== null" :status="status['jeux' + i] ? 'completed' : 'unlocked'">
+            </JeuxStatus>
         </div>
     </div>
     <div id="blur"></div>
