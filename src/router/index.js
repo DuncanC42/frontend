@@ -30,13 +30,11 @@ function isBeforeOpeningDate() {
 
 	// Add one hour to the opening date
 	openingDate.setHours(openingDate.getHours() - 2);
-	console.log("Opening date:", openingDate);
-	console.log("Current date:", currentDate);
 	return currentDate <= openingDate;
 }
 
 const getDateOuverture = async () => {
-	const response = await fetchBackend('intranet/parametres', 'GET')
+	const response = await fetchBackend('api/parametres', 'GET')
 	date_ouverture = response.data.dateDebut;
 }
 
@@ -134,7 +132,7 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
 	// List of exempted routes that won't redirect to countdown
 	const exemptedRoutes = ['/', '/erreur', '/connexion', '/inscription', '/compte-rebours'];
-	while (date_ouverture === null) {
+	while (date_ouverture == null) {
 		await getDateOuverture()
 	}
 

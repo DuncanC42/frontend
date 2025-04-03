@@ -1,6 +1,5 @@
 <script setup>
 import CompteRebours from '@/components/temps/CompteRebours.vue';
-import { ref } from 'vue';
 import Appartement from '@/assets/images/Appartement.png';
 import FondEcran from '@/components/FondEcran.vue';
 import BlurFilter from '@/components/BlurFilter.vue';

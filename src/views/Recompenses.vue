@@ -12,7 +12,7 @@ import { fetchBackend } from '@/composable/fetchBackend';
 const limit = ref(null);
 
 onMounted(() => {
-    fetchBackend('intranet/parametres', 'GET')
+    fetchBackend('api/parametres', 'GET')
         .then(response => {
             if (response.status === 200) {
                 limit.value = response.data.dateCloture;
