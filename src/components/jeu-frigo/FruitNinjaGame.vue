@@ -145,16 +145,17 @@
     };
 
     const props = defineProps({
-    difficulty: {
-        type: String,
-        default: 'normal', // 'normal' ou 'hard'
-        validator: (value) => ['normal', 'hard'].includes(value)
-    },
-    isActive: {
+        difficulty: {
+            type: String,
+            default: 'normal', // 'normal' ou 'hard'
+            validator: (value) => ['normal', 'hard'].includes(value)
+        },
+        isActive: {
             type: Boolean,
             default: false
         }
     });
+    console.log('difficulty', props.difficulty);
 
     defineExpose();
 
@@ -171,8 +172,9 @@
             const gameWidth = window.innerWidth;
             const gameHeight = window.innerHeight - 80; // Soustraire la hauteur du header
             
-            const gameScene = new GameScene({ difficulty: props.difficulty });
-
+            const gameScene = new GameScene({ 
+                difficulty: props.difficulty // Passer la prop difficulty ici
+            });
             // Configurer et créer le jeu Phaser
             gameConfig.value = new Phaser.Game({
                 type: Phaser.AUTO,
@@ -257,6 +259,7 @@
         <Bravo 
             v-if="gameWon" 
             :score="score" 
+            :jeu_id="4"
             message="L’Assurance Maladie offre aux jeunes de 16 à 25 ans un examen de prévention santé. Il peut être réalisé dans un centre d’examens de santé."
             @retry="handleRetry" 
             @quit="handleLeave" />

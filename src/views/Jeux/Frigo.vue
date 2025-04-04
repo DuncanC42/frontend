@@ -130,7 +130,11 @@ const toggleDifficulty = () => {
     </div>
     <!-- Étape 3: Jeu (préchargé mais masqué) -->
      <div v-if="currentStep === 2" class="jeu-frigo">
-       <FruitNinjaGame difficulty="hard" :key="'game-'+gameKey" />
+       <FruitNinjaGame 
+        :key="'game-'+gameKey" 
+        :difficulty="difficulty"
+        @retry="handleRetry" 
+      />
      </div>
 </template>
 

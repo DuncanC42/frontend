@@ -63,6 +63,11 @@ const difficulty = ref('normal');
 const toggleDifficulty = () => {
   difficulty.value = difficulty.value === 'normal' ? 'hard' : 'normal';
 };
+
+const handleRetry = () => {
+    gameKey.value++; // Force la recréation du composant
+    currentStep.value = 2; // Retour au jeu
+};
 </script>
 
 <template>
@@ -133,7 +138,11 @@ const toggleDifficulty = () => {
   
   <!-- Étape 3: Jeu (préchargé mais masqué) -->
   <div v-if="currentStep === 2" class="jeu-tirelire">
-    <Jeu :key="'game-'+gameKey" :difficulty="difficulty"/>
+    <Jeu 
+      :key="'game-'+gameKey+'-'+difficulty" 
+      :difficulty="difficulty"
+      @retry="handleRetry"
+    />
   </div>
 </template>
 

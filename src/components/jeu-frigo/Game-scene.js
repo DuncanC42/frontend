@@ -77,14 +77,20 @@ export default class GameScene extends Phaser.Scene {
 
         this.difficulty = 'normal';
 
-        if (config) {
-            if (config.difficulty) {
-                this.difficulty = config.difficulty;
-            } else if (config.settings && config.settings.difficulty) {
-                this.difficulty = config.settings.difficulty;
-            }
+        // Vérifier si la config contient la difficulté
+        if (config && config.difficulty) {
+            this.difficulty = config.difficulty;
         }
 
+        // Utiliser this.difficulty pour le reste de la configuration
+        if (this.difficulty === 'normal') {
+            this.baseSpawnRate = 800;
+            this.baseSpeedMultiplier = 1.0;
+        } else if (this.difficulty === 'hard') {
+            this.baseSpawnRate = 600;
+            this.baseSpeedMultiplier = 1.2;
+        }
+        console.log("Difficulté choisie:", this.difficulty);
         this.gameTime = 60;
         this.currentDifficultyStage = 0; // 0: normal, 1: +25%, 2: +50%
         this.spawnTimers = []; // Pour stocker les références des timers
@@ -235,9 +241,7 @@ export default class GameScene extends Phaser.Scene {
         
         // Calculer le taux d'apparition basé sur la difficulté de base et le multiplicateur actuel
         const currentSpawnRate = this.baseSpawnRate / difficultyMultiplier;
-        
-        console.log(`setupSpawnTimer: Difficulté ${this.difficulty}, taux ${currentSpawnRate}ms`);
-        
+                
         // Créer le nouveau timer
         const timer = this.time.addEvent({
             delay: currentSpawnRate,
@@ -283,7 +287,6 @@ export default class GameScene extends Phaser.Scene {
         // Stocker le temps actuel
         this.gameTime = seconds;
 
-        console.log("Temps mis à jour:", seconds, "secondes, stade:", this.currentDifficultyStage);
 
         if (this.difficulty === 'normal') {
             // Paliers pour le mode normal
@@ -291,12 +294,10 @@ export default class GameScene extends Phaser.Scene {
                 this.currentDifficultyStage = 2;
                 this.speedMultiplier = this.baseSpeedMultiplier * 1.5;
                 this.setupSpawnTimer(1.5);
-                console.log("Mode normal: Phase finale (x1.5)");
             } else if (seconds <= 30 && seconds > 15 && this.currentDifficultyStage < 1) {
                 this.currentDifficultyStage = 1;
                 this.speedMultiplier = this.baseSpeedMultiplier * 1.25;
                 this.setupSpawnTimer(1.25);
-                console.log("Mode normal: Phase intermédiaire (x1.25)");
             }
         } else if (this.difficulty === 'hard') {
             // Paliers pour le mode difficile (plus précoces)
@@ -304,12 +305,10 @@ export default class GameScene extends Phaser.Scene {
                 this.currentDifficultyStage = 2;
                 this.speedMultiplier = this.baseSpeedMultiplier * 1.5;
                 this.setupSpawnTimer(1.5);
-                console.log("Mode difficile: Phase finale (x1.5)");
             } else if (seconds <= 40 && seconds > 20 && this.currentDifficultyStage < 1) {
                 this.currentDifficultyStage = 1;
                 this.speedMultiplier = this.baseSpeedMultiplier * 1.25;
                 this.setupSpawnTimer(1.25);
-                console.log("Mode difficile: Phase intermédiaire (x1.25)");
             }
         }
     }
