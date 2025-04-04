@@ -166,59 +166,42 @@ const handleContinue = () => {
 };
 
 const handleShare = async () => {
-  const shareData = {
-    title: 'Mon score',
-    text: `J'ai obtenu ${props.currentScore} points !`,
-    url: window.location.href,
-  };
+  const shareText = `J'ai obtenu ${props.currentScore} points ! ${window.location.href}`;
 
-  try {
-    // 1. Essayer l'API Web Share (mobile)
-    if (navigator.share) {
-      await navigator.share(shareData);
+  // 1. Essayer l'API Web Share (mobile moderne)
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: 'Mon score',
+        text: shareText,
+      });
       return;
+    } catch (err) {
+      console.log("L'utilisateur a annulé le partage", err);
     }
-    
-    // 2. Fallback pour desktop/navigateurs non supportés
+  }
+
+  // 2. Fallback pour SMS via le protocole sms:
+  if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+    const smsUri = `sms:?body=${encodeURIComponent(shareText)}`;
+    window.location.href = smsUri;
+    return;
+  }
+
+  // 3. Fallback pour desktop/navigateurs non supportés
+  try {
     if (navigator.clipboard) {
-      await navigator.clipboard.writeText(
-        `${shareData.text}\n${shareData.url}`
-      );
-      toast.success('Score copié dans le presse-papiers !'); // Ou alert()
-      return;
+      await navigator.clipboard.writeText(shareText);
+      toast.success('Score copié dans le presse-papiers !');
+    } else {
+      throw new Error('Clipboard API non disponible');
     }
-    
-    // 3. Fallback ultime
-    fallbackShare(shareData.text);
   } catch (err) {
-    console.error('Erreur de partage:', err);
-    fallbackShare(shareData.text);
+    console.error('Erreur de copie:', err);
+    toast.error('Impossible de copier le score');
   }
 };
 
-const fallbackShare = (text) => {
-  // Solution alternative pour les vieux navigateurs
-  const textArea = document.createElement('textarea')
-  textArea.value = `${text}\n${window.location.href}`
-  document.body.appendChild(textArea)
-  textArea.select()
-  
-  try {
-    document.execCommand('copy')
-    toast.info('Score copié !') // Ou alert()
-  } catch (err) {
-    toast.error('Impossible de copier le score') // Ou alert()
-    console.error('Fallback copy failed:', err)
-  }
-  
-  document.body.removeChild(textArea)
-  
-  // Option: Ouvrir un mail ou autre
-  window.open(
-    `mailto:?subject=Mon score&body=${encodeURIComponent(text)}`,
-    '_blank'
-  )
-};
 </script>
 
 <style scoped>

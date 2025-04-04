@@ -40,7 +40,7 @@
 </template>
 
 <script setup>
-    import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
+    import { ref, onMounted, onBeforeUnmount, watch, computed } from 'vue'
     import Phaser from 'phaser'
     import Minuteur from '@/components/temps/Minuteur.vue'
     import PagePause from '@/components/PagePause.vue'
@@ -70,57 +70,64 @@
     
     const router = useRouter()
     const {switchAudio, pause, resume} = useMusic();
+    
     switchAudio(ambiance);
 
-    
-    
     const minuteurRef = ref(null)
-    
     const puzzleCompleted = ref(false)
-    
     const gameWon = ref(false)
     const gameLost = ref(false)
-    const score = ref(0)
+
+    const props = defineProps({
+        difficulty: {
+            type: String,
+            default: 'normal',
+            validator: (value) => ['normal', 'hard'].includes(value)
+        }
+    });
+
+    console.log(props.difficulty)
     
-    const moveCount = ref(0)
+    // Variables dépendantes de la difficulté
+    const idealMoves = computed(() => props.difficulty === 'hard' ? 28 : 22);
+    const movePenalty = computed(() => props.difficulty === 'hard' ? 4 : 1); 
+    const scoreMultiplier = computed(() => props.difficulty === 'hard' ? 1.5 : 1);
+    
+    const gameTime = ref(60); // Temps total en secondes
+    const moveCount = ref(0); // Nombre de coups joués
+    const score = ref(0); // Score final
 
     const calculateScore = () => {
-        const timeLeft = gameTime.value; // Temps restant en secondes
-        const moves = moveCount.value;   // Nombre de coups utilisés
+        console.log('Calculating score with:', {
+            gameTime: gameTime.value,
+            moveCount: moveCount.value,
+            difficulty: props.difficulty,
+            idealMoves: idealMoves.value,
+            movePenalty: movePenalty.value,
+            scoreMultiplier: scoreMultiplier.value
+        });
+
+        // 1. Score de base basé sur le temps (50% à 100% du maximum)
+        const timeRatio = gameTime.value / 60;
+        let scoreValue = 500 + Math.round(timeRatio * 1000); // 500-1500 pts
         
-        // Paramètres de performance idéale
-        const IDEAL_TIME = 45;  // Temps idéal pour score max
-        const IDEAL_MOVES = 10; // Nombre de coups idéal
-        const MIN_SCORE = 800;  // Score minimum garanti
+        // 2. Calcul de l'efficacité des mouvements
+        const efficiency = idealMoves.value / Math.max(moveCount.value, 1);
         
-        // Calcul des composantes du score (0 à 1)
-        const timeComponent = Math.min(1, timeLeft / IDEAL_TIME);
-        const movesComponent = Math.max(0, 1 - (moves - IDEAL_MOVES) / (IDEAL_MOVES * 0.5));
+        // 3. Application de l'efficacité (30% de poids)
+        scoreValue = Math.round(scoreValue * (0.7 + 0.3 * efficiency));
         
-        // Pondération (60% temps, 40% coups)
-        let score = Math.round((timeComponent * 0.6 + movesComponent * 0.4) * 1000);
+        // 4. Bonus de difficulté
+        scoreValue = Math.round(scoreValue * scoreMultiplier.value);
         
-        // Ajustement des plages selon la performance
-        if (timeLeft >= 50 && moves <= 8) {
-            // Performance exceptionnelle
-            score = 1000;
-        } else if (timeLeft >= 40 && moves <= 12) {
-            // Très bonne performance
-            score = Phaser.Math.Between(950, 1000);
-        } else if (timeLeft >= 30 || moves <= 15) {
-            // Bonne performance
-            score = Phaser.Math.Between(900, 950);
-        } else {
-            // Performance standard
-            score = Phaser.Math.Between(850, 900);
-        }
+        // 5. Plages finales
+        const minScore = props.difficulty === 'hard' ? 800 : 600;
+        const maxScore = props.difficulty === 'hard' ? 2000 : 1500;
         
-        // Garantie de score minimum
-        score = Math.max(MIN_SCORE, score);
-        
-        return Phaser.Math.Clamp(score, MIN_SCORE, 1000);
-    }
+        return Math.min(maxScore, Math.max(minScore, scoreValue));
+    };
     
+    const TIME_LIMIT = 60
     // Variables réactives
     const game = ref(null)
     const showModal = ref(false)
@@ -134,8 +141,6 @@
     const applauseSound = ref(null)
     
     // Gestion du temps de jeu
-    const TIME_LIMIT = 60
-    const gameTime = ref(TIME_LIMIT);
     const gameTimer = ref(null)
     const isGamePaused = ref(false)
     

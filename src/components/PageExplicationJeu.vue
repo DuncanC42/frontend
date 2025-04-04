@@ -63,7 +63,7 @@ onUnmounted(() => {
 <style scoped>
 .page-explication-jeu {
     display: flex;
-    position: fixed;
+    position: relative;
     width: 100vw;
     height: 100vh;
     overflow: hidden;
