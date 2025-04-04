@@ -26,6 +26,7 @@
         <Bravo 
             v-if="gameWon" 
             :score="score" 
+            :jeu_id="1"
             message="L'Assurance Maladie offre des rendez-vous de prévention avec le dentiste appelés « M'T dents » aux jeunes de âgés de 18, 21 et 24 ans !"
             @retry="handleRetry" 
             @quit="handleLeave" 

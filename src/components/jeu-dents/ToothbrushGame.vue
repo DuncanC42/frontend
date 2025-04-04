@@ -96,6 +96,7 @@
     <Bravo 
       v-if="gameWon" 
       :score="score" 
+      :jeu_id="5"
       message="L'Assurance Maladie offre des rendez-vous de prévention avec le dentiste appelés « M'T dents » aux jeunes de âgés de 18, 21 et 24 ans !"
       @retry="handleRetry" 
       @quit="handleLeave" 
@@ -157,6 +158,11 @@ export default {
     isActive: {
       type: Boolean,
       default: false
+    },
+    difficulty: {
+      type: String,
+      default: 'normal',
+      validator: (value) => ['normal', 'hard'].includes(value)
     }
   },
   components: {
@@ -482,7 +488,7 @@ export default {
       const scaleY = canvas.height / rect.height;
 
       // Ajuster les coordonnées en fonction du ratio
-      const canvasX = (x - rect.left) * scaleX;
+      const canvasX = (x - rect.left) * scaleX; 
       const canvasY = (y - rect.top) * scaleY;
 
       // Vérifier si la brosse est sur le canvas
@@ -496,7 +502,10 @@ export default {
           // Effacer les dents jaunes avec un cercle
           ctx.globalCompositeOperation = "destination-out";
           ctx.beginPath();
-          ctx.arc(canvasX, canvasY, 80, 0, Math.PI * 2); // Rayon de 90 pixels
+
+          const brushRadius = this.difficulty === 'hard' ? 60 : 80;
+          ctx.arc(canvasX, canvasY, brushRadius, 0, Math.PI * 2); // Rayon de 80 pixels
+
           ctx.fill();
 
           // Convertir les coordonnées du canvas en coordonnées de la page
@@ -700,7 +709,12 @@ export default {
       }
       
       const teethCleanedPercentage = (cleanCount / sampleSize) * 100;
-      const cleanlinessBonus = teethCleanedPercentage * 5; // 5 points par % de propreté
+      let cleanlinessBonus = teethCleanedPercentage * 5; // 5 points par % de propreté
+      
+      // Bonus de difficulté
+      if (this.difficulty === 'hard') {
+        cleanlinessBonus *= 1.5; // 10% de points en plus en mode difficile
+      }
       
       // 3. Calcul du score total 
       this.score = Math.max(0, timeBonus + cleanlinessBonus - enemiesPenalty);
