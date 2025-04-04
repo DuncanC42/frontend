@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, watch } from 'vue';
 import ThootbrushGame from '../../components/jeu-dents/ToothbrushGame.vue';
 import PageExplicationJeu from '@/components/PageExplicationJeu.vue';
 import PageRegles from '@/components/PageRegles.vue';
@@ -45,11 +45,27 @@ const handleBackClick = () => {
     backToIntro(); // Retour à l'intro
   }
 };
+
+const difficulty = ref('normal');
+
+const toggleDifficulty = () => {
+  difficulty.value = difficulty.value === 'normal' ? 'hard' : 'normal';
+};
 </script>
 
 <template>
   <!-- Étape 1: Introduction -->
   <div v-show="currentStep === 0">
+    <!-- Bouton de difficulté positionné en haut à droite -->
+    <div class="global-difficulty-toggle">
+      <button 
+        @click="toggleDifficulty"
+        :class="{ 'active': difficulty === 'hard' }"
+      >
+        {{ difficulty === 'hard' ? 'Difficile' : 'Normale' }}
+      </button>
+    </div>
+
     <PageExplicationJeu 
       :ImageSrc="imagePostIt" 
       PostItRotate="0deg"
@@ -90,7 +106,10 @@ const handleBackClick = () => {
   
   <!-- Étape 3: Jeu (préchargé mais masqué) -->
   <div v-if="currentStep === 2" class="jeu-dents">
-    <ThootbrushGame :key="'game-'+gameKey" />
+    <ThootbrushGame 
+      :key="'game-'+gameKey" 
+      :difficulty="difficulty"
+    />
   </div>
 </template>
 
@@ -156,5 +175,33 @@ const handleBackClick = () => {
 
 .contenu-regles{
   margin-top: 0vh !important;
+}
+
+.global-difficulty-toggle {
+  position: absolute;
+  right: 20px;
+  z-index: 100;
+  top: 11%;
+}
+
+.global-difficulty-toggle button {
+  padding: 8px 16px;
+  border: 1px solid #000;
+  border-radius: 20px;
+  background-color: #0cd40c;
+  cursor: pointer;
+  color: #000;
+  transition: all 0.3s;
+  font-weight: bold;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.global-difficulty-toggle button.active {
+  background-color: #cc0d0d;
+  color: #000;
+}
+
+.intro-container {
+  position: relative;
 }
 </style>

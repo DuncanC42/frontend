@@ -1,17 +1,18 @@
 <script setup>
 import { onMounted, onUnmounted, ref } from 'vue';
 import { useLoader } from '@/composable/loader'; // Import the loader store
-import { useRouter } from 'vue-router';
 import Header from './components/Header.vue';
 import { useMusic } from '@/composable/volumes';
 import audio_mp3 from '@/assets/sons/musiques/ambiance/chill.mp3';
 import Loader from './components/Loader.vue';
 import PageErreur from './views/PageErreur.vue';
+import { useRouter } from 'vue-router';
 
 useMusic(audio_mp3);
 
 const { isLoading, showLoader, hideLoader } = useLoader();
 const router = useRouter();
+const ws = ref(null); // Référence pour le WebSocket
 
 onMounted(async () => {
 	// Ajoute un écouteur pour surveiller les changements de taille d'écran
@@ -21,6 +22,24 @@ onMounted(async () => {
 
 	showLoader();
 	await router.isReady(); // Wait for the router to be ready
+
+    ws.value = new WebSocket('ws://localhost:8051');
+
+    ws.value.onopen = () => {
+        console.log('Connecté au WebSocket');
+        ws.value.send(JSON.stringify({ action: 'userConnected' })); // Envoie l'action
+    };
+
+    ws.value.onmessage = (event) => {
+        console.log('Message reçu du serveur:', event.data);
+    };
+
+    ws.value.onclose = () => {
+        console.log('Déconnecté du WebSocket');
+        ws.value.send(JSON.stringify({ action: 'userDisconnected' })); // Envoie l'action
+
+    };
+
 	setTimeout(() => {
 		hideLoader();
 	}, 500); // Adjust delay for smooth transition
@@ -31,6 +50,11 @@ onUnmounted(() => {
 	window.removeEventListener('resize', updateScreenWidth);
 
 	showLoader(); // Show loader when the component is unmounted
+
+    if (ws.value) {
+        ws.value.send(JSON.stringify({action: 'userDisconnected'}));
+        ws.value.close();
+    }
 });
 
 router.beforeEach((to, from, next) => {

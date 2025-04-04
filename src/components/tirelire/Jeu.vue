@@ -9,12 +9,12 @@
             :score="finalScore" 
             :jeu_id="2"
             message="La complémentaire santé solidaire (C2S) est une aide pour payer ses dépenses de santé, si tes ressources sont faibles. Avec la C2S tu ne paies pas le médecin, ni tes médicaments en pharmacie. La plupart des lunettes et des soins dentaires sont pris en charge. Tu peux faire une simulation sur ameli.fr pour savoir si tu y as droit !"
-            @retry="handleRetry" 
+            @retry="handleRetry"
             @quit="handleLeave" 
         />
         <Dommage 
             v-if="gameLost" 
-            message="La complémentaire santé solidaire (C2S) est une aide pour payer ses dépenses de santé, si tes ressources sont faibles. Avec la C2S tu ne paies pas le médecin, ni tes médicaments en pharmacie. La plupart des lunettes et des soins dentaires sont pris en charge. Tu peux faire une simulation sur ameli.fr pour savoir si tu y as droit !"
+            message="La complémentaire santé solidaire (C2S) est une aide pour payer ses dépenses de santé, si tes ressources sont faibles. Avec la C2S tu ne paies pas le médecin, ni tes médicaments en pharmacie. La plupart des lunettes et des soins dentaires sont pris en charge. Tu peux faire une simulation sur ameli.fr pour savoir si tu y as droit !"
             @retry="handleRetry" 
             @quit="handleLeave" 
         />
@@ -32,8 +32,17 @@ import Chrono from '@/components/temps/ChronoTirelire.vue';
 import PagePause from '../PagePause.vue';
 import Bravo from '@/components/Bravo.vue';
 import Dommage from '@/components/Dommage.vue';
-
 import applause from '@/assets/jeu-dino/applause.mp3'
+
+const props = defineProps({
+    difficulty: {
+        type: String,
+        default: 'normal',
+        validator: (value) => ['normal', 'hard'].includes(value)
+    }
+});
+
+console.log(props.difficulty)
 
 let applauseSoundEffect;
 
@@ -43,8 +52,8 @@ const gameWon = ref(false);
 const gameLost = ref(false);
 const score = ref(0);
 const finalScore = ref(0);
-const requiredPictograms = 20;
-const maxTime = 300;
+const requiredPictograms = props.difficulty === 'hard' ? 40 : 20;
+const maxTime = props.difficulty === 'hard' ? 180 : 300;
 
 const { switchAudio, pause } = useMusic();
 switchAudio(ambiance);
@@ -111,7 +120,7 @@ const initializeGame = () => {
         physics: {
             default: 'arcade',
             arcade: {
-                gravity: { y: initialHeight * 0.5 },
+                gravity: { y: initialHeight * (props.difficulty === 'hard' ? 1.0 : 0.5) },
                 debug: false,
             },
         },
@@ -142,7 +151,7 @@ const initializeGame = () => {
     let clapSoundEffect;
     let isGameStarted = false;
     let fallingObjects = [];
-    let spawnInterval = 1000;
+    let spawnInterval = props.difficulty === 'hard' ? 800 : 1000;
     let difficultyTimer;
     let timeLimitReached = false;
     let goodPictogramsCollected = 0;
@@ -154,7 +163,7 @@ const initializeGame = () => {
     }
 
     function create() {
-        goodPictogramsCollected = 0; // Réinitialisation du compteur
+        goodPictogramsCollected = 0;
         setUpBackground.call(this);
 
         const startTextBg = this.add.rectangle(0, 0, game.config.width, game.config.height, 0x000000)
@@ -230,9 +239,7 @@ const initializeGame = () => {
     }
 
     function updateGauge() {
-        // Calcul brut du niveau de jauge (0 à 4)
         const gaugeLevel = Math.min(4, Math.floor(goodPictogramsCollected / (requiredPictograms / 5)));
-
         if (gauge && gauge.texture.key !== `jauge${gaugeLevel}`) {
             gauge.setTexture(`jauge${gaugeLevel}`);
             gauge.setScale(0.15 * scalingFactors.widthScale);
@@ -256,7 +263,7 @@ const initializeGame = () => {
             delay: 10000,
             loop: true,
             callback: () => {
-                spawnInterval = Math.max(300, spawnInterval - 100);
+                spawnInterval = Math.max(300, spawnInterval - (props.difficulty === 'hard' ? 150 : 100));
             }
         });
     }
@@ -310,7 +317,6 @@ const initializeGame = () => {
                 fallingObject.setScale(0.7 * scalingFactors.widthScale);
                 const pictogramWidth = fallingObject.displayWidth;
                 
-                // Position aléatoire mais pas trop près des bords
                 const margin = pictogramWidth * 1.5;
                 const randomX = Phaser.Math.Between(
                     margin, 
@@ -319,7 +325,7 @@ const initializeGame = () => {
                 
                 fallingObject.setPosition(randomX, 0);
                 
-                const baseSpeed = 50 + (timeElapsed.value / maxTime) * 150;
+                const baseSpeed = (props.difficulty === 'hard' ? 150 : 50) + (timeElapsed.value / maxTime) * 150;
                 fallingObject.setVelocityY(Phaser.Math.Between(baseSpeed, baseSpeed + 50));
                 fallingObject.isGood = isGood;
 
@@ -336,7 +342,6 @@ const initializeGame = () => {
             goodPictogramsCollected++;
             score.value = goodPictogramsCollected;
             
-            // Mise à jour immédiate de la jauge
             updateGauge.call(this);
             goodSoundEffect.play();
 
@@ -346,16 +351,26 @@ const initializeGame = () => {
             }
         } else {
             badPictogramsCollected++;
-            const penalty = 10 + Math.floor(timeElapsed.value / maxTime * 5);
+            const penalty = props.difficulty === 'hard' ? 15 + Math.floor(timeElapsed.value / maxTime * 10) : 10 + Math.floor(timeElapsed.value / maxTime * 5);
             timeElapsed.value += penalty;
             wrongSoundEffect.play();
         }
     }
 
     function calculateFinalScore() {
-        // 1000 points maximum
-        const timePenalty = Math.min(400, timeElapsed.value * 2); // Pénalité temporelle
-        finalScore.value = 1000 - timePenalty;
+        // Score de base
+        let baseScore = 1000;
+        
+        // Pénalité pour le temps écoulé (plus sévère en mode difficile)
+        const timePenalty = props.difficulty === 'hard' 
+            ? Math.min(600, timeElapsed.value * 3) 
+            : Math.min(400, timeElapsed.value * 2);
+        
+        // Bonus pour la difficulté
+        const difficultyBonus = props.difficulty === 'hard' ? 500 : 0;
+        
+        // Calcul final
+        finalScore.value = Math.max(0, baseScore - timePenalty + difficultyBonus);
     }
 
     function endGame(isVictory) {

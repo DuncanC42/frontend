@@ -98,7 +98,6 @@
       :score="score" 
       :jeu_id="5"
       message="L'Assurance Maladie offre des rendez-vous de prévention avec le dentiste appelés « M'T dents » aux jeunes de âgés de 18, 21 et 24 ans !"
-      @retry="handleRetry" 
       @quit="handleLeave" 
     />
     <Dommage 
@@ -503,7 +502,7 @@ export default {
           ctx.globalCompositeOperation = "destination-out";
           ctx.beginPath();
 
-          const brushRadius = this.difficulty === 'hard' ? 60 : 80;
+          const brushRadius = this.difficulty === 'hard' ? 50 : 80;
           ctx.arc(canvasX, canvasY, brushRadius, 0, Math.PI * 2); // Rayon de 80 pixels
 
           ctx.fill();
@@ -717,7 +716,8 @@ export default {
       }
       
       // 3. Calcul du score total 
-      this.score = Math.max(0, timeBonus + cleanlinessBonus - enemiesPenalty);
+      const rawScore = timeBonus + cleanlinessBonus - enemiesPenalty;
+      this.score = Math.max(0, Math.ceil(rawScore));
       
       // Stockage des valeurs intermédiaires pour le débogage (optionnel)
       this.teethCleanedPercentage = teethCleanedPercentage;
