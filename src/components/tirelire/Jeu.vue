@@ -7,7 +7,9 @@
         <Bravo 
             v-if="gameWon" 
             :score="finalScore" 
-            message="La complémentaire santé solidaire (C2S) est une aide pour payer ses dépenses de santé, si tes ressources sont faibles. Avec la C2S tu ne paies pas le médecin, ni tes médicaments en pharmacie. La plupart des lunettes et des soins dentaires sont pris en charge. Tu peux faire une simulation sur ameli.fr pour savoir si tu y as droit !"
+            :jeu_id="2"
+            message="La complémentaire santé solidaire (C2S) est une aide pour payer ses dépenses de santé, si tes ressources sont faibles. Avec la C2S tu ne paies pas le médecin, ni tes médicaments en pharmacie. La plupart des lunettes et des soins dentaires sont pris en charge. Tu peux faire une simulation sur ameli.fr pour savoir si tu y as droit !"
+            @retry="handleRetry"
             @quit="handleLeave" 
         />
         <Dommage 

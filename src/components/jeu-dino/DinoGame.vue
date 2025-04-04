@@ -23,6 +23,7 @@
         <Bravo 
             v-if="gameWon" 
             :score="score" 
+            :jeu_id="3"
             message="Les remboursements de l’Assurance Maladie se font par virement bancaire. Depuis ton compte ameli, enregistrer ton RIB c’est être sûr de recevoir les remboursements sur ton propre compte bancaire !"
             @retry="handleRetry" 
             @quit="handleLeave" 
@@ -66,6 +67,14 @@ import herbe from '@/assets/jeu-dino/herbe.png'
 import FR from '@/assets/jeu-dino/FR.png'
 
 import applause from '@/assets/jeu-dino/applause.mp3'
+
+const props = defineProps({
+  difficulty: {
+    type: String,
+    default: 'normal', // 'normal' ou 'hard'
+    validator: (value) => ['normal', 'hard'].includes(value)
+  }
+});
 
 const applauseSound = ref(null)
 
@@ -327,8 +336,14 @@ const triggerVictory = () => {
   
   gameWon.value = true;
   const timeBonus = gameTime.value * SCORE_VALUES.TIME_BONUS_MULTIPLIER;
-  score.value += SCORE_VALUES.VICTORY_BONUS + timeBonus;
-  score.value = Math.min(score.value, 1000);
+  if (props.difficulty === 'hard') {
+    score.value += SCORE_VALUES.VICTORY_BONUS + timeBonus;
+    score.value = score.value * 1.5;
+  } else {
+    score.value += SCORE_VALUES.VICTORY_BONUS + timeBonus;
+  }
+  
+  score.value = Math.min(score.value, 1500);
   
   // Jouer le son d'applaudissement
   if (game.value.instance && game.value.scene) {
@@ -584,7 +599,14 @@ function spawnObstacle() {
     'cactus3': 154.5
   }
 
-  const scale = selectedCactus === 'cactus2' ? 0.5 : 0.3
+  let scale;
+  if (props.difficulty === 'hard') {
+    // Taille plus grande en mode difficile
+    scale = selectedCactus === 'cactus2' ? 0.5 : 0.3;
+  } else {
+    // Taille normale (plus petite)
+    scale = selectedCactus === 'cactus2' ? 0.4 : 0.2;
+  }
   const cactusHeight = cactusHeights[selectedCactus] * scale
 
   const cactus = obstacles.create(x, groundY - cactusHeight, selectedCactus)
@@ -610,7 +632,12 @@ function spawnObstacle() {
 
 function spawnSecondObstacle(x, groundY, cactusTypes, cactusHeights) {
   const secondCactusType = Phaser.Utils.Array.GetRandom(cactusTypes)
-  const secondScale = secondCactusType === 'cactus2' ? 0.5 : 0.3
+  let secondScale;
+  if (props.difficulty === 'hard') {
+    secondScale = secondCactusType === 'cactus2' ? 0.5 : 0.3;
+  } else {
+    secondScale = secondCactusType === 'cactus2' ? 0.4 : 0.2;
+  }
   const secondCactusHeight = cactusHeights[secondCactusType] * secondScale
   
   const secondCactus = obstacles.create(x - 60, groundY - secondCactusHeight, secondCactusType)
