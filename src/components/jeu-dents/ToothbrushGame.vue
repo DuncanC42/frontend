@@ -712,7 +712,7 @@ export default {
       
       // Bonus de difficulté
       if (this.difficulty === 'hard') {
-        cleanlinessBonus *= 1.7; 
+        cleanlinessBonus *= 1.5; // 10% de points en plus en mode difficile
       }
       
       // 3. Calcul du score total 
