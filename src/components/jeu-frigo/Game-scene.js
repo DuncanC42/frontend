@@ -65,7 +65,7 @@ import brocoliPartieBas from '@/assets/fruit-ninja/images/brocoli_coupe_bas.png'
 
 import carotte from '@/assets/fruit-ninja/images/carotte.png';
 import carottePartieHaut from '@/assets/fruit-ninja/images/Carotte_coupee_haut.png';
-import carottePartieBas from '@/assets/fruit-ninja/images/Carotte_coupee_bas.png';
+import carottePartieBas from '@/assets/fruit-ninja/images/carotte_coupee_bas.png';
 
 export default class GameScene extends Phaser.Scene {
     constructor(config) {
