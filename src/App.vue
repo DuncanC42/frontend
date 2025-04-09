@@ -13,6 +13,8 @@ useMusic(audio_mp3);
 const { isLoading, showLoader, hideLoader } = useLoader();
 const router = useRouter();
 const ws = ref(null); // Référence pour le WebSocket
+const URI = import.meta.env.VITE_URI;
+const WS_PORT = import.meta.env.VITE_WS_PORT;
 
 onMounted(async () => {
 	// Ajoute un écouteur pour surveiller les changements de taille d'écran
@@ -23,7 +25,7 @@ onMounted(async () => {
 	showLoader();
 	await router.isReady(); // Wait for the router to be ready
 
-    ws.value = new WebSocket('ws://localhost:8051');
+    ws.value = new WebSocket(`ws://${URI}:${WS_PORT}`);
 
     ws.value.onopen = () => {
         console.log('Connecté au WebSocket');
