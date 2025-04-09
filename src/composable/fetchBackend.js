@@ -11,7 +11,9 @@ export async function fetchBackend(endpoint, method = 'GET', body = null, params
     const router = useRouter();
 
     try {
-        const url = new URL(`http://localhost:8050/${endpoint}`);
+        const URI = import.meta.env.VITE_URI;
+        const API_PORT = import.meta.env.VITE_API_PORT;
+        const url = new URL(`http://${URI}:${API_PORT}/${endpoint}`);
         const tokenStore = useTokenStore();
 
         Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
