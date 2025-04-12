@@ -5,6 +5,8 @@ import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vite.dev/config/
+
+const SERIOUS_GAME_PORT = 8080;
 export default defineConfig({
   plugins: [
     vue(),
@@ -17,7 +19,7 @@ export default defineConfig({
   },
   server: {
     host: '0.0.0.0',
-    port: 8080,  // Configuré pour correspondre au port dans Docker
+    port: SERIOUS_GAME_PORT,  // Configuré pour correspondre au port dans Docker
     watch: {
       usePolling: true
     }
