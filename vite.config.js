@@ -10,7 +10,7 @@ const SERIOUS_GAME_PORT = 8080;
 export default defineConfig({
   plugins: [
     vue(),
-    vueDevTools(),
+    // vueDevTools(),
   ],
   resolve: {
     alias: {
